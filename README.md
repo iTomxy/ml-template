@@ -7,7 +7,7 @@ ML code templates for quick project starting with, or easy conversion between, t
 - pytorch 1.4
 
 **Note**: The hierarchy here **DOES NOT** represent the real one. I usually put these files in one directory.<br/>
-Cause multiply frameworks are involved here, files are organized according to their generality.
+Cause multiple frameworks are involved here, files are organized according to their generality.
 
 # TODO
 
