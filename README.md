@@ -1,14 +1,13 @@
 # ml-template
 
-ML code templates for fast starting or easy conversion in/between these frameworks:
+ML code templates for quick project starting with, or easy conversion between, these frameworks:
 
 - tensorflow 1.12
 - tensorflow 2.1
 - pytorch 1.4
 
-**Note**: The hierarchy here DOES NOT represent the real one.<br/>
-They are typically put into the same directory.<br/>
-Cause multiply frameworks are involved, files are organized according to their generality.
+**Note**: The hierarchy here **DOES NOT** represent the real one. I usually put these files in one directory.<br/>
+Cause multiply frameworks are involved here, files are organized according to their generality.
 
 # TODO
 
