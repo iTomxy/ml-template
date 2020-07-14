@@ -9,7 +9,7 @@ https://blog.csdn.net/hackertom/article/details/103374313
 """
 
 
-def _get_triplet_mask(L, L2=None, sparse=False):
+def _triplet_mask(L, L2=None, sparse=False):
     """M(i,j,k) = 1 iff:
     - i != j != k, and
     - sim(i,j), dissim(i,k)
@@ -23,7 +23,7 @@ def _get_triplet_mask(L, L2=None, sparse=False):
     neq_id = 1 - I  # [n, m]
     neq_ij = tf.expand_dims(neq_id, 2)  # [n, m, 1]
     neq_ik = tf.expand_dims(neq_id, 1)  # [n, 1, m]
-    neq_jk = tf.expand_dims(tf.eye(m, dtype="int32"), 0)  # [1, m, m]
+    neq_jk = tf.expand_dims(1 - tf.eye(m, dtype="int32"), 0)  # [1, m, m]
     mask_index = neq_ij * neq_ik * neq_jk  # [n, m, m]
     # print("mask_index:", mask_index.shape)
 
@@ -37,16 +37,17 @@ def _get_triplet_mask(L, L2=None, sparse=False):
     return mask
 
 
-def batch_all_triplet_loss(X, L, X2=None, L2=None, margin=1, sparse=False):
-    """triplet loss (euclidean)
+def triplet_loss(X, L, X2=None, L2=None, margin=1, dist_fn=euclidean, sparse=False):
+    """triplet loss (batch all)
     X, X2: [n, d] & [m, d], feature
     L, L2: [n, c] & [m, c] if not sparse, else [n] & [m], label
+    dist_fn: distance function, default to euclidean
     sparse: in form of sparse class ID if true, else one-hot
     """
     if X2 is None:
         # assert L2 is None
         X2, L2 = X, L
-    pairwise_dist = euclidean(X, X2)  # [n, m]
+    pairwise_dist = dist_fn(X, X2)  # [n, m]
     anchor_positive_dist = tf.expand_dims(pairwise_dist, 2)
     anchor_negative_dist = tf.expand_dims(pairwise_dist, 1)
 
@@ -54,7 +55,7 @@ def batch_all_triplet_loss(X, L, X2=None, L2=None, margin=1, sparse=False):
 
     # Put to zero the invalid triplets
     # (where label(a) != label(p) or label(n) == label(a) or a == p)
-    mask_triplet = _get_triplet_mask(L, L2, sparse)
+    mask_triplet = _triplet_mask(L, L2, sparse)
 
     mask_triplet = tf.cast(mask_triplet, "float32")
     triplet_loss = tf.multiply(mask_triplet, triplet_loss)
