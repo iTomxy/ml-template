@@ -24,7 +24,7 @@ def _triplet_mask(L, L2=None, sparse=False):
     neq_id = 1 - I  # [n, m]
     neq_ij = neq_id.unsqueeze(2)  # [n, m, 1]
     neq_ik = neq_id.unsqueeze(1)  # [n, 1, m]
-    neq_jk = (1 - torch.eye(m).to(L.device)).unsqueeze(0)  # [1, m, m]
+    neq_jk = (1 - torch.eye(m)).unsqueeze(0).to(L.device)  # [1, m, m]
     mask_index = neq_ij * neq_ik * neq_jk
 
     S = sim_mat(L, L2, sparse)  # [n, m]
@@ -47,12 +47,13 @@ def triplet_loss(X, L, X2=None, L2=None, margin=1, dist_fn=euclidean, sparse=Fal
         X2, L2 = X, L
     D = dist_fn(X, X2)
     D_pos = D.unsqueeze(2)
-    D_neq = D.unsqueeze(1)
+    D_neg = D.unsqueeze(1)
     kernel = D_pos + margin - D_neg
 
-    mask_triplet = _triplet_mask(L, sparse)
+    mask_triplet = _triplet_mask(L, sparse=sparse)
     loss_triplet = 0.5 * mask_triplet * kernel
-    loss_triplet[loss_triplet < 0] = 0.0
+    # loss_triplet[loss_triplet < 0] = 0.0
+    loss_triplet = torch.max(loss_triplet, torch.zeros_like(loss_triplet).to(X.device))
 
     n_pos = (loss_triplet > 1e-16).float().sum()
     return loss_triplet.sum() / (n_pos + 1e-16)
