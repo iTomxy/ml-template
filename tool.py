@@ -47,14 +47,16 @@ class Record:
     def log_best(self):
         s = ""
         for k in self.best:
-            s += "{}: {}\n".format(k, self.best[k])
+            v = self.best[k]
+            if v != math.inf and v != - math.inf:
+                s += "{}: {}\n".format(k, v)
         return s
 
     def log_new(self):
         s = ""
         for k in self.seq:
-            s += "{}: {}\n".format(k, self.seq[k][-1])
-        return s
+            if len(self.seq[k]) > 0:
+                s += 
 
     def add_big(self, *args):
         for k in args:
