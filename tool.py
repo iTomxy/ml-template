@@ -20,9 +20,11 @@ class Logger:
         for k, v in args._get_kwargs():
             self.log_file.write("{}: {}\n".format(k, v))
         self.log_file.write("begin time: {}\n".format(time.asctime()))
+        self.closed = False
 
     def __del__(self):
-        self.stop()
+        if not self.closed:
+            self.stop()
 
     def log(self, text):
         print(text)
@@ -32,6 +34,7 @@ class Logger:
         self.log_file.write("end time: {}\n".format(time.asctime()))
         self.log_file.flush()
         self.log_file.close()
+        self.closed = True
 
 
 class Record:
@@ -56,7 +59,7 @@ class Record:
         s = ""
         for k in self.seq:
             if len(self.seq[k]) > 0:
-                s += 
+                s += "{}: {}\n".format(k, self.seq[k][-1])
 
     def add_big(self, *args):
         for k in args:
