@@ -24,13 +24,13 @@ class Logger:
 
     def __del__(self):
         if not self.closed:
-            self.stop()
+            self.close()
 
     def log(self, text):
         print(text)
         self.log_file.write(text + '\n')
 
-    def stop(self):
+    def close(self):
         self.log_file.write("end time: {}\n".format(time.asctime()))
         self.log_file.flush()
         self.log_file.close()
