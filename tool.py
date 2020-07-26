@@ -60,6 +60,7 @@ class Record:
         for k in self.seq:
             if len(self.seq[k]) > 0:
                 s += "{}: {}\n".format(k, self.seq[k][-1])
+        return s
 
     def add_big(self, *args):
         for k in args:

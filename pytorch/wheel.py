@@ -50,8 +50,12 @@ def cos(X, Y=None):
     return X_n.mm(Y_n.T)
 
 
-def hamming(X, Y=None):
+def hamming(X, Y=None, discrete=False):
     if Y is None:
         Y = X
     K = X.size(1)
-    return 0.5 * (K -X.mm(Y.T))
+    kernel = K - X.mm(Y.T)
+    if discrete:
+        return (kernel.int() // 2).float()
+    else:
+        return 0.5 * kernel
