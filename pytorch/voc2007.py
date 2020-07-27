@@ -19,8 +19,8 @@ class VOC2007:
         self.IMAGES = join(args.data_path, "images")#.resnet101.npy")
 
         split_path = join("data", args.dataset)
-        self.idx_test = torch.from_numpy(np.load(join(split_path, "idx_test.npy")))
-        self.idx_train = torch.from_numpy(np.load(join(split_path, "idx_train_val.npy")))
+        self.idx_test = np.load(join(split_path, "idx_test.npy"))
+        self.idx_train = np.load(join(split_path, "idx_train_val.npy"))
         if args.tuning:
             self._tuning_mode()
 
@@ -57,7 +57,7 @@ class VOC2007:
             if transform is not None:
                 img = transform(Image.fromarray(img))
             else:
-                img = cv2.resize(img, (224, 224), interpolation=cv2.INTER_LINEAR)
+                img = cv2.resize(img, (args.image_size, args.image_size), interpolation=cv2.INTER_LINEAR)
                 img = torch.from_numpy(np.transpose(img, (2, 0, 1)))
             image_batch.append(img.unsqueeze(0))
 
@@ -84,42 +84,52 @@ class VOC2007:
         if batch_size is None: batch_size = args.batch_size
         indices = self.indices_set[which]
         if shuffle:
-            indices = indices.clone()
+            indices = indices.copy()
         ptr = 0
         while True:
             ptr, idx = self._next_batch_idx(ptr, batch_size, indices, shuffle)
+            _idx_t = torch.from_numpy(idx)
             image = self._load_images(idx, transform=transform)
-            yield self.labels[idx], image#self.images[idx]
+            yield self.labels[_idx_t], image#self.images[idx]
 
     def iter_set(self, which, transform=None, batch_size=None, shuffle=False):
         """traverse the dataset once"""
         if batch_size is None: batch_size = args.batch_size
         indices = self.indices_set[which]
         if shuffle:
-            indices = indices.clone()
+            indices = indices.copy()
             np.random.shuffle(indices)
         for i in range(0, indices.shape[0], batch_size):
             idx = indices[i: i + batch_size]
+            _idx_t = torch.from_numpy(idx)
             image = self._load_images(idx, transform=transform)
-            yield self.labels[idx], image#self.images[idx]
+            yield self.labels[_idx_t], image#self.images[idx]
 
     def load_set(self, which, transform=None, shuffle=False):
         """load the whole set"""
         idx = self.indices_set[which]
         if shuffle:
-            idx = idx.clone()
+            idx = idx.copy()
             np.random.shuffle(idx)
+        _idx_t = torch.from_numpy(idx)
         image = self._load_images(idx, transform=transform)
-        yield self.labels[idx], image#self.images[idx]
+        yield self.labels[_idx_t], image#self.images[idx]
 
     def load_label(self, which):
         idx = self.indices_set[which]
-        return self.labels[idx]
+        _idx_t = torch.from_numpy(idx)
+        return self.labels[_idx_t]
 
     def load_label_w2v(self):
         with open(args.w2v_file, "rb") as f:
             data = pickle.load(f)
         return torch.from_numpy(data)
+
+    # def test_load(self, indices, transform=None):
+    #     """(TEST) load data according to given indices"""
+    #     image = self._load_images(indices, transform=transform)
+    #     _idx_t = torch.from_numpy(indices)
+    #     return self.labels[_idx_t], image
 
 
 if __name__ == "__main__":
@@ -130,8 +140,12 @@ if __name__ == "__main__":
     # print("test label", L.max(), ',', L.min())
     L, I = next(dataset.iter_set("test"))
     print("label:", L.shape, ", image:", I.shape)
-    print(dataset.idx_train.max(), dataset.idx_train.min())
-    print(dataset.idx_test.max(), dataset.idx_test.min())
+    # print(dataset.idx_train.max(), dataset.idx_train.min())
+    # print(dataset.idx_test.max(), dataset.idx_test.min())
+    L = dataset.load_label("test")
+    print("label range:", (L == -1).sum(), ',', (L == 0).sum(), ',', (L == 1).sum())
+    L_w2v = dataset.load_label_w2v()
+    print(L_w2v)
 
     # import matplotlib.pyplot as plt
     # from models import to_matrix, to_vector
@@ -153,3 +167,4 @@ if __name__ == "__main__":
 
     # show(L, "one")
     # show(1 - L, "zero")
+
