@@ -71,6 +71,6 @@ def one_hot(label, n_class):
     Ref:
     - https://pytorch.org/docs/stable/tensors.html#torch.Tensor.scatter_
     """
-    L = torch.zeros(label.size(0), n_class).scatter_(
+    L = torch.zeros(label.size(0), n_class).to(label.device).scatter_(
         1, label.long().unsqueeze(1), 1)
-    return L.to(label.dtype).to(label.device)
+    return L.to(label.dtype)
