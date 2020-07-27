@@ -56,6 +56,21 @@ def hamming(X, Y=None, discrete=False):
     K = X.size(1)
     kernel = K - X.mm(Y.T)
     if discrete:
-        return (kernel.int() // 2).float()
+        return (kernel.int() // 2).to(X.dtype)
     else:
         return 0.5 * kernel
+
+
+def one_hot(label, n_class):
+    """convert labels from sparse to one-hot
+    Input:
+    - label: [n], sparse class ID of n samples
+    - n_class: scalar, #classes
+    Output:
+    - L: [n, c], label in one-hot
+    Ref:
+    - https://pytorch.org/docs/stable/tensors.html#torch.Tensor.scatter_
+    """
+    L = torch.zeros(label.size(0), n_class).scatter_(
+        1, label.long().unsqueeze(1), 1)
+    return L.to(label.dtype).to(label.device)
