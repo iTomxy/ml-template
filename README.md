@@ -15,4 +15,4 @@ Cause multiple frameworks are involved here, files are organized according to th
 
 # Notes
 
-1. Seems that for **PyTorch 0.3**, performing advanced indexing with `numpy.ndarray` is **NOT** supported, which is OK in PyTorch 1.4. So in *pytorch/voc2007.py*, indices (those `idx_*`) are converted to `torch.Tensor` after being loaded, representing the use in PyTorch 0.3.
+1. Seems that for **PyTorch 0.3**, performing advanced indexing with `numpy.ndarray` is **NOT** supported, which is OK in PyTorch 1.4. So in *pytorch/voc2007.py*, indices (those `idx_*`) are converted to `torch.Tensor` before being used, representing the use in PyTorch 0.3.
