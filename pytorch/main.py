@@ -115,4 +115,4 @@ for epoch in range(args.epoch):
 
 logger.log("--- best ---")
 logger.log(record.log_best())
-logger.stop()
+torch.cuda.empty_cache()
