@@ -12,6 +12,12 @@ from tool import *
 from args import *
 
 
+print(torch.__version__)               # PyTorch version
+print(torch.version.cuda)              # Corresponding CUDA version
+print(torch.backends.cudnn.version())  # Corresponding cuDNN version
+print(torch.cuda.get_device_name(0))   # GPU type
+
+
 logger = Logger(args)
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
 os.environ['PYTHONHASHSEED'] = str(args.seed)
