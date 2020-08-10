@@ -139,7 +139,8 @@ def cos(X, Y=None):
     if (Y is None) or (X is Y):
         return tf.matmul(X_n, tf.transpose(X_n))
     Y_n = tf.math.l2_normalize(Y, axis=1)
-    return tf.matmul(X_n, tf.transpose(Y_n))
+    _cos = tf.matmul(X_n, tf.transpose(Y_n))
+    return tf.clip_by_value(_cos, -1, 1)
 
 
 def hamming(X, Y=None, discrete=False):

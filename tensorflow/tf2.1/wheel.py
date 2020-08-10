@@ -154,14 +154,12 @@ def cos(X, Y=None):
     """cosine of every (Xi, Yj) pair
     X, Y: (n, dim)
     """
-    # X_n = X / np.linalg.norm(X, ord=2, axis=1)[:, np.newaxis]
-    # Y_n = Y / np.linalg.norm(Y, ord=2, axis=1)[:, np.newaxis]
-    # return np.dot(X_n, np.transpose(Y_n))
     X_n = tf.math.l2_normalize(X, axis=1)
     if (Y is None) or (X is Y):
         return tf.matmul(X_n, tf.transpose(X_n))
     Y_n = tf.math.l2_normalize(Y, axis=1)
-    return tf.matmul(X_n, tf.transpose(Y_n))
+    _cos = tf.matmul(X_n, tf.transpose(Y_n))
+    return tf.clip_by_value(_cos, -1, 1)
 
 
 def hamming(X, Y=None, discrete=False):
