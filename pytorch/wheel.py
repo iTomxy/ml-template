@@ -13,7 +13,7 @@ def euclidean(A, B=None, sqrt=False):
         bTb = B.mm(B.T).diag()
     D = aTa.view(-1, 1) - 2.0 * aTb + bTb.view(1, -1)
     # D[D < 0] = 0.0
-    D = D.where(D < 0, torch.zeros_like(D).to(D.device))
+    D = D.where(D > 0, torch.zeros_like(D).to(D.device))
 
     if sqrt:
         # Because the gradient of sqrt is infinite when distances == 0.0 (ex: on the diagonal)
