@@ -12,13 +12,12 @@ from tool import *
 from args import *
 
 
-print("PyTorch version:", torch.__version__)
-print("cuda version:", torch.version.cuda)
-print("cuDNN version:", torch.backends.cudnn.version())
-print("GPU type:", torch.cuda.get_device_name(0))
-
-
 logger = Logger(args)
+logger.log("PyTorch version: {}".format(torch.__version__))
+logger.log("cuda version: {}".format(torch.version.cuda))
+logger.log("cuDNN version: {}".format(torch.backends.cudnn.version()))
+logger.log("GPU type: {}".format(torch.cuda.get_device_name(0)))
+
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
 os.environ['PYTHONHASHSEED'] = str(args.seed)
 random.seed(args.seed)
@@ -27,7 +26,6 @@ torch.manual_seed(args.seed)
 # torch.backends.cudnn.deterministic = True
 # torch.backends.cudnn.benchmark = False
 os.system("clear")
-print("pytorch version:", torch.__version__)
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

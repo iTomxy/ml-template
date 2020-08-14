@@ -14,6 +14,7 @@ from args import *
 
 
 logger = Logger(args)
+logger.log("tf version: {}".format(tf.__version__))
 if args.err_only:
     tf.logging.set_verbosity(tf.logging.ERROR)
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
@@ -22,7 +23,6 @@ random.seed(args.seed)
 np.random.seed(args.seed)
 tf.random.set_random_seed(args.seed)
 os.system("clear")
-print("tf version:", tf.__version__)
 
 
 dataset = flickr.Flickr()
