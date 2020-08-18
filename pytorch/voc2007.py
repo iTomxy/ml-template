@@ -88,7 +88,7 @@ class VOC2007:
         ptr = 0
         while True:
             ptr, idx = self._next_batch_idx(ptr, batch_size, indices, shuffle)
-            _idx_t = torch.from_numpy(idx)
+            _idx_t = torch.LongTensor(idx)
             image = self._load_images(idx, transform=transform)
             yield self.labels[_idx_t], image#self.images[idx]
 
@@ -101,7 +101,7 @@ class VOC2007:
             np.random.shuffle(indices)
         for i in range(0, indices.shape[0], batch_size):
             idx = indices[i: i + batch_size]
-            _idx_t = torch.from_numpy(idx)
+            _idx_t = torch.LongTensor(idx)
             image = self._load_images(idx, transform=transform)
             yield self.labels[_idx_t], image#self.images[idx]
 
@@ -111,13 +111,13 @@ class VOC2007:
         if shuffle:
             idx = idx.copy()
             np.random.shuffle(idx)
-        _idx_t = torch.from_numpy(idx)
+        _idx_t = torch.LongTensor(idx)
         image = self._load_images(idx, transform=transform)
         yield self.labels[_idx_t], image#self.images[idx]
 
     def load_label(self, which):
         idx = self.indices_set[which]
-        _idx_t = torch.from_numpy(idx)
+        _idx_t = torch.LongTensor(idx)
         return self.labels[_idx_t]
 
     def load_label_w2v(self):
@@ -128,7 +128,7 @@ class VOC2007:
     # def test_load(self, indices, transform=None):
     #     """(TEST) load data according to given indices"""
     #     image = self._load_images(indices, transform=transform)
-    #     _idx_t = torch.from_numpy(indices)
+    #     _idx_t = torch.LongTensor(indices)
     #     return self.labels[_idx_t], image
 
 
