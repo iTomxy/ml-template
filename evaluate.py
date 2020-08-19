@@ -15,13 +15,17 @@ def cos(A, B=None):
     return np.dot(An, Bn.T)
 
 
-def hamming(A, B=None):
+def hamming(A, B=None, discrete=False):
     """A, B: [None, bit]
     elements in {-1, 1}
     """
     if B is None: B = A
     bit = A.shape[1]
-    return (bit - np.dot(A, B.T)) / 2
+    kernel = bit - A.dot(B.T)
+    if discrete:
+        return (kernel.astype(np.int) // 2).astype(A.dtype)
+    else:
+        return 0.5 * kernel
 
 
 def euclidean(A, B=None, sqrt=False):
