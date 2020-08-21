@@ -170,8 +170,9 @@ def t_sne(F, L, title="tsne"):
     F = tsne.fit_transform(F)
     fig = plt.figure()
     plt.title(title)
-    plt.scatter(F[:, 0], F[:, 1], s=25, c=L, marker='.', cmap="rainbow")
-    plt.show()
+    l1 = plt.scatter(F[:, 0], F[:, 1], s=25, c=L, marker='.', cmap="rainbow")
+    plt.legend(handles=[l1], labels=[title], loc="best")
+    # plt.show()
     fig.savefig(os.path.join(args.log_path, "{}.png".format(title)))
     plt.close(fig)
 
@@ -189,7 +190,7 @@ def vis_retrieval(F, L, title="retrieval"):
     plt.scatter(F[:1, 0], F[:1, 1], s=40, c=S[:1], marker='*', cmap="rainbow")
     plt.scatter(F[1:, 0], F[1:, 1], s=25, c=S[1:], marker='.', cmap="rainbow")
     plt.colorbar()
-    plt.show()
+    # plt.show()
     fig.savefig(os.path.join(args.log_path, "{}.png".format(title)))
     plt.close(fig)
 
