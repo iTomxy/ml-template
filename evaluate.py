@@ -2,6 +2,8 @@ import os
 import numpy as np
 from sklearn.preprocessing import normalize
 from sklearn.manifold import TSNE
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from args import args
 
@@ -55,7 +57,11 @@ def calc_mAP(qF, rF, qL, rL, what=0, k=-1):
         rF: retrieval feature/hash matrix
         qL: query label matrix
         rL: retrieval label matrix
-        what: {0: cos, 1: hamming, 2: euclidean}
+        what:
+            - 0: cos
+            - 1: hamming (continuous)
+            - 2: euclidean
+            - 3: hamming (discrete)
         k: mAP@k, default `-1` means mAP@ALL
     """
     n_query = qF.shape[0]
@@ -68,6 +74,8 @@ def calc_mAP(qF, rF, qL, rL, what=0, k=-1):
         Rank = np.argsort(hamming(qF, rF))
     elif what == 2:
         Rank = np.argsort(euclidean(qF, rF))
+    elif what == 3:
+        Rank = np.argsort(hamming(qF, rF, discrete=True))
         
     AP = 0.0
     for it in range(n_query):

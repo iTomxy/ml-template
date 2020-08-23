@@ -25,6 +25,7 @@ class Flickr:
 
         self.indices_set = {
             "test": self.idx_test,
+            "train": self.idx_labeled,
             "ret": self.idx_ret,
             "labeled": self.idx_labeled,
             "unlabeled": self.idx_unlabeled

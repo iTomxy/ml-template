@@ -3,7 +3,7 @@ import tensorflow as tf
 import tensorflow.keras as K
 
 
-def conv(x, name, filter_size, stride, in_channel, out_channel, padding='SAME', act_fn=tf.nn.relu):
+def conv(x, name, filter_size, stride, in_channel, out_channel, padding='SAME', bias=True, act_fn=tf.nn.relu):
     """conv 2d"""
     with tf.variable_scope(name):
         w = tf.get_variable(
@@ -223,7 +223,7 @@ def check_nan_inf(tensors):
             tf.stack([_nan, _inf]), tf.constant([1, 2]), tf.constant([0, 0])))
         if res:
             return res
-    else isinstance(tensors, collections.Iterable):
+    elif isinstance(tensors, collections.Iterable):
         for _t in tensors:
             res = check_nan_inf(_t)
             if res:
