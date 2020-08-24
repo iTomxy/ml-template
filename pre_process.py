@@ -80,7 +80,7 @@ class MultiScaleCrop:
     NOTE: following `Resize` needed
     """
 
-    def __init__(self, size, scales=[1, 0.875, 0.75, 0.66],
+    def __init__(self, size, scales=[1.0, 0.875, 0.75, 0.66, 0.5],
                  max_distort=1, fix_crop=True, more_fix_crop=True):
         
         if isinstance(size, int):
@@ -158,8 +158,8 @@ class Normalize:
     """
 
     def __init__(self, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]):
-        self.mean = np.asarray(mean, dtype=np.float32)[np.newaxis, np.newaxis, :]
-        self.std =  np.asarray(std, dtype=np.float32)[np.newaxis, np.newaxis, :]
+        self.mean = np.expand_dims(np.asarray(mean, dtype=np.float32), [0, 1])
+        self.std = np.expand_dims(std, dtype=np.float32), [0, 1])
 
     def __call__(self, x):
         return (x - self.mean) / self.std
