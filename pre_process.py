@@ -30,7 +30,7 @@ class Compose:
 class Resize:
     def __init__(self, size, interpolation=cv2.INTER_LINEAR):
         if isinstance(size, int):
-            self.size = [int(size), int(size)]
+            self.size = (int(size), int(size))
         else:
             self.size = size
         self.interpolation = interpolation
@@ -44,7 +44,7 @@ class Crop:
 
     def __init__(self, size, x, y):
         if isinstance(size, int):
-            self.size = [int(size), int(size)]
+            self.size = (int(size), int(size))
         else:
             self.size = size
         self.x = x
@@ -84,7 +84,7 @@ class MultiScaleCrop:
                  max_distort=1, fix_crop=True, more_fix_crop=True):
         
         if isinstance(size, int):
-            self.size = [int(size), int(size)]
+            self.size = (int(size), int(size))
         else:
             self.size = size
         self.scales = scales

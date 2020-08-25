@@ -45,6 +45,20 @@ def fc(x, name, num_in, num_out, act_fn=None, bias=True, stddev=0.01):
     return out
 
 
+def gcn(DAD, x, num_in, num_out,
+        act_fn=None, bias=False, k_init=None, b_init=None, name="GCN"):
+    """GCN layer
+    DAD: $D^{-1/2} A D^{-1/2}$
+    """
+    _std = 1. / math.sqrt(num_out)
+    if k_init is None:
+        k_init = tf.initializers.random_uniform(- _std, _std)
+    if bias and (b_init is None):
+        b_init = tf.initializers.random_uniform(- _std, _std)
+    h = tf.matmul(DAD, x)
+    return tf.layers.dense(h, num_out, act_fn, bias, k_init, b_init, name=name)
+
+
 @tf.custom_gradient
 def Htanh(x):
     def grad(dy):
@@ -71,14 +85,6 @@ def pw_threshold(x, epsilon):
         return tf.where(cond, dy, zeros), epsilon
 
     return y, grad
-
-
-def gcn(DAD, x, name, num_in, num_out, act_fn=None):
-    """GCN layer
-    DAD: $D^{-1/2} A D^{-1/2}$
-    """
-    h = tf.matmul(DAD, x)
-    return fc(h, name, num_in, num_out, act_fn=act_fn, bias=False)
 
 
 def euclidean(A, B=None, sqrt=False):
