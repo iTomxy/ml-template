@@ -17,17 +17,13 @@ def cos(A, B=None):
     return np.dot(An, Bn.T)
 
 
-def hamming(A, B=None, discrete=False):
+def hamming(A, B=None):
     """A, B: [None, bit]
     elements in {-1, 1}
     """
     if B is None: B = A
     bit = A.shape[1]
-    kernel = bit - A.dot(B.T)
-    if discrete:
-        return (kernel.astype(np.int) // 2).astype(A.dtype)
-    else:
-        return 0.5 * kernel
+    return (bit - A.dot(B.T)) // 2
 
 
 def euclidean(A, B=None, sqrt=False):
@@ -44,13 +40,17 @@ def euclidean(A, B=None, sqrt=False):
     return D
 
 
-def sim_mat(label, label_2=None):
+def sim_mat(label, label_2=None, sparse=False):
     if label_2 is None:
         label_2 = label
-    return (np.dot(label, label_2.T) > 0).astype(np.float32)
+    if sparse:
+        S = label[:, np.newaxis] == label2[np.newaxis, :]
+    else:
+        S = np.dot(label, label_2.T) > 0
+    return S.astype(label.dtype)
 
 
-def calc_mAP(qF, rF, qL, rL, what=0, k=-1):
+def calc_mAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
     """calculate mAP for retrieval
     Args:
         qF: query feature/hash matrix
@@ -67,7 +67,7 @@ def calc_mAP(qF, rF, qL, rL, what=0, k=-1):
     n_query = qF.shape[0]
     if k == -1 or k > rF.shape[0]:
         k = rF.shape[0]
-    Gnd = sim_mat(qL, rL).astype(np.int)
+    Gnd = sim_mat(qL, rL, sparse).astype(np.int)
     if what == 0:
         Rank = np.argsort(1 - cos(qF, rF))
     elif what == 1:
@@ -153,20 +153,65 @@ def prfa(y_true, y_pred):
     return OP, OR, OF1, CP, CR, CF1, acc, acc_pc
 
 
-def analyse_outcast(y_true, y_score):
-    """accuracy, including the outcast
-    compare: prediction of outcast, true outcast
-    y_true: [n * c, c + 1], in {0, 1}
-    y_score: [n * c, c + 1], in [0, 1]
+def P_tie(qH, rH, qL, rL, k=-1, sparse=False):
+    """tie-aware precision@k
+    qH, rH: [n, bit] & [m, bit], hash code of query and database samples
+    qL, rL: [n, #class] & [m, #class], label of query and database samples
+    ref: https://blog.csdn.net/HackerTom/article/details/107458334
     """
-    big = np.max(y_score, 1, keepdims=True)
-    y_pred = np.where(y_score == big, 1, 0).astype(np.int)
-    y_true = y_true.astype(np.int)
-    acc_pc = (y_true == y_pred).sum(0) / y_true.shape[0]
-    true_pc = y_true.sum(0)
-    pred_pc = y_pred.sum(0)
+    if (-1 == k) or (k > rH.shape[0]):
+        k = rH.shape[0]
+    m, bit = rH.shape[0], qH.shape[1]
+    D = hamming(qH, rH)
+    Rnk = np.argsort(D)
+    S = sim_mat(qL, rL, sparse)
+    # find the tie that k lies in: t_{c-1} < k <= t_c
+    D_sort = np.vstack([d[r] for d, r in zip(D, Rnk)])
+    mask_tie = np.equal(D, D_at_k).astype(np.int)
+    # r_c, n_c
+    nc = mask_tie.sum(1)
+    rc = (mask_tie * S).sum(1)
+    # find t_{c-1}
+    pos = np.arange(m)[np.newaxis, :]
+    tie_pos = np.where(np.equal(D_sort, D_at_k), pos, np.inf)
+    tc_1 = np.min(tie_pos, 1) # - 1 + 1  # `+1` to shift 0-base to 1-base
+    # R_{c-1}
+    mask_pre = (D < D_at_k).astype(np.int)
+    Rc_1 = (mask_pre * S).sum(1)
+    # P@k
+    P_at_k = (Rc_1 + (k - tc_1) * rc / nc) / k  # [n]
+    return P_at_k.mean()
 
-    return acc_pc, true_pc, pred_pc
+
+def R_tie(qH, rH, qL, rL, k=-1, sparse=False):
+    """tie-aware recall@k
+    qH, rH: [n, bit] & [m, bit], hash code of query and database samples
+    qL, rL: [n, #class] & [m, #class], label of query and database samples
+    ref: https://blog.csdn.net/HackerTom/article/details/107458334
+    """
+    if (-1 == k) or (k > rH.shape[0]):
+        k = rH.shape[0]
+    m, bit = rH.shape[0], qH.shape[1]
+    D = hamming(qH, rH)
+    Rnk = np.argsort(D)
+    S = sim_mat(qL, rL, sparse)
+    # find the tie that k lies in: t_{c-1} < k <= t_c
+    D_sort = np.vstack([d[r] for d, r in zip(D, Rnk)])
+    mask_tie = np.equal(D, D_at_k).astype(np.int)
+    # r_c, n_c
+    nc = mask_tie.sum(1)
+    rc = (mask_tie * S).sum(1)
+    # find t_{c-1}
+    pos = np.arange(m)[np.newaxis, :]
+    tie_pos = np.where(np.equal(D_sort, D_at_k), pos, np.inf)
+    tc_1 = np.min(tie_pos, 1) # - 1 + 1  # `+1` to shift 0-base to 1-base
+    # R_{c-1}
+    mask_pre = (D < D_at_k).astype(np.int)
+    Rc_1 = (mask_pre * S).sum(1)
+    # R@k
+    Rm = S.sum(1)
+    R_at_k = (Rc_1 + (k - tc_1) * rc / nc) / Rm  # [n]
+    return R_at_k.mean()
 
 
 def t_sne(F, L, title="tsne"):
@@ -204,36 +249,24 @@ def vis_retrieval(F, L, title="retrieval"):
 
 
 if __name__ == "__main__":
-    # qB = np.array([[1, -1, 1, 1],
-    #            [-1, -1, -1, 1],
-    #            [1, 1, -1, 1],
-    #            [1, 1, 1, -1]])
-    # rB = np.array([[1, -1, 1, -1],
-    #                [-1, -1, 1, -1],
-    #                [-1, -1, 1, -1],
-    #                [1, 1, -1, -1],
-    #                [-1, 1, -1, -1],
-    #                [1, 1, -1, 1]])
-    # query_L = np.array([[0, 1, 0, 0],
-    #                     [1, 1, 0, 0],
-    #                     [1, 0, 0, 1],
-    #                     [0, 1, 0, 1]])
-    # retrieval_L = np.array([[1, 0, 0, 1],
-    #                         [1, 1, 0, 0],
-    #                         [0, 1, 1, 0],
-    #                         [0, 0, 1, 0],
-    #                         [1, 0, 0, 0],
-    #                         [0, 0, 1, 0]])
-    # print("mAP test:", calc_mAP(qB, rB, query_L, retrieval_L, what=1))
-    import flickr
-
-    dataset = flickr.Flickr()
-    test_labels = dataset.load_label("test")
-    ret_labels = dataset.load_label("ret")
-
-    mAP_cos = calc_mAP(test_labels, ret_labels, test_labels, ret_labels, 0)
-    mAP_ham = calc_mAP(test_labels, ret_labels, test_labels, ret_labels, 1)
-    mAP_euc = calc_mAP(test_labels, ret_labels, test_labels, ret_labels, 2)
-
-    print("--- label ret ---")
-    print("cos:", mAP_cos, ", ham:", mAP_ham, ", euc:", mAP_euc)
+    qB = np.array([[1, -1, 1, 1],
+               [-1, -1, -1, 1],
+               [1, 1, -1, 1],
+               [1, 1, 1, -1]])
+    rB = np.array([[1, -1, 1, -1],
+                   [-1, -1, 1, -1],
+                   [-1, -1, 1, -1],
+                   [1, 1, -1, -1],
+                   [-1, 1, -1, -1],
+                   [1, 1, -1, 1]])
+    query_L = np.array([[0, 1, 0, 0],
+                        [1, 1, 0, 0],
+                        [1, 0, 0, 1],
+                        [0, 1, 0, 1]])
+    retrieval_L = np.array([[1, 0, 0, 1],
+                            [1, 1, 0, 0],
+                            [0, 1, 1, 0],
+                            [0, 0, 1, 0],
+                            [1, 0, 0, 0],
+                            [0, 0, 1, 0]])
+    print("mAP test:", calc_mAP(qB, rB, query_L, retrieval_L, what=1))

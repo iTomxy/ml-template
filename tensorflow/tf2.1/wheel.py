@@ -163,16 +163,11 @@ def cos(X, Y=None):
     return tf.clip_by_value(_cos, -1, 1)
 
 
-def hamming(X, Y=None, discrete=False):
+def hamming(X, Y=None):
     if Y is None:
         Y = X
     K = tf.cast(tf.shape(X)[1], "float32")
-    kernel = K - tf.matmul(X, tf.transpose(Y))
-    if discrete:
-        H = tf.cast(kernel, "int32") // 2
-        return tf.cast(H, "float32")
-    else:
-        return 0.5 * kernel
+    return (K - tf.matmul(X, tf.transpose(Y))) / 2
 
 
 def top_k_mask(D, k, rand_pick=False):

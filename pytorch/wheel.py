@@ -52,15 +52,11 @@ def cos(X, Y=None):
     return X_n.mm(Y_n.T).clamp(-1, 1)
 
 
-def hamming(X, Y=None, discrete=False):
+def hamming(X, Y=None):
     if Y is None:
         Y = X
     K = X.size(1)
-    kernel = K - X.mm(Y.T)
-    if discrete:
-        return (kernel.int() // 2).to(X.dtype)
-    else:
-        return 0.5 * kernel
+    return (K - X.mm(Y.T)) / 2
 
 
 def check_nan_inf(tensors):
