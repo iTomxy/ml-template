@@ -50,7 +50,7 @@ def sim_mat(label, label_2=None, sparse=False):
     return S.astype(label.dtype)
 
 
-def calc_mAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
+def mAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
     """calculate mAP for retrieval
     Args:
         qF: query feature/hash matrix
@@ -64,7 +64,7 @@ def calc_mAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
         k: mAP@k, default `-1` means mAP@ALL
     """
     n_query = qF.shape[0]
-    if k == -1 or k > rF.shape[0]:
+    if (k < 0) or (k > rF.shape[0]):
         k = rF.shape[0]
     Gnd = sim_mat(qL, rL, sparse).astype(np.int)
     if what == 0:
@@ -87,8 +87,32 @@ def calc_mAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
         rel_cnt = np.arange(pos.shape[-1]) + 1.0
         AP += np.mean(rel_cnt / pos)
 
-    mAP = AP / n_query
-    return mAP
+    return AP / n_query
+
+
+def NDCG(qF, rF, qL, rL, what=0, k=-1, sparse=False):
+    """DCG(q, D) = sum_i { rel(q, D_i) / i }"""
+    n_query = qF.shape[0]
+    if (k < 0) or (k > rF.shape[0]):
+        k = rF.shape[0]
+    Rel = np.dot(qL, rL.T).astype(np.float) / np.maximum(qL.sum(1, keepdims=True), 1)
+    G = Rel  # 2 ** Rel - 1
+    D = np.arange(k) + 1  # np.log2(2 + np.arange(k))
+    Rank_best = np.argsort(- np.dot(qL, rL.T))
+    if what == 0:
+        Rank = np.argsort(1 - cos(qF, rF))
+    elif what == 1:
+        Rank = np.argsort(hamming(qF, rF))
+    elif what == 2:
+        Rank = np.argsort(euclidean(qF, rF))
+
+    _NDCG = 0
+    for g, rnk, rnk_best in zip(G, Rank, Rank_best):
+        dcg_best = (g[rnk_best[:k]] / D).sum()
+        if dcg_best > 0:
+            dcg = (g[rnk[:k]] / D).sum()
+            _NDCG += dcg / dcg_best
+    return _NDCG / n_query
 
 
 def ap_pc(y_true, y_score):
@@ -189,6 +213,9 @@ def P_R_F1_tie(qH, rH, qL, rL, k=-1, sparse=False):
 
 
 def mAP_tie(qH, rH, qL, rL, k=-1, sparse=False):
+    """tie-aware mAP
+    ref: https://blog.csdn.net/HackerTom/article/details/107458334
+    """
     n, m = qH.shape[0], rH.shape[0]
     if (k < 0) or (k > m):
         k = m
@@ -233,6 +260,45 @@ def mAP_tie(qH, rH, qL, rL, k=-1, sparse=False):
         AP += kernel[:k].sum() / Rm
 
     return AP / n
+
+
+def NDCG_tie(qH, rH, qL, rL, k=-1, sparse=False):
+    """tie-aware NDCG
+    ref: https://blog.csdn.net/HackerTom/article/details/107458334
+    """
+    n, m = qH.shape[0], rH.shape[0]
+    if (k < 0) or (k > m):
+        k = m
+    Rel = np.dot(qL, rL.T).astype(np.float) / np.maximum(qL.sum(1, keepdims=True), 1)
+    G = Rel  # 2 ** Rel - 1
+    pos = np.arange(m) + 1  # 1-base
+    D_inv = 1 / pos  # np.log2(2 + np.arange(m))
+    Rank_best = np.argsort(- np.dot(qL, rL.T))
+    Dis = hamming(qF, rF)
+    Rank = np.argsort(Dis)
+
+    _NDCG = 0
+    n_c = np.zeros([m])
+    sum_d = np.zeros([m])
+    for g, d, rnk, rnk_best in zip(G, Dis, Rank, Rank_best):
+        dcg_best = (g[rnk_best] * D_inv)[:k].sum()
+        d_unique = np.unique(d)  # ascending
+        d_sort = d[rnk]
+        g_sort = g[rnk]
+        for _d in d_unique:
+            tie_idx = (d_sort == _d)
+            tie_pos = pos[tie_idx]
+            tc_1 = tie_pos[0] - 1  # i.e. tie_pos.min() - 1
+            if tc_1 >= k:  # k <= t_{c-1} < t_c, out of range
+                break  # continue
+            n_c[tie_idx] = tie_idx.astype(np.int).sum()
+            tc = tie_pos[-1]
+            sum_d[tie_idx] = (1 / np.arange(tc_1 + 1, min(k, tc) + 1)).sum()
+
+        dcg = (g_sort * sum_d)[:k].sum()
+        _NDCG += dcg / dcg_best
+
+    return _NDCG / n
 
 
 def t_sne(F, L, title="tsne"):
@@ -291,7 +357,7 @@ if __name__ == "__main__":
                             [0, 0, 1, 0],
                             [1, 0, 0, 0],
                             [0, 0, 1, 0]])
-    print("mAP test:", calc_mAP(qB, rB, query_L, retrieval_L, what=1))
+    print("mAP test:", mAP(qB, rB, query_L, retrieval_L, what=1))
 
     # test tie-aware P@k, R@k
     k = 3
