@@ -61,7 +61,6 @@ def calc_mAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
             - 0: cos
             - 1: hamming (continuous)
             - 2: euclidean
-            - 3: hamming (discrete)
         k: mAP@k, default `-1` means mAP@ALL
     """
     n_query = qF.shape[0]
@@ -74,9 +73,7 @@ def calc_mAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
         Rank = np.argsort(hamming(qF, rF))
     elif what == 2:
         Rank = np.argsort(euclidean(qF, rF))
-    elif what == 3:
-        Rank = np.argsort(hamming(qF, rF, discrete=True))
-        
+
     AP = 0.0
     for it in range(n_query):
         gnd = Gnd[it]
@@ -153,65 +150,89 @@ def prfa(y_true, y_pred):
     return OP, OR, OF1, CP, CR, CF1, acc, acc_pc
 
 
-def P_tie(qH, rH, qL, rL, k=-1, sparse=False):
-    """tie-aware precision@k
-    qH, rH: [n, bit] & [m, bit], hash code of query and database samples
-    qL, rL: [n, #class] & [m, #class], label of query and database samples
+def P_R_F1_tie(qH, rH, qL, rL, k=-1, sparse=False):
+    """tie-aware precision@k, recall@k, F1@k
+    qH, rH: [n, bit] & [m, bit], hash code of query & database samples
+    qL, rL: [n, #class] & [m, #class], label of query & database samples
+        if sparse, shapes are [n] & [m]
+    k: position threshold of `P@k`
+    sparse: whether label is sparse class ID or one-hot vector
     ref: https://blog.csdn.net/HackerTom/article/details/107458334
     """
-    if (-1 == k) or (k > rH.shape[0]):
-        k = rH.shape[0]
-    m, bit = rH.shape[0], qH.shape[1]
+    m = rH.shape[0]
+    if (k < 0) or (k > m):
+        k = m
     D = hamming(qH, rH)
     Rnk = np.argsort(D)
     S = sim_mat(qL, rL, sparse)
-    # find the tie that k lies in: t_{c-1} < k <= t_c
+    # find the tie where k lies in: t_{c-1} < k <= t_c
     D_sort = np.vstack([d[r] for d, r in zip(D, Rnk)])
+    D_at_k = D_sort[:, k-1:k]  # `-1` for 0-base
     mask_tie = np.equal(D, D_at_k).astype(np.int)
     # r_c, n_c
     nc = mask_tie.sum(1)
     rc = (mask_tie * S).sum(1)
     # find t_{c-1}
-    pos = np.arange(m)[np.newaxis, :]
+    pos = np.arange(m)[np.newaxis, :]  # [1, m]
     tie_pos = np.where(np.equal(D_sort, D_at_k), pos, np.inf)
     tc_1 = np.min(tie_pos, 1) # - 1 + 1  # `+1` to shift 0-base to 1-base
     # R_{c-1}
     mask_pre = (D < D_at_k).astype(np.int)
     Rc_1 = (mask_pre * S).sum(1)
-    # P@k
-    P_at_k = (Rc_1 + (k - tc_1) * rc / nc) / k  # [n]
-    return P_at_k.mean()
-
-
-def R_tie(qH, rH, qL, rL, k=-1, sparse=False):
-    """tie-aware recall@k
-    qH, rH: [n, bit] & [m, bit], hash code of query and database samples
-    qL, rL: [n, #class] & [m, #class], label of query and database samples
-    ref: https://blog.csdn.net/HackerTom/article/details/107458334
-    """
-    if (-1 == k) or (k > rH.shape[0]):
-        k = rH.shape[0]
-    m, bit = rH.shape[0], qH.shape[1]
-    D = hamming(qH, rH)
-    Rnk = np.argsort(D)
-    S = sim_mat(qL, rL, sparse)
-    # find the tie that k lies in: t_{c-1} < k <= t_c
-    D_sort = np.vstack([d[r] for d, r in zip(D, Rnk)])
-    mask_tie = np.equal(D, D_at_k).astype(np.int)
-    # r_c, n_c
-    nc = mask_tie.sum(1)
-    rc = (mask_tie * S).sum(1)
-    # find t_{c-1}
-    pos = np.arange(m)[np.newaxis, :]
-    tie_pos = np.where(np.equal(D_sort, D_at_k), pos, np.inf)
-    tc_1 = np.min(tie_pos, 1) # - 1 + 1  # `+1` to shift 0-base to 1-base
-    # R_{c-1}
-    mask_pre = (D < D_at_k).astype(np.int)
-    Rc_1 = (mask_pre * S).sum(1)
-    # R@k
+    # P@k, R@k, F1@k
+    _common = Rc_1 + (k - tc_1) * rc / nc  # [n]
     Rm = S.sum(1)
-    R_at_k = (Rc_1 + (k - tc_1) * rc / nc) / Rm  # [n]
-    return R_at_k.mean()
+    P_at_k = _common / k
+    R_at_k = _common / Rm
+    F1_at_k = 2 * _common / (k + Rm)
+    return P_at_k.mean(), R_at_k.mean(), F1_at_k.mean()
+
+
+def mAP_tie(qH, rH, qL, rL, k=-1, sparse=False):
+    n, m = qH.shape[0], rH.shape[0]
+    if (k < 0) or (k > m):
+        k = m
+    D = hamming(qH, rH)
+    Rnk = np.argsort(D)
+    S = sim_mat(qL, rL, sparse)
+    AP = 0
+    pos = np.arange(m)  # 0-base
+    # t_fi_1[k]: t_{f(k) - 1}
+    t_fi_1 = np.zeros([m])
+    # r_fi[k]: #relevant samples in the tie where k lies in
+    r_fi = np.zeros([m])
+    # n_fi[k]: #samples in the tie where k lies in
+    n_fi = np.zeros([m])
+    # R_fi_1[k]: prefix sum of r_fi (exclude r_fi[k])
+    R_fi_1 = np.zeros([m])
+    for d, s, rnk in zip(D, S, Rnk):
+        Rm = s.sum()
+        if 0 == Rm:
+            continue
+        d_unique = np.unique(d)  # ascending
+        d_sort = d[rnk]
+        s_sort = s[rnk]
+        _R_fi_1 = 0  # R_{f(i) - 1}
+        for _d in d_unique:
+            tie_idx = (d_sort == _d)
+            t_fi_1[tie_idx] = pos[tie_idx].min() # - 1 + 1  # `+1` to shift 0-base to 1-base
+            _r_fi = s[tie_idx].sum()
+            r_fi[tie_idx] = _r_fi
+            n_fi[tie_idx] = tie_idx.astype(np.int).sum()
+            R_fi_1[tie_idx] = _R_fi_1  # exclude `_r_fi`
+            _R_fi_1 += _r_fi
+
+        # deal with invalid terms
+        n_fi_1, r_fi_1 = n_fi - 1, r_fi - 1
+        idx_invalid = (n_fi_1 == 0)
+        n_fi_1[idx_invalid] = 1
+        r_fi_1[idx_invalid] = 0
+        # in computing (i - t_{f(i)-1} - 1),
+        # the lastest `-1` is megered: pos = i - 1
+        kernel = (R_fi_1 + (pos - t_fi_1) * r_fi_1 / n_fi_1 + 1) * r_fi / n_fi / (pos + 1)
+        AP += kernel[:k].sum() / Rm
+
+    return AP / n
 
 
 def t_sne(F, L, title="tsne"):
@@ -249,6 +270,7 @@ def vis_retrieval(F, L, title="retrieval"):
 
 
 if __name__ == "__main__":
+    # test mAP
     qB = np.array([[1, -1, 1, 1],
                [-1, -1, -1, 1],
                [1, 1, -1, 1],
@@ -270,3 +292,18 @@ if __name__ == "__main__":
                             [1, 0, 0, 0],
                             [0, 0, 1, 0]])
     print("mAP test:", calc_mAP(qB, rB, query_L, retrieval_L, what=1))
+
+    # test tie-aware P@k, R@k
+    k = 3
+    D = np.array([
+        [1, 1, 2, 3],
+        [13, 13, 11, 12],
+        [22, 22, 21, 22]
+    ])
+    print("D:", D)
+    S = np.array([
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [1, 1, 1, 0]
+    ])
+    print("S:", S)
