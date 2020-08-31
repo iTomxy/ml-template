@@ -123,6 +123,7 @@ ENV/
 
 # tensorflow
 events.out.tfevents.*
+*.tfrecords
 
 # pytorch
 *.pth
