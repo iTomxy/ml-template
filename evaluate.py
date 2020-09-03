@@ -44,7 +44,7 @@ def sim_mat(label, label_2=None, sparse=False):
     if label_2 is None:
         label_2 = label
     if sparse:
-        S = label[:, np.newaxis] == label2[np.newaxis, :]
+        S = label[:, np.newaxis] == label_2[np.newaxis, :]
     else:
         S = np.dot(label, label_2.T) > 0
     return S.astype(label.dtype)
@@ -91,14 +91,14 @@ def mAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
 
 
 def NDCG(qF, rF, qL, rL, what=0, k=-1, sparse=False):
-    """DCG(q, D) = sum_i { rel(q, D_i) / i }"""
+    """Normalized Discounted Cumulative Gain"""
     n_query = qF.shape[0]
     if (k < 0) or (k > rF.shape[0]):
         k = rF.shape[0]
-    Rel = np.dot(qL, rL.T).astype(np.float) / np.maximum(qL.sum(1, keepdims=True), 1)
-    G = Rel  # 2 ** Rel - 1
-    D = np.arange(k) + 1  # np.log2(2 + np.arange(k))
-    Rank_best = np.argsort(- np.dot(qL, rL.T))
+    Rel = np.dot(qL, rL.T).astype(np.float)
+    G = 2 ** Rel - 1
+    D = np.log2(2 + np.arange(k))
+    # Rank_best = np.argsort(- np.dot(qL, rL.T))
     if what == 0:
         Rank = np.argsort(1 - cos(qF, rF))
     elif what == 1:
@@ -113,6 +113,52 @@ def NDCG(qF, rF, qL, rL, what=0, k=-1, sparse=False):
             dcg = (g[rnk[:k]] / D).sum()
             _NDCG += dcg / dcg_best
     return _NDCG / n_query
+
+
+def ACG(qF, rF, qL, rL, what=0, k=-1, sparse=False):
+    """Average Cumulative Gains"""
+    n_query = qF.shape[0]
+    if (k < 0) or (k > rF.shape[0]):
+        k = rF.shape[0]
+    Rel = np.dot(qL, rL.T).astype(np.float)
+    Gain = Rel
+    if what == 0:
+        Rank = np.argsort(1 - cos(qF, rF))
+    elif what == 1:
+        Rank = np.argsort(hamming(qF, rF))
+    elif what == 2:
+        Rank = np.argsort(euclidean(qF, rF))
+
+    _ACG = 0
+    for g, rnk in zip(Gain, Rank):
+        _ACG += g[rnk[:k]].mean()
+    return _ACG / n_query
+
+
+def WAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
+    """Weighted Mean Precision"""
+    n_query = qF.shape[0]
+    if (k < 0) or (k > rF.shape[0]):
+        k = rF.shape[0]
+    G = np.dot(qL, rL.T).astype(np.int)
+    S = (G > 0).astype(np.int)
+    pos = np.arange(k) + 1
+    if what == 0:
+        Rank = np.argsort(1 - cos(qF, rF))
+    elif what == 1:
+        Rank = np.argsort(hamming(qF, rF))
+    elif what == 2:
+        Rank = np.argsort(euclidean(qF, rF))
+
+    _WAP = 0.0
+    for s, g, rnk in zip(S, G, Rank):
+        s, g = s[rnk[:k]], g[rnk[:k]]
+        n_rel = s.sum()
+        if n_rel > 0:
+            acg = np.cumsum(g) / pos
+            _WAP += acg * s / n_rel
+
+    return _WAP / n_query
 
 
 def ap_pc(y_true, y_score):
