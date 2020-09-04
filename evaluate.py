@@ -57,10 +57,7 @@ def mAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
         rF: retrieval feature/hash matrix
         qL: query label matrix
         rL: retrieval label matrix
-        what:
-            - 0: cos
-            - 1: hamming (continuous)
-            - 2: euclidean
+        what: {0: cos, 1: hamming, 2: euclidean}
         k: mAP@k, default `-1` means mAP@ALL
     """
     n_query = qF.shape[0]
@@ -91,14 +88,15 @@ def mAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
 
 
 def NDCG(qF, rF, qL, rL, what=0, k=-1, sparse=False):
-    """Normalized Discounted Cumulative Gain"""
+    """Normalized Discounted Cumulative Gain
+    ref: https://github.com/kunhe/TALR/blob/master/%2Beval/NDCG.m
+    """
     n_query = qF.shape[0]
     if (k < 0) or (k > rF.shape[0]):
         k = rF.shape[0]
-    Rel = np.dot(qL, rL.T).astype(np.float)
+    Rel = np.dot(qL, rL.T).astype(np.int)
     G = 2 ** Rel - 1
     D = np.log2(2 + np.arange(k))
-    # Rank_best = np.argsort(- np.dot(qL, rL.T))
     if what == 0:
         Rank = np.argsort(1 - cos(qF, rF))
     elif what == 1:
@@ -107,8 +105,8 @@ def NDCG(qF, rF, qL, rL, what=0, k=-1, sparse=False):
         Rank = np.argsort(euclidean(qF, rF))
 
     _NDCG = 0
-    for g, rnk, rnk_best in zip(G, Rank, Rank_best):
-        dcg_best = (g[rnk_best[:k]] / D).sum()
+    for g, rnk in zip(G, Rank):
+        dcg_best = (np.sort(g)[::-1][:k] / D).sum()
         if dcg_best > 0:
             dcg = (g[rnk[:k]] / D).sum()
             _NDCG += dcg / dcg_best
@@ -260,7 +258,9 @@ def P_R_F1_tie(qH, rH, qL, rL, k=-1, sparse=False):
 
 def mAP_tie(qH, rH, qL, rL, k=-1, sparse=False):
     """tie-aware mAP
-    ref: https://blog.csdn.net/HackerTom/article/details/107458334
+    ref:
+    - https://blog.csdn.net/HackerTom/article/details/107458334
+    - https://github.com/kunhe/TALR/blob/master/%2Beval/tieAP.m
     """
     n, m = qH.shape[0], rH.shape[0]
     if (k < 0) or (k > m):
@@ -289,7 +289,7 @@ def mAP_tie(qH, rH, qL, rL, k=-1, sparse=False):
         for _d in d_unique:
             tie_idx = (d_sort == _d)
             t_fi_1[tie_idx] = pos[tie_idx].min() # - 1 + 1  # `+1` to shift 0-base to 1-base
-            _r_fi = s[tie_idx].sum()
+            _r_fi = s_sort[tie_idx].sum()
             r_fi[tie_idx] = _r_fi
             n_fi[tie_idx] = tie_idx.astype(np.int).sum()
             R_fi_1[tie_idx] = _R_fi_1  # exclude `_r_fi`
@@ -310,24 +310,27 @@ def mAP_tie(qH, rH, qL, rL, k=-1, sparse=False):
 
 def NDCG_tie(qH, rH, qL, rL, k=-1, sparse=False):
     """tie-aware NDCG
-    ref: https://blog.csdn.net/HackerTom/article/details/107458334
+    ref:
+    - https://blog.csdn.net/HackerTom/article/details/107458334
+    - https://github.com/kunhe/TALR/blob/master/%2Beval/tieNDCG.m
     """
     n, m = qH.shape[0], rH.shape[0]
     if (k < 0) or (k > m):
         k = m
-    Rel = np.dot(qL, rL.T).astype(np.float) / np.maximum(qL.sum(1, keepdims=True), 1)
-    G = Rel  # 2 ** Rel - 1
+    Rel = np.dot(qL, rL.T).astype(np.int)
+    G = 2 ** Rel - 1
     pos = np.arange(m) + 1  # 1-base
-    D_inv = 1 / pos  # np.log2(2 + np.arange(m))
-    Rank_best = np.argsort(- np.dot(qL, rL.T))
-    Dis = hamming(qF, rF)
-    Rank = np.argsort(Dis)
+    D_inv = 1 / np.log2(1 + pos)
+    Dist = hamming(qH, rH)
+    Rank = np.argsort(Dist)
 
     _NDCG = 0
     n_c = np.zeros([m])
     sum_d = np.zeros([m])
-    for g, d, rnk, rnk_best in zip(G, Dis, Rank, Rank_best):
-        dcg_best = (g[rnk_best] * D_inv)[:k].sum()
+    for g, d, rnk in zip(G, Dist, Rank):
+        dcg_best = (np.sort(g)[::-1][:k] * D_inv).sum()
+        if 0 == dcg_best:
+            continue
         d_unique = np.unique(d)  # ascending
         d_sort = d[rnk]
         g_sort = g[rnk]
@@ -339,9 +342,9 @@ def NDCG_tie(qH, rH, qL, rL, k=-1, sparse=False):
                 break  # continue
             n_c[tie_idx] = tie_idx.astype(np.int).sum()
             tc = tie_pos[-1]
-            sum_d[tie_idx] = (1 / np.arange(tc_1 + 1, min(k, tc) + 1)).sum()
+            sum_d[tie_idx] = (1 / np.log2(1 + np.arange(tc_1 + 1, min(k, tc) + 1))).sum()
 
-        dcg = (g_sort * sum_d)[:k].sum()
+        dcg = ((g_sort / n_c) * sum_d)[:k].sum()
         _NDCG += dcg / dcg_best
 
     return _NDCG / n
@@ -404,18 +407,11 @@ if __name__ == "__main__":
                             [1, 0, 0, 0],
                             [0, 0, 1, 0]])
     print("mAP test:", mAP(qB, rB, query_L, retrieval_L, what=1))
+    print("NDCG test:", NDCG(qB, rB, query_L, retrieval_L, what=1))
 
     # test tie-aware P@k, R@k
-    k = 3
-    D = np.array([
-        [1, 1, 2, 3],
-        [13, 13, 11, 12],
-        [22, 22, 21, 22]
-    ])
-    print("D:", D)
-    S = np.array([
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [1, 1, 1, 0]
-    ])
-    print("S:", S)
+    print("tie mAP:", mAP_tie(qB, rB, query_L, retrieval_L, k=-1, sparse=False))
+    print("tie NDCG:", NDCG_tie(qB, rB, query_L, retrieval_L, k=-1, sparse=False))
+    print("change place")
+    print("tie mAP:", mAP_tie(rB, qB, retrieval_L, query_L, k=-1, sparse=False))
+    print("tie NDCG:", NDCG_tie(rB, qB, retrieval_L, query_L, k=-1, sparse=False))
