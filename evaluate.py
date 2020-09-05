@@ -328,7 +328,7 @@ def NDCG_tie(qH, rH, qL, rL, k=-1, sparse=False):
     n_c = np.zeros([m])
     sum_d = np.zeros([m])
     for g, d, rnk in zip(G, Dist, Rank):
-        dcg_best = (np.sort(g)[::-1][:k] * D_inv).sum()
+        dcg_best = (np.sort(g)[::-1] * D_inv)[:k].sum()
         if 0 == dcg_best:
             continue
         d_unique = np.unique(d)  # ascending
