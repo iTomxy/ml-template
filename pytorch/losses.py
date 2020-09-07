@@ -57,3 +57,42 @@ def triplet_loss(X, L, X2=None, L2=None, margin=1, dist_fn=euclidean, sparse=Fal
 
     n_pos = (loss_triplet > 1e-16).float().sum()
     return loss_triplet.sum() / (n_pos + 1e-16)
+
+
+def mAPrs_loss(D, S, bit, n_bin, delta_scale=1):
+    """(simplified) continuous relaxation of tie-aware mAP
+    D: [n, m], Hamming distance matrix
+    S: [n, m], similarity matrix in {0, 1}
+    bit: hash bit length
+    n_bin: # of bins
+    delta_scale: scaling factor for the \Delta parameter
+    ref:
+    - https://github.com/kunhe/TALR/blob/master/apr_s_forward.m
+    - https://github.com/kunhe/TALR/blob/master/apr_s_backward.m
+    - https://blog.csdn.net/HackerTom/article/details/106181622
+    """
+    S_inv = 1 - S
+    S = S - S.diag().diag()
+    delta = bit / n_bin * delta_scale
+    t = torch.linspace(0, bit, n_bin + 1).to(D.device)  # histogram centres
+    # soft_mask(i,j,k) > 0 means that
+    # dist(i,j) lies in the region of the k-th bin
+    scaled_abs_diff = (D.unsqueeze(2) - t.view(1, 1, -1)).abs() / delta
+    soft_mask = (1 - scaled_abs_diff).clamp(min=0)  # [n, m, n_bin]
+    # cp(d): (soft) #pos samples lying in the tie of distance d
+    cp = (soft_mask * S.unsqueeze(2)).sum(1)  # [n, n_bin]
+    # c(d): (soft) #samples lying in the tie of distance d
+    c = cp + (soft_mask * S_inv.unsqueeze(2)).sum(1)  # [n, n_bin]
+    # Cp, C: cumulative sum of cp & c, respectively
+    Cp = cp.cumsum(1)  # [n, n_bin]
+    C = c.cumsum(1)  # [n, n_bin]
+    # Cp_1, C_1: C_{d-1}^+, C_{d-1}
+    zero = torch.zeros_like(C[:, 0:1])  # [n, 1]
+    Cp_1 = torch.cat([Cp[:, :-1], zero], 1)
+    C_1 = torch.cat([C[:, :-1], zero], 1)
+    # Np(i): (hard) #pos samples in the i-th retriavel list
+    Np = S.sum(1)  # [n]
+    APr_s = (cp * (Cp_1 + Cp + 1) / (C_1 + C + 1)).sum(1) / Np  # [n]
+    # deal with invalid terms
+    APr_s = APr_s.where(Np > 0, torch.zeros_like(APr_s)) / delta_scale
+    return (1 - APr_s).sum()  # to maximize
