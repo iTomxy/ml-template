@@ -23,7 +23,7 @@ def hamming(A, B=None):
     """
     if B is None: B = A
     bit = A.shape[1]
-    return (bit - A.dot(B.T)) // 2
+    return (bit - A.dot(B.T)) * 0.5
 
 
 def euclidean(A, B=None, sqrt=False):
