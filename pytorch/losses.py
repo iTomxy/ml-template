@@ -60,9 +60,9 @@ def triplet_loss(X, L, X2=None, L2=None, margin=1, dist_fn=euclidean, sparse=Fal
 
 
 def mAPrs_loss(X, L, X2=None, L2=None, n_bin=None, delta_scale=1, sparse=False):
-    """(simplified) continuous relaxation of tie-aware mAP
-    X, X2: [n, d], raw hash (BEFORE binarization and activation like sigmoid)
-    L, L2: [n, c] or [n], labels, [n] is sparse class ID
+    """simplified continuous relaxation of tie-aware mAP
+    X, X2: [n, bit] & [m, bit], continuous hash in (-1, 1)
+    L, L2: [n, c] & [m, c], labels, if `sparse` then [n] & [m]
     n_bin: # of bins
     delta_scale: scaling factor for the \Delta parameter
     sparse: True if the labels are sparse class ID
@@ -104,3 +104,60 @@ def mAPrs_loss(X, L, X2=None, L2=None, n_bin=None, delta_scale=1, sparse=False):
     # deal with invalid terms
     APr_s = APr_s.where(Np > 0, torch.zeros_like(APr_s)) / delta_scale
     return (1 - APr_s).sum()  # to maximize
+
+
+def NDCGrs_loss(X, L, X2=None, L2=None, n_bin=None, sparse=False):
+    """lower bound of tie-aware NDCG
+    X, X2: [n, bit] & [m, bit], continuous hash in (-1, 1)
+    L, L2: [n, c] & [m, c] labels, if `sparse` then [n] & [m]
+    n_bin: # of bins
+    delta_scale: scaling factor for the \Delta parameter
+    sparse: True if the labels are sparse class ID
+    ref:
+    - https://github.com/kunhe/TALR/blob/master/ndcgr_s_forward.m
+    """
+    if X2 is None:
+        X2, L2 = X, L
+    n, m, bit = X.size(0), X2.size(0), X.size(1)
+    if n_bin is None:
+        n_bin = bit // 2
+    D = hamming(X, X2)
+    S = L.mm(L2.T)
+    Gain = 2 ** S - 1  # NOTE: mind overflowing, e.g., COCO dataset
+    S_unique = S.unique(sorted=True).to(torch.int32)  # ascending
+    S = S - S.diag().diag()
+    S_mask = (S.unsqueeze(2) == S_unique.view(1, 1, -1)).float()  # [n, m, #s]
+    S_mask[:, :, 0] -= S_mask[:, :, 0].diag().diag()
+    Discount = 1 / (torch.arange(m).float() + 2).log2()
+    Discount = Discount.unsqueeze(0).to(X.device)  # [1, m]
+    delta = bit / n_bin
+    t = torch.linspace(0, bit, n_bin + 1).int().to(D.device)  # histogram centres
+    # soft_mask(i,j,k) > 0 means that
+    # dist(i,j) lies in the region of the k-th bin
+    scaled_abs_diff = (D.unsqueeze(2) - t.view(1, 1, -1)).abs()
+    soft_mask = (1 - scaled_abs_diff).clamp(min=0)  # [n, m, n_bin]
+    # c_ds(i,j,k): #samples in the i-th retrieval list that
+    #   of similarity level k and lie in the bin j
+    c_ds = torch.zeros(n, t.size(0), S_unique.size(0))
+    c_ds = c_ds.to(X.device)  # [n, n_bin, #s]
+    for _t in t:
+        for _s in S_unique:
+            _c_ds_mask = soft_mask[:, :, _t] * S_mask[:, :, _s]  # [n, m]
+            c_ds[:, _t, _s] = _c_ds_mask.sum(1)  # [n]
+    # c_d(i,j): #samples in the i-th retrieval list lying in j-th tie
+    c_d = c_ds.sum(2)  # [n, n_bin]
+    # C_d: cumsum of c_d
+    C_d = c_d.cumsum(1)  # [n, n_bin]
+    # C_1d: C_{d-1}
+    zero = torch.zeros_like(C_d[:, 0:1])
+    C_1d = torch.cat([zero, C_d[:, :-1]], 1)  # [n, n_bin]
+    # C_bar = C_{d-1} + (c_d + 1) / 2 + 1
+    C_bar = C_1d + (c_d + 1) / 2 + 1  # [n, n_bin]
+    # Gns(i): gain of similarity level i
+    Gns = 2 ** S_unique.float() - 1  # [#s], mind overflowing
+    # G_hat(i,j): sum gain of j-th bin in the i-th retrieval list
+    G_hat = (c_ds * Gns.view(1, 1, -1)).sum(2)  # [n, n_bin]
+    _DCG = (G_hat / C_bar.log2()).sum(1)  # [n]
+    _DCGi = (Gain.sort(1, descending=True)[0] * Discount).sum(1)  # [n]
+    NDCGr_s = torch.where(_DCGi > 0, _DCG / _DCGi, torch.zeros_like(_DCG))
+    return (1 - NDCGr_s).sum()  # to maximize
