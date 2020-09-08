@@ -59,18 +59,26 @@ def triplet_loss(X, L, X2=None, L2=None, margin=1, dist_fn=euclidean, sparse=Fal
     return loss_triplet.sum() / (n_pos + 1e-16)
 
 
-def mAPrs_loss(D, S, bit, n_bin, delta_scale=1):
+def mAPrs_loss(X, L, X2=None, L2=None, n_bin=None, delta_scale=1, sparse=False):
     """(simplified) continuous relaxation of tie-aware mAP
-    D: [n, m], Hamming distance matrix
-    S: [n, m], similarity matrix in {0, 1}
-    bit: hash bit length
+    X, X2: [n, d], raw hash (BEFORE binarization and activation like sigmoid)
+    L, L2: [n, c] or [n], labels, [n] is sparse class ID
     n_bin: # of bins
     delta_scale: scaling factor for the \Delta parameter
+    sparse: True if the labels are sparse class ID
     ref:
     - https://github.com/kunhe/TALR/blob/master/apr_s_forward.m
-    - https://github.com/kunhe/TALR/blob/master/apr_s_backward.m
     - https://blog.csdn.net/HackerTom/article/details/106181622
     """
+    if X2 is None:
+        X2, L2 = X, L
+    D = hamming(X, X2)
+    S = sim_mat(L, L2, sparse)
+    bit = X.size(1)
+    if n_bin is None:
+        n_bin = bit
+        if bit >= 32:
+            n_bin = bit // 2
     S_inv = 1 - S
     S = S - S.diag().diag()
     delta = bit / n_bin * delta_scale
@@ -88,8 +96,8 @@ def mAPrs_loss(D, S, bit, n_bin, delta_scale=1):
     C = c.cumsum(1)  # [n, n_bin]
     # Cp_1, C_1: C_{d-1}^+, C_{d-1}
     zero = torch.zeros_like(C[:, 0:1])  # [n, 1]
-    Cp_1 = torch.cat([Cp[:, :-1], zero], 1)
-    C_1 = torch.cat([C[:, :-1], zero], 1)
+    Cp_1 = torch.cat([zero, Cp[:, :-1]], 1)
+    C_1 = torch.cat([zero, C[:, :-1]], 1)
     # Np(i): (hard) #pos samples in the i-th retriavel list
     Np = S.sum(1)  # [n]
     APr_s = (cp * (Cp_1 + Cp + 1) / (C_1 + C + 1)).sum(1) / Np  # [n]
