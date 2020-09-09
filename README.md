@@ -11,9 +11,11 @@ Cause multiple frameworks are involved here, files are organized according to th
 
 # TODO
 
-1. add model saving & resuming
+1. add model saving & resuming, with info string indicating the information of model, loss, epoch, performance, etc.
+2. add forward/backward hook to diagnose model, see [3]
 
 # References
 
 1. [AlexNet implementation + weights in TensorFlow](http://www.cs.toronto.edu/~guerzhoy/tf_alexnet/)
 2. [mikechen66/AlexNet_TensorFlow2.0-2.2](https://github.com/mikechen66/AlexNet_TensorFlow2.0-2.2)
+3. [Finding source of NaN in forward pass](https://discuss.pytorch.org/t/finding-source-of-nan-in-forward-pass/51153)
