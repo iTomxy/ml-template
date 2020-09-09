@@ -124,14 +124,14 @@ def NDCGrs_loss(X, L, X2=None, L2=None, n_bin=None, sparse=False):
     D = hamming(X, X2)
     S = L.mm(L2.T)
     Gain = 2 ** S - 1  # NOTE: mind overflowing, e.g., COCO dataset
-    S_unique = S.unique(sorted=True).to(torch.int32)  # ascending
+    S_unique = S.unique(sorted=True).float()  # ascending
     S = S - S.diag().diag()
     S_mask = (S.unsqueeze(2) == S_unique.view(1, 1, -1)).float()  # [n, m, #s]
     S_mask[:, :, 0] -= S_mask[:, :, 0].diag().diag()
     Discount = 1 / (torch.arange(m).float() + 2).log2()
     Discount = Discount.unsqueeze(0).to(X.device)  # [1, m]
     delta = bit / n_bin
-    t = torch.linspace(0, bit, n_bin + 1).int().to(D.device)  # histogram centres
+    t = torch.linspace(0, bit, n_bin + 1).to(D.device)  # histogram centres
     # soft_mask(i,j,k) > 0 means that
     # dist(i,j) lies in the region of the k-th bin
     scaled_abs_diff = (D.unsqueeze(2) - t.view(1, 1, -1)).abs()
@@ -140,8 +140,8 @@ def NDCGrs_loss(X, L, X2=None, L2=None, n_bin=None, sparse=False):
     #   of similarity level k and lie in the bin j
     c_ds = torch.zeros(n, t.size(0), S_unique.size(0))
     c_ds = c_ds.to(X.device)  # [n, n_bin, #s]
-    for _t in t:
-        for _s in S_unique:
+    for _t in range(t.size(0)):
+        for _s in range(S_unique.size(0)):
             _c_ds_mask = soft_mask[:, :, _t] * S_mask[:, :, _s]  # [n, m]
             c_ds[:, _t, _s] = _c_ds_mask.sum(1)  # [n]
     # c_d(i,j): #samples in the i-th retrieval list lying in j-th tie
