@@ -39,6 +39,33 @@ class Resize:
         return cv2.resize(x, self.size, interpolation=self.interpolation)
 
 
+class ZeroCentre:
+    """mean of image [H, W, C]
+    1. mean by channel: [1, 1, C]
+    2. mean by pixel: [H, W, C]
+    """
+
+    def __init__(self, mean):
+        self.mean = mean
+
+    def __call__(self, img):
+        return img - self.mean
+
+
+class Normalize:
+    """assert the input image is in range [0, 1]
+    e.g., a `lambda x: x / 255` might has to be added before this
+        if the original image is in range [0, 255].
+    """
+
+    def __init__(self, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]):
+        self.mean = np.expand_dims(np.asarray(mean, dtype=np.float32), [0, 1])
+        self.std = np.expand_dims(np.asarray(std, dtype=np.float32), [0, 1])
+
+    def __call__(self, x):
+        return (x - self.mean) / self.std
+
+
 class Crop:
     """image[x: x + w, y: y + h, :]"""
 
@@ -149,17 +176,3 @@ class MultiScaleCrop:
     def __call__(self, image):
         w, h, x, y = self._sample_crop_size(image.shape)
         return image[x: x + w, y: y + h, :]
-
-
-class Normalize:
-    """assert the input image is in range [0, 1]
-    e.g., a `lambda x: x / 255` might has to be added before this
-        if the original image is in range [0, 255].
-    """
-
-    def __init__(self, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]):
-        self.mean = np.expand_dims(np.asarray(mean, dtype=np.float32), [0, 1])
-        self.std = np.expand_dims(std, dtype=np.float32), [0, 1])
-
-    def __call__(self, x):
-        return (x - self.mean) / self.std

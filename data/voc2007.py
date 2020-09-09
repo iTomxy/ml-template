@@ -1,73 +1,63 @@
-from os.path import join
 import numpy as np
-# import h5py
-import scipy.io as sio
-# import cv2
-from PIL import Image
-import torch
-from torchvision import transforms
-from args import *
+import pickle
+import cv2
+from os.path import join
+from args import args
 
 
-class Flickr:
-    def __init__(self,):
-        # self.MEAN_PIX = join(args.data_path, "avgpix.{}.npy".format(args.dataset))
-        self.LABELS = join(args.data_path, "labels.mat")
-        self.IMAGES = join(args.data_path, "images")#.alexnet.npy")
-        self.TEXTS = join(args.data_path, "texts.mat")
+class VOC2007:
+    def __init__(self, zero_as=0):
+        """zero_as: in {0, 1}
+        - 0: treat difficult as negative
+        - 1: treat difficult as positive
+        """
+
+        self.LABELS = join(args.data_path, "labels.l.npy")
+        self.IMAGES = join(args.data_path, "images")#.resnet101.npy")
 
         split_path = join("./split", args.dataset)
-        CENTRES = join(split_path, "{}.{}.npy".format(args.dataset, args.bit))
         self.idx_test = np.load(join(split_path, "idx_test.npy"))
-        self.idx_ret = np.load(join(split_path, "idx_ret.npy"))
-        self.idx_labeled = np.load(join(split_path, "idx_labeled.npy"))
-        self.idx_unlabeled = np.load(join(split_path, "idx_unlabeled.npy"))
+        self.idx_train = np.load(join(split_path, "idx_train_val.npy"))
         if args.tuning:
             self._tuning_mode()
 
         self.indices_set = {
             "test": self.idx_test,
-            "ret": self.idx_ret,
-            "labeled": self.idx_labeled,
-            "unlabeled": self.idx_unlabeled
+            "train": self.idx_train
         }
 
-        # self.labels = np.load(self.LABELS)
-        self.labels = torch.from_numpy(sio.loadmat(self.LABELS)["LAll"]).float()
-        self.centres = torch.from_numpy(np.load(CENTRES)).float()  # in {-1, 1}
-        # self.images = torch.from_numpy(np.load(self.IMAGES))
-        # self.texts = torch.from_numpy(sio.loadmat(self.TEXTS)["YAll"])
-        # mean_pix = np.load(self.MEAN_PIX).astype(np.float32)
-        # self.mean_pix = torch.from_numpy(np.expand_dims(mean_pix, 0))  # [1, 224, 224, 3]
+        self.labels = np.load(self.LABELS).astype(np.float32)
+        if 1 == zero_as:
+            self.labels[0 == self.labels] = 1
+        self.labels[-1 == self.labels] = 0
+        self.images = np.load(self.IMAGES).astype(np.float32)
 
     def _tuning_mode(self):
         """k-fold to tune"""
         assert args.i_fold < args.n_fold
-        n_unlabeled = self.idx_unlabeled.shape[0] // 2
-        self.idx_unlabeled = self.idx_unlabeled[-n_unlabeled:]
-        n_labeled = self.idx_labeled.shape[0]
-        fold_size = n_labeled // args.n_fold
+        n_train = self.idx_train.shape[0]
+        fold_size = n_train // args.n_fold
         begin, end = args.i_fold * fold_size, (args.i_fold + 1) * fold_size
-        self.idx_test = self.idx_labeled[begin: end]
-        self.idx_labeled = np.concatenate(
-            (self.idx_labeled[:begin], self.idx_labeled[end:]))
-        self.idx_ret = np.concatenate([self.idx_labeled, self.idx_unlabeled])
-        
+        self.idx_test = self.idx_train[begin: end]
+        self.idx_train = np.concatenate(
+            (self.idx_train[:begin], self.idx_train[end:]))
+
     def count(self, which):
         return self.indices_set[which].shape[0]
 
     def _load_images(self, indeces, transform=None):
         image_batch = []
         for idx in indeces:
-            img = np.load(join(self.IMAGES, "{}.npy".format(idx)))  # [1, 224, 224, 3]
+            # idx: 0-base, image file name: 1-base
+            img = cv2.imread(join(self.IMAGES, "{:0>6}.jpg".format(idx + 1)))[:, :, ::-1]
             if transform is not None:
-                img = transform(Image.fromarray(img[0])).unsqueeze(0)
+                img = transform(img)
             else:
-                img = torch.from_numpy(np.transpose(img, (0, 3, 1, 2)))
-            image_batch.append(img)
+                img = cv2.resize(img, (224, 224), interpolation=cv2.INTER_LINEAR)
+            image_batch.append(img[np.newaxis, :])
 
-        image_batch = torch.cat(image_batch, 0).float()
-        return image_batch #- self.mean_pix
+        image_batch = np.vstack(image_batch).astype(np.float32)
+        return image_batch
 
     def _next_batch_idx(self, ptr, batch_sz, indices, shuffle=False):
         """return (new_pointer, batch_indices_array)"""
@@ -86,7 +76,7 @@ class Flickr:
 
     def loop_set(self, which, transform=None, batch_size=None, shuffle=False):
         """cycle through the dataset"""
-        batch_size = batch_size or args.batch_size
+        if batch_size is None: batch_size = args.batch_size
         indices = self.indices_set[which]
         if shuffle:
             indices = indices.copy()
@@ -99,7 +89,7 @@ class Flickr:
 
     def iter_set(self, which, transform=None, batch_size=None, shuffle=False):
         """traverse the dataset once"""
-        batch_size = batch_size or args.batch_size
+        if batch_size is None: batch_size = args.batch_size
         indices = self.indices_set[which]
         if shuffle:
             indices = indices.copy()
@@ -124,9 +114,35 @@ class Flickr:
         idx = self.indices_set[which]
         return self.labels[idx]
 
-    def load_centre(self):
-        return self.centres
+    def load_label_w2v(self):
+        with open(args.w2v_file, "rb") as f:
+            data = pickle.load(f)
+        return data
 
 
 if __name__ == "__main__":
-    pass
+    dataset = VOC2007()
+    print("train:", dataset.idx_train.max(), dataset.idx_train.min())
+    print("test:", dataset.idx_test.max(), dataset.idx_test.min())
+
+    import matplotlib.pyplot as plt
+    from models import to_matrix, to_vector
+    L = dataset.load_label("train")
+    one_pc = (L == 1).sum(0)
+    zero_pc = (L == 0).sum(0)
+    zo_pc = zero_pc / one_pc
+    print("one:", one_pc)
+    print("zero:", zero_pc)
+    print("0 / 1:", zo_pc)
+
+    def show(label, title):
+        cnt = np.sum(label, axis=0)
+        fig = plt.figure()
+        plt.bar(np.arange(cnt.shape[0]), cnt)
+        plt.title(title)
+        # plt.show()
+        fig.savefig("log/{}.png".format(title))
+
+    # show(L, "one")
+    # show(1 - L, "zero")
+
