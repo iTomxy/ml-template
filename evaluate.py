@@ -50,26 +50,18 @@ def sim_mat(label, label_2=None, sparse=False):
     return S.astype(label.dtype)
 
 
-def mAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
+def mAP(Dist, S, k=-1):
     """calculate mAP for retrieval
     Args:
-        qF: query feature/hash matrix
-        rF: retrieval feature/hash matrix
-        qL: query label matrix
-        rL: retrieval label matrix
-        what: {0: cos, 1: hamming, 2: euclidean}
+        Dist: distance matrix
+        S: similarity matrix
         k: mAP@k, default `-1` means mAP@ALL
     """
-    n_query = qF.shape[0]
-    if (k < 0) or (k > rF.shape[0]):
-        k = rF.shape[0]
-    Gnd = sim_mat(qL, rL, sparse).astype(np.int)
-    if what == 0:
-        Rank = np.argsort(1 - cos(qF, rF))
-    elif what == 1:
-        Rank = np.argsort(hamming(qF, rF))
-    elif what == 2:
-        Rank = np.argsort(euclidean(qF, rF))
+    n, m = Dist.shape
+    if (k < 0) or (k > m):
+        k = m
+    Gnd = S
+    Rank = np.argsort(Dist)
 
     AP = 0.0
     for it in range(n_query):
@@ -84,25 +76,20 @@ def mAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
         rel_cnt = np.arange(pos.shape[-1]) + 1.0
         AP += np.mean(rel_cnt / pos)
 
-    return AP / n_query
+    return AP / n
 
 
-def NDCG(qF, rF, qL, rL, what=0, k=-1, sparse=False):
+def NDCG(Dist, Rel, k=-1):
     """Normalized Discounted Cumulative Gain
     ref: https://github.com/kunhe/TALR/blob/master/%2Beval/NDCG.m
     """
-    n_query = qF.shape[0]
-    if (k < 0) or (k > rF.shape[0]):
-        k = rF.shape[0]
+    n, m = Dist.shape
+    if (k < 0) or (k > m):
+        k = m
     Rel = np.dot(qL, rL.T).astype(np.int)
     G = 2 ** Rel - 1
     D = np.log2(2 + np.arange(k))
-    if what == 0:
-        Rank = np.argsort(1 - cos(qF, rF))
-    elif what == 1:
-        Rank = np.argsort(hamming(qF, rF))
-    elif what == 2:
-        Rank = np.argsort(euclidean(qF, rF))
+    Rank = np.argsort(Dist)
 
     _NDCG = 0
     for g, rnk in zip(G, Rank):
@@ -110,7 +97,7 @@ def NDCG(qF, rF, qL, rL, what=0, k=-1, sparse=False):
         if dcg_best > 0:
             dcg = (g[rnk[:k]] / D).sum()
             _NDCG += dcg / dcg_best
-    return _NDCG / n_query
+    return _NDCG / n
 
 
 def ACG(qF, rF, qL, rL, what=0, k=-1, sparse=False):
@@ -256,18 +243,18 @@ def P_R_F1_tie(qH, rH, qL, rL, k=-1, sparse=False):
     return P_at_k.mean(), R_at_k.mean(), F1_at_k.mean()
 
 
-def mAP_tie(qH, rH, qL, rL, k=-1, sparse=False):
+def mAP_tie(Dist, S, k=-1):
     """tie-aware mAP
+    Dist: [n, m], Hamming distance matrix
+    S: [n, m], similarity mattrix
     ref:
     - https://blog.csdn.net/HackerTom/article/details/107458334
     - https://github.com/kunhe/TALR/blob/master/%2Beval/tieAP.m
     """
-    n, m = qH.shape[0], rH.shape[0]
+    n, m = Dist.shape
     if (k < 0) or (k > m):
         k = m
-    D = hamming(qH, rH)
     Rnk = np.argsort(D)
-    S = sim_mat(qL, rL, sparse)
     AP = 0
     pos = np.arange(m)  # 0-base
     # t_fi_1[k]: t_{f(k) - 1}
@@ -308,20 +295,19 @@ def mAP_tie(qH, rH, qL, rL, k=-1, sparse=False):
     return AP / n
 
 
-def NDCG_tie(qH, rH, qL, rL, k=-1, sparse=False):
+def NDCG_tie(Dist, Rel, k=-1):
     """tie-aware NDCG
+    Dist: [n, m], Hamming distance matrix
     ref:
     - https://blog.csdn.net/HackerTom/article/details/107458334
     - https://github.com/kunhe/TALR/blob/master/%2Beval/tieNDCG.m
     """
-    n, m = qH.shape[0], rH.shape[0]
+    n, m = Dist.shape
     if (k < 0) or (k > m):
         k = m
-    Rel = np.dot(qL, rL.T).astype(np.int)
     G = 2 ** Rel - 1
     pos = np.arange(m) + 1  # 1-base
     D_inv = 1 / np.log2(1 + pos)
-    Dist = hamming(qH, rH)
     Rank = np.argsort(Dist)
 
     _NDCG = 0

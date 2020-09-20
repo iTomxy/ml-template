@@ -10,12 +10,6 @@ https://blog.csdn.net/hackertom/article/details/103374313
 """
 
 
-def struct_loss(X, Y, S, coef=0.5):
-    xTy = coef * X.mm(Y.T)
-    loss = (1 - S) * xTy - (xTy.sigmoid() + 1e-16).log()
-    return loss.mean()
-
-
 def _triplet_mask(L, L2=None, sparse=False):
     if L2 is None:
         L2 = L
@@ -57,10 +51,3 @@ def triplet_loss(X, L, X2=None, L2=None, margin=1, dist_fn=euclidean, sparse=Fal
 
     n_pos = (loss_triplet > 1e-16).float().sum()
     return loss_triplet.sum() / (n_pos + 1e-16)
-
-
-def l2_regularize(w_list):
-    loss = 0
-    for w in w_list:
-        loss += 0.5 * (w ** 2).sum()
-    return loss

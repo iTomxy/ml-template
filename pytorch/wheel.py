@@ -89,3 +89,13 @@ def one_hot(label, n_class):
     L = torch.zeros(label.size(0), n_class).to(label.device).scatter_(
         1, label.long().unsqueeze(1), 1)
     return L.to(label.dtype)
+
+
+def freeze_layer(layer):
+    for param in layer.parameters():
+        param.requires_grad = False
+
+
+def freeze_mulit_layers(multi_layers):
+    for layer in multi_layers:
+        freeze_layer(layer)

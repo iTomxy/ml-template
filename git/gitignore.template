@@ -130,4 +130,5 @@ events.out.tfevents.*
 
 # for this repo
 !idx_*.npy
-log
+log/
+data/

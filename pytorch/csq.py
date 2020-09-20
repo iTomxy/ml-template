@@ -76,17 +76,6 @@ class AlexNetFc(nn.Module):
         return y
 
 
-def freeze_layer(layer):
-    for param in layer.parameters():
-        param.requires_grad = False
-
-
-def freeze_mulit_layers(multi_layers):
-    for layer in multi_layers:
-        freeze_layer(layer)
-
-
-
 def single_centre(C, L):
     idx = (L == 1).nonzero()[:, 1]
     return C[idx]
