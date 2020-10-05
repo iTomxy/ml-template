@@ -206,6 +206,16 @@ def top_k_mask(D, k, rand_pick=False):
     return mask
 
 
+def count_mask(X):
+    """M(i,j) = |{ (s,t) | X(s,t) = X(i,j) }|
+    ref: https://blog.csdn.net/HackerTom/article/details/108902880
+    """
+    x_flat = tf.cast(tf.reshape(X, [-1]), "int32")
+    _bin = tf.math.bincount(x_flat)
+    mask = tf.reshape(tf.gather(_bin, x_flat), tf.shape(X))
+    return tf.cast(mask, X.dtype)
+
+
 def check_nan_inf(tensors):
     """status = {0: OK, 1: NaN, 2: inf, 3: NaN & inf}
     tensors: single tensor, or collections of tensor

@@ -91,6 +91,16 @@ def one_hot(label, n_class):
     return L.to(label.dtype)
 
 
+def count_mask(X):
+    """M(i,j) = |{ (s,t) | X(s,t) = X(i,j) }|
+    ref: https://blog.csdn.net/HackerTom/article/details/108902880
+    """
+    x_flat = X.flatten().int()
+    _bin = torch.bincount(x_flat)
+    mask = torch.gather(_bin, 0, x_flat).view(*X.size())
+    return mask.to(X.dtype)
+
+
 def freeze_layer(layer):
     for param in layer.parameters():
         param.requires_grad = False
