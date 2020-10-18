@@ -56,7 +56,8 @@ def hamming(X, Y=None):
     if Y is None:
         Y = X
     K = X.size(1)
-    return (K - X.mm(Y.T)) / 2
+    D = (K - X.mm(Y.T)) / 2
+    return D.clamp(0, K)
 
 
 def check_nan_inf(tensors):

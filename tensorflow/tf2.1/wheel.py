@@ -167,7 +167,8 @@ def hamming(X, Y=None):
     if Y is None:
         Y = X
     K = tf.cast(tf.shape(X)[1], "float32")
-    return (K - tf.matmul(X, tf.transpose(Y))) / 2
+    D = (K - tf.matmul(X, tf.transpose(Y))) / 2
+    return tf.clip_by_value(D, 0, K)
 
 
 def top_k_mask(D, k, rand_pick=False):
