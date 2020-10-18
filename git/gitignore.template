@@ -169,6 +169,20 @@ cython_debug/
 *.tgz
 *.rar
 
+# documents
+*.pdf
+*.doc
+*.docx
+*.rtf
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+*.vsd
+*.vsdx
+*.wps
+*.et
+
 # tensorflow
 events.out.tfevents.*
 *.tfrecords
