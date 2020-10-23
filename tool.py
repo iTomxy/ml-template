@@ -13,20 +13,28 @@ def timestamp():
 class Logger:
     """log info in stdout & log file"""
     def __init__(self, args):
-        if not os.path.exists(args.log_path):
-            os.makedirs(args.log_path)
-        log_file_path = os.path.join(args.log_path, "log.{}".format(timestamp()))
-        self.log_file = open(log_file_path, "a")
-        for k, v in args._get_kwargs():
-            self.log_file.write("{}: {}\n".format(k, v))
-        self.log_file.write("begin time: {}\n".format(time.asctime()))
-        self.closed = False
+        self.args = args
+        self.log_file = None
+        self.closed = True
 
     def __del__(self):
         if not self.closed:
             self.close()
+    
+    def open(self):
+        if not os.path.exists(self.args.log_path):
+            os.makedirs(self.args.log_path)
+        log_file_path = os.path.join(
+            self.args.log_path, "log.{}".format(timestamp()))
+        self.log_file = open(log_file_path, "a")
+        for k, v in self.args._get_kwargs():
+            self.log_file.write("{}: {}\n".format(k, v))
+        self.log_file.write("begin time: {}\n".format(time.asctime()))
+        self.closed = False
 
     def log(self, text):
+        if self.closed:
+            self.open()
         print(text)
         self.log_file.write(text + '\n')
 

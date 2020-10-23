@@ -110,3 +110,26 @@ def freeze_layer(layer):
 def freeze_mulit_layers(multi_layers):
     for layer in multi_layers:
         freeze_layer(layer)
+
+
+def get_on(*tensors, cuda=True):
+    """np.ndarray -> torch.Tensor (cuda)"""
+    if cuda:
+        fn = lambda x: torch.from_numpy(x).cuda()
+    else:
+        fn = lambda x: torch.from_numpy(x)
+    return list(map(fn, tensors))
+
+
+def get_off(*tensors, cuda=True):
+    """torch.Tensor (cuda) -> np.ndarray"""
+    res = []
+    for t in tensors:
+        if cuda:
+            t = t.cpu()
+        if 0 == t.ndim:  # scalar
+            t = t.item()
+        else:
+            t = t.numpy()
+        res.append(t)
+    return res
