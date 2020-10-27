@@ -15,34 +15,30 @@ class Logger:
     def __init__(self, args):
         self.args = args
         self.log_file = None
-        self.closed = True
 
     def __del__(self):
-        if not self.closed:
-            self.close()
-    
+        if self.log_file is not None:
+            self.log_file.write("end time: {}\n".format(time.asctime()))
+            self.log_file.flush()
+            self.log_file.close()
+            # self.log_file = None
+
+    def __call__(self, text):
+        if self.log_file is None:
+            self.open()
+        print(text)
+        self.log_file.write(text + '\n')
+
     def open(self):
         if not os.path.exists(self.args.log_path):
             os.makedirs(self.args.log_path)
         log_file_path = os.path.join(
             self.args.log_path, "log.{}".format(timestamp()))
         self.log_file = open(log_file_path, "a")
+        assert self.log_file is not None
         for k, v in self.args._get_kwargs():
             self.log_file.write("{}: {}\n".format(k, v))
         self.log_file.write("begin time: {}\n".format(time.asctime()))
-        self.closed = False
-
-    def log(self, text):
-        if self.closed:
-            self.open()
-        print(text)
-        self.log_file.write(text + '\n')
-
-    def close(self):
-        self.log_file.write("end time: {}\n".format(time.asctime()))
-        self.log_file.flush()
-        self.log_file.close()
-        self.closed = True
 
 
 class Record:
