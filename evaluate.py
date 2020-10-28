@@ -64,7 +64,7 @@ def mAP(Dist, S, k=-1):
     Rank = np.argsort(Dist)
 
     AP = 0.0
-    for it in range(n_query):
+    for it in range(n):
         gnd = Gnd[it]
         if np.sum(gnd) == 0:
             continue
