@@ -18,7 +18,7 @@ def _triplet_mask(L, L2=None, sparse=False):
     L2: (is not None) [m, c] if not sparse, else [m]
     """
     if L2 is None: L2 = L
-    n, m = L.shape[0], L2.shape[0]
+    n, m = tf.shape(L)[0], tf.shape(L2)[0]
 
     I = tf.eye(n, m, dtype="int32")
     neq_id = 1 - I  # [n, m]
