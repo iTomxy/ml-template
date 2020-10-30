@@ -86,7 +86,6 @@ def NDCG(Dist, Rel, k=-1):
     n, m = Dist.shape
     if (k < 0) or (k > m):
         k = m
-    Rel = np.dot(qL, rL.T).astype(np.int)
     G = 2 ** Rel - 1
     D = np.log2(2 + np.arange(k))
     Rank = np.argsort(Dist)
@@ -100,50 +99,40 @@ def NDCG(Dist, Rel, k=-1):
     return _NDCG / n
 
 
-def ACG(qF, rF, qL, rL, what=0, k=-1, sparse=False):
+def ACG(Dist, Rel, k=-1):
     """Average Cumulative Gains"""
-    n_query = qF.shape[0]
-    if (k < 0) or (k > rF.shape[0]):
-        k = rF.shape[0]
-    Rel = np.dot(qL, rL.T).astype(np.float)
+    n, m = Dist.shape
+    if (k < 0) or (k > m):
+        k = m
     Gain = Rel
-    if what == 0:
-        Rank = np.argsort(1 - cos(qF, rF))
-    elif what == 1:
-        Rank = np.argsort(hamming(qF, rF))
-    elif what == 2:
-        Rank = np.argsort(euclidean(qF, rF))
+    Rank = np.argsort(Dist)
 
     _ACG = 0
     for g, rnk in zip(Gain, Rank):
         _ACG += g[rnk[:k]].mean()
-    return _ACG / n_query
+    return _ACG / n
 
 
-def WAP(qF, rF, qL, rL, what=0, k=-1, sparse=False):
-    """Weighted Mean Precision"""
-    n_query = qF.shape[0]
-    if (k < 0) or (k > rF.shape[0]):
-        k = rF.shape[0]
-    G = np.dot(qL, rL.T).astype(np.int)
-    S = (G > 0).astype(np.int)
+def WAP(Dist, Rel, k=-1):
+    """Weighted mean Average Precision"""
+    n, m = Dist.shape
+    if (k < 0) or (k > m):
+        k = m
+    Gain = Rel
+    S = (Gain > 0).astype(np.int)
     pos = np.arange(k) + 1
-    if what == 0:
-        Rank = np.argsort(1 - cos(qF, rF))
-    elif what == 1:
-        Rank = np.argsort(hamming(qF, rF))
-    elif what == 2:
-        Rank = np.argsort(euclidean(qF, rF))
+    Rank = np.argsort(Dist)
 
     _WAP = 0.0
-    for s, g, rnk in zip(S, G, Rank):
-        s, g = s[rnk[:k]], g[rnk[:k]]
+    for s, g, rnk in zip(S, Gain, Rank):
+        _rnk = rnk[:k]
+        s, g = s[_rnk], g[_rnk]
         n_rel = s.sum()
         if n_rel > 0:
             acg = np.cumsum(g) / pos
-            _WAP += acg * s / n_rel
+            _WAP += (acg * s).sum() / n_rel
 
-    return _WAP / n_query
+    return _WAP / n
 
 
 def ap_pc(y_true, y_score):
