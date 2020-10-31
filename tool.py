@@ -44,46 +44,54 @@ class Logger:
 class Record:
     """record (scalar) performance"""
     def __init__(self):
-        self.best = {}
+        self._best = {}
         self.prefer = {}  # {0: small, 1: big}
         self.seq = {}
 
-    def __str__(self):
-        return self.log_best()
-
-    def log_best(self):
+    def best(self):
         s = ""
-        for k in self.best:
-            v = self.best[k]
+        for k in self._best:
+            v = self._best[k]
             if v != math.inf and v != - math.inf:
                 s += "{}: {}\n".format(k, v)
         return s
 
-    def log_new(self):
+    def new(self):
         s = ""
         for k in self.seq:
             if len(self.seq[k]) > 0:
-                s += "{}: {}\n".format(k, self.seq[k][-1])
+                s += "{}: {}\n".format(k, self._seq[k][-1])
         return s
 
     def add_big(self, *args):
         for k in args:
-            assert k not in self.best
-            self.best[k] = - math.inf
+            assert k not in self._best
+            self._best[k] = - math.inf
             self.prefer[k] = 1
             self.seq[k] = []
 
     def add_small(self, *args):
         for k in args:
-            assert k not in self.best
-            self.best[k] = math.inf
+            assert k not in self._best
+            self._best[k] = math.inf
             self.prefer[k] = 0
             self.seq[k] = []
 
     def update(self, key, value):
         _cmp = min if (0 == self.prefer[key]) else max
-        self.best[key] = _cmp(self.best[key], value)
+        self._best[key] = _cmp(self._best[key], value)
         self.seq[key].append(value)
+
+    def near_mean(self, key, window=7):
+        """mean of the nearest several records
+        to recognize plateau & stop training
+        """
+        assert (window > 0) and (key in self.seq)
+        if 0 == len(self.seq[key]):
+            # print("Record: near_mean: not records yet")
+            return None
+        _list = self.seq[key][-window:]
+        return sum(_list) / len(_list)
 
 
 class MeanValue:
