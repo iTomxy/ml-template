@@ -1,6 +1,7 @@
 import os
 import time
 import math
+import csv
 
 
 def timestamp():
@@ -48,20 +49,34 @@ class Record:
         self.prefer = {}  # {0: small, 1: big}
         self.seq = {}
 
-    def best(self):
-        s = ""
-        for k in self._best:
-            v = self._best[k]
-            if v != math.inf and v != - math.inf:
-                s += "{}: {}\n".format(k, v)
-        return s
+    def best(self, key=None):
+        """if `key` given, return the best value of that key (in number)
+        else, return best records of all key (in string)
+        """
+        if key is not None:
+            assert key in self._best
+            return self._best[key]
+        else:
+            s = ""
+            for k in self._best:
+                v = self._best[k]
+                if v != math.inf and v != - math.inf:
+                    s += "{}: {}\n".format(k, v)
+            return s
 
-    def new(self):
-        s = ""
-        for k in self.seq:
-            if len(self.seq[k]) > 0:
-                s += "{}: {}\n".format(k, self._seq[k][-1])
-        return s
+    def new(self, key=None):
+        """if `key` given, return the newest value of that key (in number)
+        else, return newest records of all key (in string)
+        """
+        if key is not None:
+            assert key in self.seq
+            return self.seq[key][-1]
+        else:
+            s = ""
+            for k in self.seq:
+                if len(self.seq[k]) > 0:
+                    s += "{}: {}\n".format(k, self._seq[k][-1])
+            return s
 
     def add_big(self, *args):
         for k in args:
@@ -134,3 +149,20 @@ class MeanValue:
         self.mean_old = 0.0
         self.m_s = 0.0
         self.std = math.nan
+
+
+def dict2csv(csv_file, dict_data):
+    """write a dict to `csv_file`
+    - dict_data: {(str) key name: (list) value list}
+    """
+    with open(csv_file, "w", newline='') as f:
+        writer = csv.writer(f)
+        for k in dict_data:
+            v_list = [k]
+            v_list.extend(list(dict_data[k]))
+            writer.writerow(v_list)
+
+
+if __name__ == "__main__":
+    data = {"a": (1, 2, 3), "b": [4, 5, 6]}
+    dict2csv("test.csv", data)
