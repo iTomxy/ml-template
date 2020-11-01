@@ -118,7 +118,10 @@ def get_on(*tensors, cuda=True):
         fn = lambda x: torch.from_numpy(x).cuda()
     else:
         fn = lambda x: torch.from_numpy(x)
-    return list(map(fn, tensors))
+    res = list(map(fn, tensors))
+    if len(res) == 1:
+        res = res[0]
+    return res
 
 
 def get_off(*tensors, cuda=True):
@@ -132,4 +135,6 @@ def get_off(*tensors, cuda=True):
         else:
             t = t.numpy()
         res.append(t)
+    if len(res) == 1:
+        res = res[0]
     return res
