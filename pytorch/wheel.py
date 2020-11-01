@@ -128,6 +128,7 @@ def get_off(*tensors, cuda=True):
     """torch.Tensor (cuda) -> np.ndarray"""
     res = []
     for t in tensors:
+        t = t.data
         if cuda:
             t = t.cpu()
         if 0 == t.ndim:  # scalar
