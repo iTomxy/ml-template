@@ -75,7 +75,7 @@ class Record:
             s = ""
             for k in self.seq:
                 if len(self.seq[k]) > 0:
-                    s += "{}: {}\n".format(k, self._seq[k][-1])
+                    s += "{}: {}\n".format(k, self.seq[k][-1])
             return s
 
     def add_big(self, *args):
