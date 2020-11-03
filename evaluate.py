@@ -135,6 +135,25 @@ def WAP(Dist, Rel, k=-1):
     return _WAP / n
 
 
+def mAHP(Dist, S, k=-1):
+    """mean Average Hierarchical Precision
+    S: similarity matric, CAN be multi-level
+    ref: Hierarchical Semantic Indexing for Large Scale Image Retrieval
+    """
+    n, m = Dist.shape
+    if (k < 0) or (k > m):
+        k = m
+    Rank = np.argsort(Dist)
+
+    APH = 0
+    for s, rnk in zip(S, Rank):
+        aph_best = np.cumsum(np.sort(s)[::-1][:k])
+        if aph_best[0] > 0:
+            aph_real = np.cumsum(s[rnk[:k]])
+            APH += (aph_real / aph_best).mean()
+    return APH / n
+
+
 def ap_pc(y_true, y_score):
     """AP per class for multi-label classification
     input:
