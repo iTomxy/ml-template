@@ -359,11 +359,12 @@ def HP_tie(Dist, Rel, k=-1):
     pos = 1 + np.arange(m)  # 1-base
 
     t_hp_list = []
-    for dis, rnk, rel in zip(Dist, Rel, Rank):
+    for dis, rnk, rel in zip(Dist, Rank, Rel):
         sim_sum_best = np.cumsum(np.sort(rel)[::-1])  # [m]
         d_sort = dis[rnk]  # [m]
+        rel_sort = rel[rnk]
         d_unique = np.unique(dis)  # ascending
-        # sim_sum_pre[i]: sim sum of the previous ties that
+        # sim_sum_pre[i]: sim sum of the previous ties
         #       before the tie where i-th elem lies
         sim_sum_pre = np.zeros_like(dis)
         _pre_sum = 0
@@ -375,10 +376,10 @@ def HP_tie(Dist, Rel, k=-1):
         #    where the i-th sample lies
         tc_1 = np.zeros_like(dis)
         for _d in d_unique:
-            mask_tie = (_d == dis)
-            tc_1[mask_tie] = pos[_d == d_sort][0] - 1
+            mask_tie = np.equal(d_sort, _d)
+            tc_1[mask_tie] = pos[mask_tie][0] - 1
             tie_n[mask_tie] = mask_tie.astype(np.int).sum()
-            _ss_tie = rel[mask_tie].sum()
+            _ss_tie = rel_sort[mask_tie].sum()
             sim_sum_tie[mask_tie] = _ss_tie
             sim_sum_pre[mask_tie] = _pre_sum
             _pre_sum += _ss_tie
@@ -392,6 +393,7 @@ def mAHP_tie(Dist, Rel, k=-1):
     ref: https://blog.csdn.net/HackerTom/article/details/107458334
     """
     t_HP = HP_tie(Dist, Rel, k)
+    print(">1:", (t_HP > 1).astype(np.int).sum())
     n, m = Dist.shape
     if (k < 0) or (k > m):
         k = m
