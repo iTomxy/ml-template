@@ -277,12 +277,14 @@ def mAP_tie(Dist, S, k=-1):
     # R_fi_1[k]: prefix sum of r_fi (exclude r_fi[k])
     R_fi_1 = np.zeros([m])
     for d, s, rnk in zip(D, S, Rnk):
-        Rm = s.sum()
+        # Rm = s.sum()  # #rel in all
+        s_sort = s[rnk]
+        Rm = s_sort[:k].sum()  # #rel in top-k
         if 0 == Rm:
             continue
         d_unique = np.unique(d)  # ascending
         d_sort = d[rnk]
-        s_sort = s[rnk]
+        # s_sort = s[rnk]
         _R_fi_1 = 0  # R_{f(i) - 1}
         for _d in d_unique:
             tie_idx = (d_sort == _d)
