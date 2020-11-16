@@ -124,12 +124,15 @@ def get_on(*tensors, cuda=True):
     return res
 
 
-def get_off(*tensors, cuda=True):
+def get_off(*tensors):
     """torch.Tensor (cuda) -> np.ndarray"""
     res = []
     for t in tensors:
+        if isinstance(t, np.ndarray):
+            res.append(t)
+            continue
         t = t.data
-        if cuda:
+        if "cuda" in t.device.type:
             t = t.cpu()
         if 0 == t.ndim:  # scalar
             t = t.item()
