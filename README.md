@@ -15,6 +15,13 @@ Cause multiple frameworks are involved here, files are organized according to th
 2. add forward/backward hook to diagnose model, see [3]
 3. hard mining for triplet, see [5]
 
+# Docker
+
+1. [TensorFlow 1.12](https://hub.docker.com/layers/tensorflow/tensorflow/1.12.0-gpu-py3/images/sha256-413b9533f92a400117a23891d050ab829e277a6ff9f66c9c62a755b7547dbb1e?context=explore)
+2. [TensorFlow 2.1](https://hub.docker.com/layers/tensorflow/tensorflow/2.1.0-gpu-py3/images/sha256-1010e051dde4a9b62532a80f4a9a619013eafc78491542d5ef5da796cc2697ae?context=explore)
+3. [PyTorch 1.4](https://hub.docker.com/layers/pytorch/pytorch/1.4-cuda10.1-cudnn7-runtime/images/sha256-ee783a4c0fccc7317c150450e84579544e171dd01a3f76cf2711262aced85bf7?context=explore)
+4. [PyTorch 0.3](https://hub.docker.com/layers/floydhub/pytorch/0.3.1-gpu.cuda9cudnn7-py3.38/images/sha256-f130384d52e5e5542a78db8b7d7ead8885fd73a84cca8cc5a7c7a755a192da37?context=explore)
+
 # References
 
 1. [AlexNet implementation + weights in TensorFlow](http://www.cs.toronto.edu/~guerzhoy/tf_alexnet/)
