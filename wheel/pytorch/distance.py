@@ -2,6 +2,30 @@ import torch
 import torch.nn.functional as F
 
 
+def calc_dist_in_batch(dist_fn, A, B=None, threshold=5000):
+    if B is None:
+        B = A
+    if (A.size(0) < threshold) and (B.size(0) < threshold):
+        return dist_fn(A, B)
+    to_transpose = False
+    if A.size(0) < B.size(0):
+        A, B = B, A
+        to_transpose = True
+    to_seq = (B.size(0) > threshold)
+    res = torch.zeros([A.size(0), B.size(0)]).to(A.dtype).to(A.device)
+    for i in range(0, A.size(0), threshold):
+        a = A[i: i + threshold]
+        if to_seq:
+            for k in range(0, B.size(0), threshold):
+                b = B[k: k + threshold]
+                res[i:i+threshold, k:k+threshold] = dist_fn(a, b)
+        else:
+            res[i:i+threshold] = dist_fn(a, B)
+    if to_transpose:
+        res = res.T
+    return res
+
+
 def euclidean(A, B=None, sqrt=False):
     if (B is None) or (B is A):
         aTb = A.mm(A.T)
@@ -43,3 +67,27 @@ def hamming(X, Y=None):
     K = X.size(1)
     D = (K - X.mm(Y.T)) / 2
     return D.clamp(0, K)
+
+
+if __name__ == "__main__":
+    a = torch.randn(5, 2).sign().float()
+    b = torch.randn(7, 2).sign().float()
+
+    # euclidean
+    euc = euclidean(a, b)
+    euc_wrap = calc_dist_in_batch(euclidean, a, b, threshold=3)
+    # print("euc:\n", euc, "\neuc_wrap:", euc_wrap)
+    print(euc.size(), euc_wrap.size())
+    print((euc != euc_wrap).int().sum())
+
+    # hamming
+    ham = hamming(a, b)
+    ham_wrap = calc_dist_in_batch(hamming, a, b, threshold=3)
+    # print("ham:\n", ham, "\nham_wrap:", ham_wrap)
+    print((ham != ham_wrap).int().sum())
+
+    # cos
+    cos_d = cos(a, b)
+    cos_wrap = calc_dist_in_batch(cos, a, b, threshold=3)
+    # print("cos:\n", cos_d, "\ncos_wrap:", cos_wrap)
+    print((cos_d != cos_wrap).int().sum())
