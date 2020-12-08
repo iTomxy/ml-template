@@ -69,7 +69,6 @@ def mAHP_tie(Dist, Rel, k=-1):
     ref: https://blog.csdn.net/HackerTom/article/details/107458334
     """
     t_HP = HP_tie(Dist, Rel, k)
-    print(">1:", (t_HP > 1).astype(np.int).sum())
     n, m = Dist.shape
     if (k < 0) or (k > m):
         k = m

@@ -42,7 +42,7 @@ def mAP_tie(Dist, S, k=-1):
     n, m = Dist.shape
     if (k < 0) or (k > m):
         k = m
-    Rnk = np.argsort(D)
+    Rnk = np.argsort(Dist)
     AP = 0
     pos = np.arange(m)  # 0-base
     # t_fi_1[k]: t_{f(k) - 1}
@@ -53,7 +53,7 @@ def mAP_tie(Dist, S, k=-1):
     n_fi = np.zeros([m])
     # R_fi_1[k]: prefix sum of r_fi (exclude r_fi[k])
     R_fi_1 = np.zeros([m])
-    for d, s, rnk in zip(D, S, Rnk):
+    for d, s, rnk in zip(Dist, S, Rnk):
         # Rm = s.sum()  # #rel in all
         s_sort = s[rnk]
         Rm = s_sort[:k].sum()  # #rel in top-k
