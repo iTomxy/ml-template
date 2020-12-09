@@ -7,6 +7,8 @@ function args = get_args(data_set)
     args.my_meanpix = 1;
     args.whole_image = 0;
     args.sample_ret = 5000;
+    args.test_per = 50;
+    args.image_size = 224;
 
     if args.my_data
         DATA_P = fullfile(P, "data", data_set);
@@ -25,9 +27,7 @@ function args = get_args(data_set)
             args.text_file = fullfile(DATA_P, "nus-wide-tc21-yall.mat");
             args.image_file = fullfile(DATA_P, "nus-wide-tc21-iall.mat"); % (195834, 3, 224, 224)
         end
-        args.image_path = fullfile(DATA_P, "images.mat");
+        args.image_path = fullfile(DATA_P, "images");
         args.meanpix_file = fullfile(args.split_path, sprintf("avgpix.%s.mat", args.split));  % (224, 224, 3)
     end % if data_set
-
-    args.test_per = 50;
 end
