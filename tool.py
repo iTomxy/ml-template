@@ -13,8 +13,10 @@ def timestamp():
 
 class Logger:
     """log info in stdout & log file"""
-    def __init__(self, args):
-        self.args = args
+
+    def __init__(self, log_path, file_name=None):
+        self.log_path = log_path
+        self.file_name = file_name
         self.log_file = None
 
     def __del__(self):
@@ -31,19 +33,19 @@ class Logger:
         self.log_file.write(text + '\n')
 
     def open(self):
-        if not os.path.exists(self.args.log_path):
-            os.makedirs(self.args.log_path)
-        log_file_path = os.path.join(
-            self.args.log_path, "log.{}".format(timestamp()))
+        if not os.path.exists(self.log_path):
+            os.makedirs(self.log_path)
+        if self.file_name is None:
+            self.file_name = "log.{}".format(timestamp())
+        log_file_path = os.path.join(self.log_path, self.file_name)
         self.log_file = open(log_file_path, "a")
         assert self.log_file is not None
-        for k, v in self.args._get_kwargs():
-            self.log_file.write("{}: {}\n".format(k, v))
         self.log_file.write("begin time: {}\n".format(time.asctime()))
 
 
 class Record:
     """record (scalar) performance"""
+
     def __init__(self):
         self._best = {}
         self.prefer = {}  # {0: small, 1: big}
