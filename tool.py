@@ -36,7 +36,7 @@ class Logger:
         if not os.path.exists(self.log_path):
             os.makedirs(self.log_path)
         if self.file_name is None:
-            self.file_name = "log.{}".format(timestamp())
+            self.file_name = "log.{}.txt".format(timestamp())
         log_file_path = os.path.join(self.log_path, self.file_name)
         self.log_file = open(log_file_path, "a")
         assert self.log_file is not None
