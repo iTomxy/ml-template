@@ -63,3 +63,12 @@ def hook_it(model):
         for name, p in _m.named_parameters():
             name_list.append(name)
         print(_m.__class__.__name__, ':', name_list)
+
+
+def show_model(module, layer=0):
+    for name, m in module.named_children():
+        if layer > 0:
+            print("|  " * (layer - 1) + "|- ", end="")
+        print(m.__class__)
+        if isinstance(m, nn.Sequential):
+            go(m, layer + 1)
