@@ -18,7 +18,7 @@ def get_off(*tensors):
     """torch.Tensor (cuda) -> np.ndarray"""
     res = []
     for t in tensors:
-        if isinstance(t, np.ndarray):
+        if isinstance(t, (int, float, str, np.ndarray)):
             res.append(t)
             continue
         t = t.data
