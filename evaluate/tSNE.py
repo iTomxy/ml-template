@@ -3,7 +3,20 @@ import numpy as np
 from sklearn.manifold import TSNE
 import matplotlib
 matplotlib.use("Agg")
+# import matplotlib.font_manager
+# from matplotlib import rcParams
 import matplotlib.pyplot as plt
+
+
+# # enable latex support
+# matplotlib.rcParams['text.usetex'] = True
+
+# # use Times New Roman
+# rcParams['font.family'] = 'Times New Roman'
+
+# # use Times New Roman NOT bold
+# del matplotlib.font_manager.weight_dict['roman']
+# matplotlib.font_manager._rebuild()
 
 
 def t_sne(F, L, title="tsne", path="log"):
