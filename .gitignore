@@ -125,5 +125,3 @@ events.out.tfevents.*
 *.pth
 
 # for this repo
-!idx_*.npy
-log
