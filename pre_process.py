@@ -1,6 +1,7 @@
 import random
 import numpy as np
 import cv2
+# import albumentations as A
 
 
 """image transforms/augmentations
@@ -37,6 +38,37 @@ class Resize:
 
     def __call__(self, x):
         return cv2.resize(x, self.size, interpolation=self.interpolation)
+
+
+class SPNoise:
+    """salt & pepper noise
+    random p in [0, 1]
+    p < p_low: set 0 (pepper noise)
+    p_low <= p <= p_high: left untouched
+    p > p_high: set 255 (salt noise)
+    """
+    def __init__(self, p_low=0.1, p_high=0.9):
+        self.p_low = p_low
+        self.p_high = p_high
+
+    def __call__(self, img):
+        """img in [0, 255]"""
+        _dtype = img.dtype
+        p = np.random.rand(*img.shape)
+        img = np.where(p < self.p_low, 0, img)
+        img = np.where(p > self.p_high, 255, img)
+        return img.astype(np.uint8).astype(_dtype)
+
+
+class GaussianNoise:
+    def __init__(self, mean=0, var=0.01):
+        self.mean = mean
+        self.var = var
+
+    def __call__(self, img):
+        """img in [0, 255]"""
+        noiz = 255 * np.random.normal(self.mean, self.var, img.shape)
+        return np.clip(img + noiz, 0, 255).astype(np.uint8).astype(img.dtype)
 
 
 class ZeroCentre:
