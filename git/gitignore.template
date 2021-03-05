@@ -145,19 +145,19 @@ cython_debug/
 .idea
 
 # data
-*.mat
-*.h5
-*.np[yz]
-*.png
-*.jpg
-*.jpeg
-*.webm
-*.gif
 *.exe
-*.obj
-*.svg
-*.pkl
+*.gif
+*.h5
+*.jpeg
+*.jpg
 *.lnk
+*.mat
+*.np[yz]
+*.obj
+*.pkl
+*.png
+*.svg
+*.webm
 .DS_Store
 
 # zipped file
