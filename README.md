@@ -32,7 +32,7 @@ some entries to be added in *hosts* file:
 ```
 140.82.114.4	github.com
 199.232.5.194	github.global.ssl.fastly.net
-199.232.68.133 raw.githubusercontent.com
+199.232.68.133	raw.githubusercontent.com
 ```
 
 # References
