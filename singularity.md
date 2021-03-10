@@ -65,14 +65,15 @@ singularity shell instance://tom-1
 
 类似 docker 之 `docker exec`。 `tom-1` 就是创建时指定的 instance name。
 
-
 # 退出容器
 
+在容器**内**：
+
 ```shell
-exit
+Singularity> exit
 ```
 
-在容器内操作，命令提示符应该是 `Singularity>`。
+`Singularity>` 是命令提示符。
 
 exit 之后可以重连。
 
