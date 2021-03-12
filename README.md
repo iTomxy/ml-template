@@ -11,6 +11,7 @@ ML code templates for quick project starting with, or easy conversion between, t
 Cause multiple frameworks are involved here, files are organized according to their generality.
 
 - *+itom/*: some tool functions that might be used in matlab codes.
+- *requirements.txt*: some common packages I met that a docker image may not contains.
 
 # TODO
 
