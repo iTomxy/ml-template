@@ -2,7 +2,7 @@
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
+*.py[codz]
 *$py.class
 
 # C extensions
@@ -170,19 +170,29 @@ cython_debug/
 *.rar
 
 # documents
-*.pdf
+*.csv
 *.doc
 *.docx
-*.rtf
-*.csv
-*.xls
-*.xlsx
+~$*.doc
+~$*.docx
+*.et
+*.pdf
 *.ppt
 *.pptx
+~$*.ppt
+~$*.pptx
+*.rtf
+*.swp
 *.vsd
 *.vsdx
+~$*.vsd
+~$*.vsdx
 *.wps
-*.et
+*.xls
+*.xlsx
+~$*.xls
+~$*.xlsx
+
 
 # tensorflow
 events.out.tfevents.*
