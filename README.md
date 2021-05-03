@@ -36,6 +36,25 @@ some entries to be added in *hosts* file:
 199.232.68.133	raw.githubusercontent.com
 ```
 
+# pip
+
+change the source of `pip`, see [7, 8].
+
+While you can add the configuration file yourself, a quicker way would be using one of the following commands:
+
+```shell
+# Tsinghua
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+# Alibaba
+pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+# Tencent
+pip config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple
+# Douban
+pip config set global.index-url http://pypi.douban.com/simple/
+```
+
+
+
 # References
 
 1. [AlexNet implementation + weights in TensorFlow](http://www.cs.toronto.edu/~guerzhoy/tf_alexnet/)
@@ -44,3 +63,5 @@ some entries to be added in *hosts* file:
 4. [torch.autograd.detect_anomaly](https://pytorch.org/docs/1.4.0/autograd.html#torch.autograd.detect_anomaly)
 5. [deep-cross-modal-hashing/torchcmh/dataset/base/triplet.py](https://github.com/WangGodder/deep-cross-modal-hashing/blob/master/torchcmh/dataset/base/triplet.py)
 6. [【BUG】[nltk_data] Error loading punkt: ＜urlopen error [Errno 11004] [nltk_data]](https://blog.csdn.net/xiangduixuexi/article/details/108601873)
+7. [Python 修改 pip 源为国内源](https://www.cnblogs.com/lsgxeva/p/12978981.html)
+8. [python - pip换源，更换pip源到国内镜像](https://blog.csdn.net/xuezhangjun0121/article/details/81664260)
