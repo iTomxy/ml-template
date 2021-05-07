@@ -12,17 +12,18 @@ def mAP(Dist, S, k=-1):
     n, m = Dist.shape
     if (k < 0) or (k > m):
         k = m
-    Gnd = S
+    Gnd = S.astype(np.int32)
+    gnd_rs = np.sum(Gnd, axis=1)
     Rank = np.argsort(Dist)
 
     AP = 0.0
     for it in range(n):
         gnd = Gnd[it]
-        if np.sum(gnd) == 0:
+        if 0 == gnd_rs[it]:
             continue
         rank = Rank[it][:k]
         gnd = gnd[rank]
-        if np.sum(gnd) == 0:
+        if (k > 0) and (np.sum(gnd) == 0):
             continue
         pos = np.asarray(np.where(gnd == 1.)) + 1.0
         rel_cnt = np.arange(pos.shape[-1]) + 1.0
@@ -107,12 +108,15 @@ if __name__ == "__main__":
                             [0, 0, 1, 0],
                             [1, 0, 0, 0],
                             [0, 0, 1, 0]])
-    print("mAP test:", mAP(qB, rB, query_L, retrieval_L, what=1))
-    print("NDCG test:", NDCG(qB, rB, query_L, retrieval_L, what=1))
+
+    D = (qB.shape[1] - qB.dot(rB.T)) / 2
+    S = (query_L.dot(retrieval_L.T) > 0).astype(np.int32)
+    print("mAP test:", mAP(D, S, k=-1))
+    # print("NDCG test:", NDCG(qB, rB, query_L, retrieval_L, what=1))
 
     # test tie-aware P@k, R@k
-    print("tie mAP:", mAP_tie(qB, rB, query_L, retrieval_L, k=-1, sparse=False))
-    print("tie NDCG:", NDCG_tie(qB, rB, query_L, retrieval_L, k=-1, sparse=False))
-    print("change place")
-    print("tie mAP:", mAP_tie(rB, qB, retrieval_L, query_L, k=-1, sparse=False))
-    print("tie NDCG:", NDCG_tie(rB, qB, retrieval_L, query_L, k=-1, sparse=False))
+    # print("tie mAP:", mAP_tie(qB, rB, query_L, retrieval_L, k=-1, sparse=False))
+    # print("tie NDCG:", NDCG_tie(qB, rB, query_L, retrieval_L, k=-1, sparse=False))
+    # print("change place")
+    # print("tie mAP:", mAP_tie(rB, qB, retrieval_L, query_L, k=-1, sparse=False))
+    # print("tie NDCG:", NDCG_tie(rB, qB, retrieval_L, query_L, k=-1, sparse=False))
