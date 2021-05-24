@@ -201,6 +201,12 @@ events.out.tfevents.*
 # pytorch
 *.pth
 
+# latex
+*.aux
+*.bbl
+*.blg
+*.out
+
 # for this repo
 #!idx_*.npy
 log/
