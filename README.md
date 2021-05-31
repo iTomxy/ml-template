@@ -28,13 +28,15 @@ Cause multiple frameworks are involved here, files are organized according to th
 
 # hosts
 
-some entries to be added in *hosts* file:
+some entries to be added in *hosts* file for [GitHub](https://github.com/) accessing:
 
 ```
 140.82.114.4	github.com
 199.232.5.194	github.global.ssl.fastly.net
 199.232.68.133	raw.githubusercontent.com
 ```
+
+see [9] for automatic *hosts* updating.
 
 # pip
 
@@ -53,8 +55,6 @@ pip config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple
 pip config set global.index-url http://pypi.douban.com/simple/
 ```
 
-
-
 # References
 
 1. [AlexNet implementation + weights in TensorFlow](http://www.cs.toronto.edu/~guerzhoy/tf_alexnet/)
@@ -65,3 +65,4 @@ pip config set global.index-url http://pypi.douban.com/simple/
 6. [【BUG】[nltk_data] Error loading punkt: ＜urlopen error [Errno 11004] [nltk_data]](https://blog.csdn.net/xiangduixuexi/article/details/108601873)
 7. [Python 修改 pip 源为国内源](https://www.cnblogs.com/lsgxeva/p/12978981.html)
 8. [python - pip换源，更换pip源到国内镜像](https://blog.csdn.net/xuezhangjun0121/article/details/81664260)
+9. [521xueweihan/GitHub520](https://github.com/521xueweihan/GitHub520)
