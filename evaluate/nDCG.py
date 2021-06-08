@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def NDCG(Dist, Rel, k=-1):
+def nDCG(Dist, Rel, k=-1):
     """Normalized Discounted Cumulative Gain
     ref: https://github.com/kunhe/TALR/blob/master/%2Beval/NDCG.m
     """
@@ -21,7 +21,7 @@ def NDCG(Dist, Rel, k=-1):
     return _NDCG / n
 
 
-def NDCG_tie(Dist, Rel, k=-1):
+def nDCG_tie(Dist, Rel, k=-1):
     """tie-aware NDCG
     Dist: [n, m], Hamming distance matrix
     ref:
