@@ -39,7 +39,7 @@ class Logger:
         if self.file_name is None:
             self.file_name = "log.{}.txt".format(timestamp())
         log_file_path = os.path.join(self.log_path, self.file_name)
-        self.log_file = open(log_file_path, "a")
+        self.log_file = open(log_file_path, "w")
         assert self.log_file is not None
         self.log_file.write("begin time: {}\n".format(time.asctime()))
 
