@@ -128,9 +128,9 @@ class MeanValue:
         self.var += value * value
         self.n += n
 
-        if self.n == 0:
+        if 0 == self.n:
             self.mean, self.std = math.nan, math.nan
-        elif self.n == 1:
+        elif 1 == self.n:
             self.mean, self.std = self.sum, math.inf
             self.mean_old = self.mean
             self.m_s = 0.0
