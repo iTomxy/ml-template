@@ -7,6 +7,7 @@ import csv
 def timestamp():
     """time-stamp string: Y-M-D-h-m"""
     t = time.localtime(time.time())
+    # return time.strftime("%Y-%m-%d-%H-%M", t)
     return "{}-{}-{}-{}-{}".format(
         t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min)
 
