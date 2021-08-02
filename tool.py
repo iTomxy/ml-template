@@ -2,6 +2,7 @@ import os
 import time
 import math
 import csv
+import itertools
 
 
 def timestamp():
@@ -10,6 +11,19 @@ def timestamp():
     # return time.strftime("%Y-%m-%d-%H-%M", t)
     return "{}-{}-{}-{}-{}".format(
         t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min)
+
+
+def enum_product(*args):
+    """enumerate the product of several arrays with corresponding indices
+    usage:
+    - `for (i1, i2), (v1, v2) in enum_product(array1, array2):`
+    ref:
+    - https://stackoverflow.com/questions/56430745/enumerating-a-tuple-of-indices-with-itertools-product
+    """
+    yield from zip(
+        itertools.product(*(range(len(x)) for x in args)),
+        itertools.product(*args)
+    )
 
 
 class Logger:
