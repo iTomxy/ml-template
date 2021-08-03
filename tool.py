@@ -20,10 +20,11 @@ def enum_product(*args):
     ref:
     - https://stackoverflow.com/questions/56430745/enumerating-a-tuple-of-indices-with-itertools-product
     """
-    yield from zip(
+    for _index, _data in zip(
         itertools.product(*(range(len(x)) for x in args)),
         itertools.product(*args)
-    )
+    ):
+        yield _index, _data
 
 
 class Logger:
