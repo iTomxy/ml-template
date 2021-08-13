@@ -28,11 +28,20 @@ def count_mask(X):
     return mask.to(X.dtype)
 
 
-def freeze_layer(layer):
-    for param in layer.parameters():
-        param.requires_grad = False
+def freeze_module(*modules):
+    for m in modules:
+        for param in m.parameters():
+            param.requires_grad = False
 
 
-def freeze_mulit_layers(multi_layers):
-    for layer in multi_layers:
-        freeze_layer(layer)
+def unfreeze_module(*modules):
+    for m in modules:
+        for param in m.parameters():
+            param.requires_grad = True
+
+
+def zero_grad(*modules):
+    for m in modules:
+        for param in m.parameters():
+            param.grad = None
+
