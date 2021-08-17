@@ -40,7 +40,7 @@ class TrainVar(nn.Module):
 
 class MixVar(nn.Module):
     """mixture of constants & trainable variables
-    - https://blog.csdn.net/HackerTom/article/details/119740928
+    ref: https://blog.csdn.net/HackerTom/article/details/119740928
     """
 
     def __init__(self, X, const_mask, init_val=None, process_fn=None):
@@ -53,6 +53,10 @@ class MixVar(nn.Module):
                 e.g. normalization, activation, etc.
         """
         super(MixVar, self).__init__()
+        if isinstance(X, np.ndarray):
+            X = torch.from_numpy(X).float()
+        if isinstance(const_mask, np.ndarray):
+            const_mask = torch.from_numpy(const_mask).long()
         self.X = X
         self.const_mask = const_mask
         self.process_fn = process_fn
