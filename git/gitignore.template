@@ -155,6 +155,7 @@ cython_debug/
 *.np[yz]
 *.obj
 *.pkl
+*.pickle
 *.png
 *.svg
 *.webm
