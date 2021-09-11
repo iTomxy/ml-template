@@ -30,7 +30,7 @@ def enum_product(*args):
 class Logger:
     """log info in stdout & log file"""
 
-    def __init__(self, log_path, file_name=None):
+    def __init__(self, log_path='.', file_name=None):
         self.log_path = log_path
         self.file_name = file_name
         self.log_file = None
@@ -58,6 +58,10 @@ class Logger:
         self.log_file = open(log_file_path, "w")
         assert self.log_file is not None
         self.log_file.write("begin time: {}\n".format(time.asctime()))
+
+    def flush(self):
+        if self.log_file:
+            self.log_file.flush()
 
 
 class Record:
