@@ -23,8 +23,8 @@ parser.add_argument('--dataset', type=str, default="flickr",
 parser.add_argument('--n_class', type=int, default=24)
 parser.add_argument('--bit', type=int, default=16)
 parser.add_argument('--alpha', type=float, default=0.1)
-parser.add_argument('--mAP_at', type=int, default=-1,
-                    help="mAP@?, `-1` means `all`")
+parser.add_argument('--pos_thres', type=int, default=-1,
+                    help="position threshold (mAP@?, nDCG@?), `-1` means `all`")
 
 parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--iter', type=int, default=60)
