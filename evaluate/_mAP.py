@@ -1,35 +1,58 @@
 import numpy as np
 
 
-def mAP(Dist, S, k=-1):
+def mAP(Dist, Sim, k=-1):
     """mean Average Precision
-    - Dist: distance matrix
-    - S: similarity matrix
-    - k: mAP@k, default `-1` means mAP@ALL
+    Input:
+        Dist: distance matrix
+        Sim: 0/1 similarity matrix
+        k: mAP@k, int or int tuple/list
+           default `-1` means mAP@ALL
     ref:
     - https://blog.csdn.net/HackerTom/article/details/89309665
     """
+    if isinstance(k, int):
+        k = [k]
+    else:
+        k = sorted(k)  # ascending
     n, m = Dist.shape
-    if (k < 0) or (k > m):
-        k = m
-    Gnd = S.astype(np.int32)
+    for kid in range(len(k)):
+        if (k[kid] < 0) or (k[kid] > m):
+            k[kid] = m
+    Gnd = (Sim > 0).astype(np.int32)  # ensure 0/1
     gnd_rs = np.sum(Gnd, axis=1)
-    Rank = np.argsort(Dist)
+    Rank = np.argsort(Dist, axis=-1)
 
-    AP = 0.0
+    AP = np.zeros([len(k)], dtype=np.float32)
     for it in range(n):
         gnd = Gnd[it]
         if 0 == gnd_rs[it]:
             continue
-        rank = Rank[it][:k]
+        rank = Rank[it]#[:k]
         gnd = gnd[rank]
-        if (k > 0) and (np.sum(gnd) == 0):
-            continue
-        pos = np.asarray(np.where(gnd == 1.)) + 1.0
+        # if (k > 0) and (np.sum(gnd) == 0):
+        #     continue
+        pos = np.asarray(np.where(gnd == 1.)).flatten() + 1.0
         rel_cnt = np.arange(pos.shape[-1]) + 1.0
-        AP += np.mean(rel_cnt / pos)
+        # AP += np.mean(rel_cnt / pos)
+        p_list = rel_cnt / pos
 
-    return AP / n
+        _cnt, _p_sum = 0, 0
+        for kid, _k in enumerate(k):
+            if 0 == _k:
+                continue
+            while (_cnt < pos.shape[0]) and (pos[_cnt] <= _k):
+                _p_sum += p_list[_cnt]
+                _cnt += 1
+            _ap = _p_sum / _cnt
+            AP[kid] += _ap
+            if _cnt >= pos.shape[0]:
+                break
+
+    _mAP = AP / n
+    if 1 == _mAP.shape[0]:
+        _mAP = _mAP[0]
+    return _mAP
 
 
 def mAP_tie(Dist, S, k=-1):
