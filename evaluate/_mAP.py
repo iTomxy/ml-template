@@ -55,19 +55,28 @@ def mAP(Dist, Sim, k=-1):
     return _mAP
 
 
-def mAP_tie(Dist, S, k=-1):
+def mAP_tie(Dist, Sim, k=-1):
     """tie-aware mAP
-    Dist: [n, m], Hamming distance matrix
-    S: [n, m], similarity mattrix
+    Input:
+        Dist: [n, m], Hamming distance matrix
+        Sim: [n, m], similarity mattrix
+        k: mAP@k, int or int tuple/list
+           default `-1` means mAP@ALL
     ref:
     - https://blog.csdn.net/HackerTom/article/details/107458334
     - https://github.com/kunhe/TALR/blob/master/%2Beval/tieAP.m
     """
+    if isinstance(k, int):
+        k = [k]
+    else:
+        k = sorted(k)  # ascending
     n, m = Dist.shape
-    if (k < 0) or (k > m):
-        k = m
-    Rnk = np.argsort(Dist)
-    AP = 0
+    for kid in range(len(k)):
+        if (k[kid] < 0) or (k[kid] > m):
+            k[kid] = m
+    Rnk = np.argsort(Dist, axis=-1)
+    # AP = 0
+    AP = np.zeros([len(k)], dtype=np.float32)
     pos = np.arange(m)  # 0-base
     # t_fi_1[k]: t_{f(k) - 1}
     t_fi_1 = np.zeros([m])
@@ -77,11 +86,14 @@ def mAP_tie(Dist, S, k=-1):
     n_fi = np.zeros([m])
     # R_fi_1[k]: prefix sum of r_fi (exclude r_fi[k])
     R_fi_1 = np.zeros([m])
-    for d, s, rnk in zip(Dist, S, Rnk):
+    for d, s, rnk in zip(Dist, Sim, Rnk):
         # Rm = s.sum()  # #rel in all
         s_sort = s[rnk]
-        Rm = s_sort[:k].sum()  # #rel in top-k
-        if 0 == Rm:
+        # Rm = s_sort[:k].sum()  # #rel in top-k
+        # if 0 == Rm:
+        #     continue
+        Rm_list = s_sort.cumsum()
+        if 0 == Rm_list[-1]:  # = Rm.max() = s_sort.sum()
             continue
         d_unique = np.unique(d)  # ascending
         d_sort = d[rnk]
@@ -104,9 +116,17 @@ def mAP_tie(Dist, S, k=-1):
         # in computing (i - t_{f(i)-1} - 1),
         # the lastest `-1` is megered: pos = i - 1
         kernel = (R_fi_1 + (pos - t_fi_1) * r_fi_1 / n_fi_1 + 1) * r_fi / n_fi / (pos + 1)
-        AP += kernel[:k].sum() / Rm
+        # AP += kernel[:k].sum() / Rm
+        kernel_cumsum = np.cumsum(kernel)
+        for kid, _k in enumerate(k):
+            if _k > 0:
+                # `_k - 1` to shift to 0-base
+                AP[kid] += kernel_cumsum[_k - 1] / Rm_list[_k - 1]
 
-    return AP / n
+    _mAP = AP / n
+    if 1 == _mAP.shape[0]:
+        _mAP = _mAP[0]
+    return _mAP
 
 
 if __name__ == "__main__":
