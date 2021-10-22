@@ -3,22 +3,47 @@ import numpy as np
 
 def nDCG(Dist, Rel, k=-1):
     """Normalized Discounted Cumulative Gain
-    ref: https://github.com/kunhe/TALR/blob/master/%2Beval/NDCG.m
+    Input:
+        Dist: [n, m], Hamming distance matrix
+        Rel: [n, m], relevance mattrix, in {0, 1, 2, ...}
+        k: nDCG@k, int or int tuple/list
+           default `-1` means nDCG@ALL
+    ref:
+    - https://blog.csdn.net/HackerTom/article/details/108413141
+    - https://github.com/kunhe/TALR/blob/master/%2Beval/NDCG.m
     """
+    if isinstance(k, int):
+        k = [k]
+    else:
+        k = sorted(k)  # ascending
     n, m = Dist.shape
-    if (k < 0) or (k > m):
-        k = m
+    for kid in range(len(k)):
+        if (k[kid] < 0) or (k[kid] > m):
+            k[kid] = m
     G = 2 ** Rel - 1
-    D = np.log2(2 + np.arange(k))
+    # D = np.log2(2 + np.arange(k))
+    D = np.log2(2 + np.arange(m))
     Rank = np.argsort(Dist)
 
-    _NDCG = 0
-    for g, rnk in zip(G, Rank):
-        dcg_best = (np.sort(g)[::-1][:k] / D).sum()
-        if dcg_best > 0:
-            dcg = (g[rnk[:k]] / D).sum()
-            _NDCG += dcg / dcg_best
-    return _NDCG / n
+    _nDCG = np.zeros([len(k)], dtype=np.float32)
+    for g, d, rnk in zip(G, D, Rank):
+        # dcg_best = (np.sort(g)[::-1][:k] / D).sum()
+        g_desc = np.sort(g)[::-1]
+        dcg_best_list = (g_desc / D).cumsum()
+        # if dcg_best > 0:
+        #     dcg = (g[rnk[:k]] / D).sum()
+        #     _NDCG += dcg / dcg_best
+        g_sort = g[rnk]
+        dcg_list = (g_sort / D).cumsum()
+        if dcg_best_list[0] > 0:  # = dcg_best_list.min() = biggist DCG
+            for kid, _k in enumerate(k):
+                dcg = dcg_list[_k - 1]
+                _nDCG[kid] += dcg / dcg_best_list[_k - 1]
+
+    _nDCG /= n
+    if 1 == _nDCG.shape[0]:
+        _nDCG = _nDCG[0]
+    return _nDCG
 
 
 def nDCG_tie(Dist, Rel, k=-1):
