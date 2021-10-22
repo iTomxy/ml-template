@@ -19,6 +19,17 @@ def check_nan_inf(tensors):
     return 0
 
 
+def replace_nan_inf(tensor, v=0):
+    """replace inf & nan in `tensor` with `v`"""
+    if 0 == v:
+        z = torch.zeros_like(tensor)
+    else:
+        z = torch.ones_like(tensor)
+        if 1 != v:
+            z = z * v
+    return torch.where(torch.isinf(tensor) | torch.isnan(tensor), z, tensor)
+
+
 def forward_nan(m, x, y):
     if not isinstance(x, tuple):
         x = [x]
