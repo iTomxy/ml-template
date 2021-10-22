@@ -30,15 +30,16 @@ def nDCG(Dist, Rel, k=-1):
         # dcg_best = (np.sort(g)[::-1][:k] / D).sum()
         g_desc = np.sort(g)[::-1]
         dcg_best_list = (g_desc / D).cumsum()
+        if 0 == dcg_best_list[0]:  # = dcg_best_list.min() = biggist DCG
+            continue
         # if dcg_best > 0:
         #     dcg = (g[rnk[:k]] / D).sum()
         #     _NDCG += dcg / dcg_best
         g_sort = g[rnk]
         dcg_list = (g_sort / D).cumsum()
-        if dcg_best_list[0] > 0:  # = dcg_best_list.min() = biggist DCG
-            for kid, _k in enumerate(k):
-                dcg = dcg_list[_k - 1]
-                _nDCG[kid] += dcg / dcg_best_list[_k - 1]
+        for kid, _k in enumerate(k):
+            dcg = dcg_list[_k - 1]
+            _nDCG[kid] += dcg / dcg_best_list[_k - 1]
 
     _nDCG /= n
     if 1 == _nDCG.shape[0]:
