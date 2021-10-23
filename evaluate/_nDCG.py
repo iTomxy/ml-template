@@ -29,9 +29,9 @@ def nDCG(Dist, Rel, k=-1):
     for g, d, rnk in zip(G, D, Rank):
         # dcg_best = (np.sort(g)[::-1][:k] / D).sum()
         g_desc = np.sort(g)[::-1]
-        dcg_best_list = (g_desc / D).cumsum()
-        if 0 == dcg_best_list[0]:  # = dcg_best_list.min() = biggist DCG
+        if 0 == g_desc[0]:  # biggist DCG
             continue
+        dcg_best_list = (g_desc / D).cumsum()
         # if dcg_best > 0:
         #     dcg = (g[rnk[:k]] / D).sum()
         #     _NDCG += dcg / dcg_best
