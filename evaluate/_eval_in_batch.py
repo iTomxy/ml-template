@@ -6,7 +6,7 @@ from util import MeanValue
 def eval_in_batch(eval_fn, Dist, Sim, k=-1, batch_size=2000):
     assert Dist.shape[0] == Sim.shape[0]
     n = Dist.shape[0]
-    single_k = isinstance(k, int)
+    single_k = isinstance(k, int) or (1 == len(k))
     if single_k:
         res = MeanValue()
     else:
