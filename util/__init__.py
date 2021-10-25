@@ -1,1 +1,1 @@
-from tool import *
+from .tool import *
