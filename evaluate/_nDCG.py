@@ -38,8 +38,9 @@ def nDCG(Dist, Rel, k=-1):
         g_sort = g[rnk]
         dcg_list = (g_sort / D).cumsum()
         for kid, _k in enumerate(k):
-            dcg = dcg_list[_k - 1]
-            _nDCG[kid] += dcg / dcg_best_list[_k - 1]
+            if _k > 0:
+                dcg = dcg_list[_k - 1]
+                _nDCG[kid] += dcg / dcg_best_list[_k - 1]
 
     _nDCG /= n
     if 1 == _nDCG.shape[0]:

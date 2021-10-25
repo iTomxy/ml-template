@@ -39,7 +39,7 @@ def mAP(Dist, Sim, k=-1):
 
         _cnt, _p_sum = 0, 0
         for kid, _k in enumerate(k):
-            if 0 == _k:
+            if (0 == _k) or (pos[_cnt] > _k):
                 continue
             while (_cnt < pos.shape[0]) and (pos[_cnt] <= _k):
                 _p_sum += p_list[_cnt]
@@ -119,7 +119,7 @@ def mAP_tie(Dist, Sim, k=-1):
         # AP += kernel[:k].sum() / Rm
         kernel_cumsum = np.cumsum(kernel)
         for kid, _k in enumerate(k):
-            if _k > 0:
+            if (_k > 0) and (Rm_list[_k - 1]):
                 # `_k - 1` to shift to 0-base
                 AP[kid] += kernel_cumsum[_k - 1] / Rm_list[_k - 1]
 
