@@ -4,11 +4,16 @@ import torch
 
 def get_on(*tensors, cuda=True):
     """np.ndarray -> torch.Tensor (cuda)"""
-    if cuda:
-        fn = lambda x: torch.from_numpy(x).cuda()
-    else:
-        fn = lambda x: torch.from_numpy(x)
-    res = list(map(fn, tensors))
+    res = []
+    for t in tensors:
+        if isinstance(t, (int, float)):
+            t = torch.tensor(t)
+        elif isinstance(t, np.ndarray):
+            t = torch.from_numpy(x)
+        # assert isinstance(t, torch.Tensor)
+        if cuda:
+            t = t.cuda()
+        res.append(t)
     if len(res) == 1:
         res = res[0]
     return res
