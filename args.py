@@ -4,26 +4,25 @@ parser = argparse.ArgumentParser(description='iTom')
 parser.add_argument('--gpu_id', type=str, nargs='?', default="0")
 parser.add_argument('--gpu_frac', type=float, default=0.5,
                     help="fraction of gpu memory to use")
-parser.add_argument('--tuning', type=int, default=0,
-                    help="`0` for normal training, `1` for fine-tuning/tuning hyper param")
-parser.add_argument('--err_only', type=int, default=0,
-                    help="whether to log errors only")
+
+parser.add_argument('--tune', action="store_true", default=False,
+                    help="add this flag to enable tuning mode")
 parser.add_argument('--n_fold', type=int, default=5)
 parser.add_argument('--i_fold', type=int, default=0)
 parser.add_argument('--seed', type=int, default=7,
                     help="random seed")
-parser.add_argument('--cnnf_weight', type=str,
-                    default='/home/dataset/vgg_net.mat',
-                    help="CNN-F weights file path")
+
+parser.add_argument('--err_only', action="store_true", default=False,
+                    help="whether to log errors only")
 parser.add_argument('--log_path', type=str, default="./log")
-parser.add_argument('--data_path', type=str, default="/home/dataset/nuswide-tc21")
-parser.add_argument('--dataset', type=str, default="flickr",
-                    help="nuswide_tc21, coco, flickr")
+
+parser.add_argument('--dataset', type=str, default="flickr25k",
+                    help="{flickr25k, nuswide_tc21}")
 
 parser.add_argument('--n_class', type=int, default=24)
 parser.add_argument('--bit', type=int, default=16)
 parser.add_argument('--alpha', type=float, default=0.1)
-parser.add_argument('--pos_thres', type=int, default=-1,
+parser.add_argument('--pos_thres', type=int, nargs='+', default=-1,
                     help="position threshold (mAP@?, nDCG@?), `-1` means `all`")
 
 parser.add_argument('--batch_size', type=int, default=128)
