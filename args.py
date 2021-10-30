@@ -17,12 +17,13 @@ parser.add_argument('--err_only', action="store_true", default=False,
 parser.add_argument('--log_path', type=str, default="./log")
 
 parser.add_argument('--dataset', type=str, default="flickr25k",
-                    help="{flickr25k, nuswide_tc21}")
+                    choices=["flickr25k", "nuswide_tc21"])
 
 parser.add_argument('--n_class', type=int, default=24)
 parser.add_argument('--bit', type=int, default=16)
 parser.add_argument('--alpha', type=float, default=0.1)
-parser.add_argument('--pos_thres', type=int, nargs='+', default=-1,
+parser.add_argument('--pos_thres', type=int, nargs='+',
+                    default=[50, 250, 500, 1000, 5000, -1],
                     help="position threshold (mAP@?, nDCG@?), `-1` means `all`")
 
 parser.add_argument('--batch_size', type=int, default=128)
