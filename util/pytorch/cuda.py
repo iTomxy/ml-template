@@ -9,7 +9,7 @@ def get_on(*tensors, cuda=True):
         if isinstance(t, (int, float)):
             t = torch.tensor(t)
         elif isinstance(t, np.ndarray):
-            t = torch.from_numpy(x)
+            t = torch.from_numpy(t)
         # assert isinstance(t, torch.Tensor)
         if cuda:
             t = t.cuda()
