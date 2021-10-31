@@ -89,7 +89,6 @@ def nDCG_tie(Dist, Rel, k=-1):
             tie_pos = pos[tie_idx]
             tc_1 = tie_pos[0] - 1  # i.e. tie_pos.min() - 1
             tc = tie_pos[-1]
-            assert tc > tc_1
             while _start_kid < len(k):
                 if k[_start_kid] > tc_1:
                     break
