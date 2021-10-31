@@ -13,12 +13,11 @@ def mAP(Dist, Sim, k=-1):
     """
     if isinstance(k, int):
         k = [k]
-    else:
-        k = sorted(k)  # ascending
     n, m = Dist.shape
     for kid in range(len(k)):
         if (k[kid] < 0) or (k[kid] > m):
             k[kid] = m
+    k = sorted(k)  # ascending
     Gnd = (Sim > 0).astype(np.int32)  # ensure 0/1
     gnd_rs = np.sum(Gnd, axis=1)
     Rank = np.argsort(Dist, axis=-1)
@@ -68,12 +67,11 @@ def mAP_tie(Dist, Sim, k=-1):
     """
     if isinstance(k, int):
         k = [k]
-    else:
-        k = sorted(k)  # ascending
     n, m = Dist.shape
     for kid in range(len(k)):
         if (k[kid] < 0) or (k[kid] > m):
             k[kid] = m
+    k = sorted(k)  # ascending
     Rnk = np.argsort(Dist, axis=-1)
     # AP = 0
     AP = np.zeros([len(k)], dtype=np.float32)
