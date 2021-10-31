@@ -19,6 +19,7 @@ def nDCG(Dist, Rel, k=-1):
         if (k[kid] < 0) or (k[kid] > m):
             k[kid] = m
     k = sorted(k)  # ascending
+    assert k[0] != 0, "`@0` is meaningless and disallowed for efficiency"
     G = 2 ** Rel - 1
     # D = np.log2(2 + np.arange(k))
     D = np.log2(2 + np.arange(m))
@@ -37,9 +38,8 @@ def nDCG(Dist, Rel, k=-1):
         g_sort = g[rnk]
         dcg_list = (g_sort / D).cumsum()
         for kid, _k in enumerate(k):
-            if _k > 0:
-                dcg = dcg_list[_k - 1]
-                _nDCG[kid] += dcg / dcg_best_list[_k - 1]
+            dcg = dcg_list[_k - 1]
+            _nDCG[kid] += dcg / dcg_best_list[_k - 1]
 
     _nDCG /= n
     if 1 == _nDCG.shape[0]:
@@ -65,6 +65,7 @@ def nDCG_tie(Dist, Rel, k=-1):
         if (k[kid] < 0) or (k[kid] > m):
             k[kid] = m
     k = sorted(k)  # ascending
+    assert k[0] != 0, "`@0` is meaningless and disallowed for efficiency"
     G = 2 ** Rel - 1
     pos = np.arange(m) + 1  # 1-base
     D_inv = 1 / np.log2(1 + pos)
@@ -103,9 +104,8 @@ def nDCG_tie(Dist, Rel, k=-1):
                 dcg_list[kid_offset + _start_kid] += tie_dcg
 
         for kid, _k in enumerate(k):
-            if _k > 0:
-                _ndcg = dcg_list[kid] / dcg_best_list[_k - 1]  # 0-base
-                _nDCG[kid] += _ndcg
+            _ndcg = dcg_list[kid] / dcg_best_list[_k - 1]  # 0-base
+            _nDCG[kid] += _ndcg
 
     _nDCG /= n
     if 1 == _nDCG.shape[0]:

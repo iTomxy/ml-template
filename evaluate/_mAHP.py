@@ -3,24 +3,41 @@ import numpy as np
 
 def mAHP(Dist, Rel, k=-1):
     """mean Average Hierarchical Precision
-    APH@k = 1/k * [ sum_i {HP@i} - 1/2 * (HP@1 + HP@k) ]
+    AHP@k = 1/k * [ sum_i {HP@i} - 1/2 * (HP@1 + HP@k) ]
+    Input:
+        Dist: distance matrix
+        Rel: relevance matrix
+        k: mAP@k, int or int tuple/list
+           default `-1` means mAP@ALL
     ref:
     - https://github.com/cvjena/semantic-embeddings/issues/4
     - Hierarchical Semantic Indexing for Large Scale Image Retrieval
     """
+    if isinstance(k, int):
+        k = [k]
     n, m = Dist.shape
-    if (k < 0) or (k > m):
-        k = m
+    for kid in range(len(k)):
+        if (k[kid] < 0) or (k[kid] > m):
+            k[kid] = m
+    k = sorted(k)  # ascending
+    assert k[0] != 0, "`@0` is meaningless and disallowed for efficiency"
     Rank = np.argsort(Dist)
 
-    AHP = 0
+    AHP = np.zeros([len(k)], dtype=np.float32)
     for rel, rnk in zip(Rel, Rank):
-        sim_sum_best = np.cumsum(np.sort(rel)[::-1][:k])
-        if sim_sum_best[0] > 0:
-            sim_sum_real = np.cumsum(rel[rnk[:k]])
-            hp = sim_sum_real / sim_sum_best
-            AHP += hp.mean() - 0.5 * (hp[0] + hp[-1]) / k
-    return AHP / n
+        rel_desc = np.sort(rel)[::-1]
+        if 0 == rel_desc[0]:  # = rel_desc.max()
+            continue
+        sim_sum_best = np.cumsum(rel_desc)
+        sim_sum_real = np.cumsum(rel[rnk])
+        hp = sim_sum_real / sim_sum_best
+        for kid, _k in enumerate(k):
+            AHP[kid] += hp[:_k].mean() - 0.5 * (hp[0] + hp[_k - 1]) / _k
+
+    _mAHP = AHP / n
+    if 1 == _mAHP.shape[0]:
+        _mAHP = _mAHP[0]
+    return _mAHP
 
 
 def HP_tie(Dist, Rel, k=-1):
@@ -66,12 +83,28 @@ def HP_tie(Dist, Rel, k=-1):
 
 def mAHP_tie(Dist, Rel, k=-1):
     """mean Average Hierarchical Precision
-    ref: https://blog.csdn.net/HackerTom/article/details/107458334
+    Input:
+        Dist: distance matrix
+        Rel: relevance matrix
+        k: mAP@k, int or int tuple/list
+           default `-1` means mAP@ALL
     """
-    t_HP = HP_tie(Dist, Rel, k)
+    if isinstance(k, int):
+        k = [k]
     n, m = Dist.shape
-    if (k < 0) or (k > m):
-        k = m
-    assert k == t_HP.shape[1]
-    AHP = t_HP.mean(1) - 0.5 * (t_HP[:, 0] + t_HP[:, -1]) / k
-    return AHP.mean()
+    for kid in range(len(k)):
+        if (k[kid] < 0) or (k[kid] > m):
+            k[kid] = m
+    k = sorted(k)  # ascending
+    assert k[0] != 0, "`@0` is meaningless and disallowed for efficiency"
+
+    t_HP = HP_tie(Dist, Rel, -1)  # `-1` to support multi-k
+    t_HP_cumsum = t_HP.cumsum(1)
+    _mAHP = np.zeros([len(k)], dtype=np.float32)
+    for kid, _k in enumerate(k):
+        ahp_list = (t_HP_cumsum[:, _k - 1] - 0.5 * (t_HP[:, 0] + t_HP[:, _k - 1])) / _k
+        _mAHP[kid] = ahp_list.mean()
+
+    if 1 == _mAHP.shape[0]:
+        _mAHP = _mAHP[0]
+    return _mAHP

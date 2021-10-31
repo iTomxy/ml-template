@@ -18,6 +18,7 @@ def mAP(Dist, Sim, k=-1):
         if (k[kid] < 0) or (k[kid] > m):
             k[kid] = m
     k = sorted(k)  # ascending
+    assert k[0] != 0, "`@0` is meaningless and disallowed for efficiency"
     Gnd = (Sim > 0).astype(np.int32)  # ensure 0/1
     gnd_rs = np.sum(Gnd, axis=1)
     Rank = np.argsort(Dist, axis=-1)
@@ -72,6 +73,7 @@ def mAP_tie(Dist, Sim, k=-1):
         if (k[kid] < 0) or (k[kid] > m):
             k[kid] = m
     k = sorted(k)  # ascending
+    assert k[0] != 0, "`@0` is meaningless and disallowed for efficiency"
     Rnk = np.argsort(Dist, axis=-1)
     # AP = 0
     AP = np.zeros([len(k)], dtype=np.float32)
@@ -117,7 +119,7 @@ def mAP_tie(Dist, Sim, k=-1):
         # AP += kernel[:k].sum() / Rm
         kernel_cumsum = np.cumsum(kernel)
         for kid, _k in enumerate(k):
-            if (_k > 0) and (Rm_list[_k - 1]):
+            if Rm_list[_k - 1]:
                 # `_k - 1` to shift to 0-base
                 AP[kid] += kernel_cumsum[_k - 1] / Rm_list[_k - 1]
 
