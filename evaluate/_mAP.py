@@ -104,7 +104,7 @@ def mAP_tie(Dist, Sim, k=-1):
             t_fi_1[tie_idx] = pos[tie_idx].min() # - 1 + 1  # `+1` to shift 0-base to 1-base
             _r_fi = s_sort[tie_idx].sum()
             r_fi[tie_idx] = _r_fi
-            n_fi[tie_idx] = tie_idx.astype(np.int).sum()
+            n_fi[tie_idx] = tie_idx.sum()
             R_fi_1[tie_idx] = _R_fi_1  # exclude `_r_fi`
             _R_fi_1 += _r_fi
 

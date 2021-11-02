@@ -71,7 +71,7 @@ def HP_tie(Dist, Rel, k=-1):
         for _d in d_unique:
             mask_tie = np.equal(d_sort, _d)
             tc_1[mask_tie] = pos[mask_tie][0] - 1
-            tie_n[mask_tie] = mask_tie.astype(np.int).sum()
+            tie_n[mask_tie] = mask_tie.sum()
             _ss_tie = rel_sort[mask_tie].sum()
             sim_sum_tie[mask_tie] = _ss_tie
             sim_sum_pre[mask_tie] = _pre_sum
