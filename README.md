@@ -55,6 +55,38 @@ pip config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple
 pip config set global.index-url http://pypi.douban.com/simple/
 ```
 
+# CPU cores
+
+## linux
+
+- [Linux查看物理CPU个数、核数、逻辑CPU个数](https://www.cnblogs.com/emanlee/p/3587571.html)
+
+```shell
+# 总核数 = 物理CPU个数 X 每颗物理CPU的核数 
+# 总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数
+
+# 查看物理CPU个数
+cat /proc/cpuinfo | grep "physical id" | sort | uniq | wc -l
+
+# 查看每个物理CPU中core的个数(即核数)
+cat /proc/cpuinfo | grep "cpu cores" | uniq
+
+# 查看逻辑CPU的个数
+cat /proc/cpuinfo | grep "processor" | wc -l
+```
+
+## python
+
+- [python 查看cpu的核数](https://blog.csdn.net/m0_37360684/article/details/104048542)
+
+```python
+from multiprocessing import cpu_count
+
+print(cpu_count())
+```
+
+
+
 # References
 
 1. [AlexNet implementation + weights in TensorFlow](http://www.cs.toronto.edu/~guerzhoy/tf_alexnet/)
