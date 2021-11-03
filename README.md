@@ -85,6 +85,36 @@ from multiprocessing import cpu_count
 print(cpu_count())
 ```
 
+# *.bashrc*
+
+## prompt
+
+Add new line (`\n`) before the prompt (`\$`) to suit long path
+
+1. Search `PS1` in the *.bashrc* file to locate the lines look like the followings.
+2. add a `\n` before the two `\$`s (as shown below).
+
+```shell
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\n\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\n\$ '
+fi
+```
+
+## custom var
+
+```shell
+# quick switching within a docker container
+export TOM=/home/tom  # home dir in host machine
+export CODE=/home/tom/codes  # code dir
+export DATA=/home/dataset  # data dir
+
+# for matlab
+export PATH=/usr/local/R2018a/bin:$PATH
+alias mrun='matlab -nodesktop -nosplash -r'
+```
+
 
 
 # References
