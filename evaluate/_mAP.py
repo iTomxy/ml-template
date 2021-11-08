@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 
 
@@ -13,6 +14,8 @@ def mAP(Dist, Sim, k=-1):
     """
     if isinstance(k, int):
         k = [k]
+    else:
+        k = copy.deepcopy(k)
     n, m = Dist.shape
     for kid in range(len(k)):
         if (k[kid] < 0) or (k[kid] > m):
@@ -68,6 +71,8 @@ def mAP_tie(Dist, Sim, k=-1):
     """
     if isinstance(k, int):
         k = [k]
+    else:
+        k = copy.deepcopy(k)
     n, m = Dist.shape
     for kid in range(len(k)):
         if (k[kid] < 0) or (k[kid] > m):

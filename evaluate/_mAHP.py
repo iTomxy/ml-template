@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 
 
@@ -15,6 +16,8 @@ def mAHP(Dist, Rel, k=-1):
     """
     if isinstance(k, int):
         k = [k]
+    else:
+        k = copy.deepcopy(k)
     n, m = Dist.shape
     for kid in range(len(k)):
         if (k[kid] < 0) or (k[kid] > m):
@@ -76,6 +79,13 @@ def HP_tie(Dist, Rel, k=-1):
             sim_sum_tie[mask_tie] = _ss_tie
             sim_sum_pre[mask_tie] = _pre_sum
             _pre_sum += _ss_tie
+        # print("check: numerator-denominator 0-consistency")
+        # numerator = (sim_sum_pre + (pos - tc_1) * (sim_sum_tie / tie_n))
+        # zero_mask = (0 == sim_sum_best)
+        # if zero_mask.sum() > 0:
+        #     print("0 in denominator")
+        #     assert (0 == numerator[zero_mask]).all(), "* inconsistent"
+        sim_sum_best[0 == sim_sum_best] = 1
         t_hp = (sim_sum_pre + (pos - tc_1) * (sim_sum_tie / tie_n)) / sim_sum_best
         t_hp_list.append(t_hp[:k])
     return np.vstack(t_hp_list)
@@ -91,6 +101,8 @@ def mAHP_tie(Dist, Rel, k=-1):
     """
     if isinstance(k, int):
         k = [k]
+    else:
+        k = copy.deepcopy(k)
     n, m = Dist.shape
     for kid in range(len(k)):
         if (k[kid] < 0) or (k[kid] > m):

@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 
 
@@ -14,6 +15,8 @@ def nDCG(Dist, Rel, k=-1):
     """
     if isinstance(k, int):
         k = [k]
+    else:
+        k = copy.deepcopy(k)
     n, m = Dist.shape
     for kid in range(len(k)):
         if (k[kid] < 0) or (k[kid] > m):
@@ -60,6 +63,8 @@ def nDCG_tie(Dist, Rel, k=-1):
     """
     if isinstance(k, int):
         k = [k]
+    else:
+        k = copy.deepcopy(k)
     n, m = Dist.shape
     for kid in range(len(k)):
         if (k[kid] < 0) or (k[kid] > m):
