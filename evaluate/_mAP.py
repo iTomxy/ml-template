@@ -42,7 +42,7 @@ def mAP(Dist, Sim, k=-1):
 
         _cnt, _p_sum = 0, 0
         for kid, _k in enumerate(k):
-            if (0 == _k) or (pos[_cnt] > _k):
+            if pos[_cnt] > _k:
                 continue
             while (_cnt < pos.shape[0]) and (pos[_cnt] <= _k):
                 _p_sum += p_list[_cnt]
