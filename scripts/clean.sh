@@ -32,6 +32,7 @@ clean()
         clean `basename $d` `expr $2 + 1`
     done
     cd ..
+    rmdir $1 2>/dev/null
 }
 
 for d in `ls -d */ | grep log`; do
