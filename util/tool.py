@@ -42,12 +42,13 @@ class Logger:
             self.log_file.close()
             # self.log_file = None
 
-    def __call__(self, text, on_screen=True):
+    def __call__(self, *text, on_screen=True):
         if self.log_file is None:
             self.open()
+        _str = " ".join(map(str, text))
         if on_screen:
-            print(text)
-        self.log_file.write(text + '\n')
+            print(_str)
+        self.log_file.write(_str + "\n")
 
     def open(self):
         if not os.path.exists(self.log_path):
