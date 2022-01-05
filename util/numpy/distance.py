@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from sklearn.preprocessing import normalize
 
@@ -32,7 +33,8 @@ def cos(A, B=None):
     if (B is None) or (B is A):
         return np.dot(An, An.T)
     Bn = normalize(B, norm='l2', axis=1)
-    return np.dot(An, Bn.T)
+    S = np.dot(An, Bn.T)
+    return np.clip(S, -1, 1)
 
 
 def hamming(A, B=None):
@@ -41,7 +43,8 @@ def hamming(A, B=None):
     """
     if B is None: B = A
     bit = A.shape[1]
-    return (bit - A.dot(B.T)) * 0.5
+    D = (bit - A.dot(B.T)) * 0.5
+    return np.clip(D, 0, bit)
 
 
 def euclidean(A, B=None, sqrt=False):
@@ -55,7 +58,7 @@ def euclidean(A, B=None, sqrt=False):
     D = aTa[:, np.newaxis] - 2.0 * aTb + bTb[np.newaxis, :]
     if sqrt:
         D = np.sqrt(D)
-    return D
+    return np.clip(D, 0, math.inf)
 
 
 if __name__ == "__main__":

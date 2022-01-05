@@ -23,7 +23,7 @@ def euclidean(A, B=None, sqrt=False):
         # Correct the epsilon added: set the distances on the mask to be exactly 0.0
         D = D * (1.0 - mask)
 
-    return D
+    return tf.maximum(D, 0.0)
 
 
 def cos(X, Y=None):
