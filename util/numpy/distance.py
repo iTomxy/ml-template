@@ -47,6 +47,18 @@ def hamming(A, B=None):
     return np.clip(D, 0, bit)
 
 
+def hamming_real(X, Y=None):
+    """continous extension / relaxed version Hamming distance
+    X, Y: [None, K], in [-1, 1] (e.g. after tanh)
+    """
+    if Y is None:
+        Y = X
+    K = X.shape[1]
+    _cos = cos(X, Y)
+    D = 0.5 * K * (1 - _cos)
+    return np.clip(D, 0, K)
+
+
 def euclidean(A, B=None, sqrt=False):
     if (B is None) or (B is A):
         aTb = A.dot(A.T)

@@ -46,6 +46,18 @@ def hamming(X, Y=None):
     return tf.clip_by_value(D, 0, K)
 
 
+def hamming_real(X, Y=None):
+    """continous extension / relaxed version Hamming distance
+    X, Y: [None, K], in [-1, 1] (e.g. after tanh)
+    """
+    if Y is None:
+        Y = X
+    K = tf.cast(tf.shape(X)[1], "float32")
+    _cos = cos(X, Y)
+    D = 0.5 * K * (1 - _cos)
+    return tf.clip_by_value(D, 0, K)
+
+
 def rbf_kernel(X, Y=None, sigma=1.25):
     """K(i,j) = exp(-0.5 * ||xi - xj||^2 / sigma^2)
     sigma: width of RBF kernel, default 1.25 from paper:

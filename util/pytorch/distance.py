@@ -69,6 +69,18 @@ def hamming(X, Y=None):
     return D.clamp(0, K)
 
 
+def hamming_real(X, Y=None):
+    """continous extension / relaxed version Hamming distance
+    X, Y: [None, K], in [-1, 1] (e.g. after tanh)
+    """
+    if Y is None:
+        Y = X
+    K = X.size(1)
+    _cos = cos(X, Y)
+    D = 0.5 * K * (1 - _cos)
+    return D.clamp(0, K)
+
+
 if __name__ == "__main__":
     a = torch.randn(5, 2).sign().float()
     b = torch.randn(7, 2).sign().float()
