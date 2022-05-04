@@ -1,8 +1,0 @@
-FROM gw000/keras:2.1.4-py3-tf-gpu
-
-RUN python3 -m pip install --upgrade pip && \
-	pip3 install opencv-python-headless pickleshare Pillow scikit-learn \
-				 enum34 futures tensorboard tqdm pandas matplotlib nltk \
-				 Cython easydict graphviz PyYAML && \
-	cd && \
-	rm -rf .cache

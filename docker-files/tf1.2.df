@@ -1,0 +1,7 @@
+FROM tensorflow/tensorflow:1.2.0-gpu
+
+RUN pip --no-cache-dir install --upgrade pip \
+    && pip --no-cache-dir install Cython graphviz h5py PyYAML \
+           tqdm xlwt opencv-python-headless==4.2.0.32 \
+    && cd \
+    && rm -rf .cache
