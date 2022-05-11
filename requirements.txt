@@ -1,6 +1,7 @@
 albumentations
 Cython
 easydict
+fire
 graphviz
 h5py
 matplotlib
