@@ -1,7 +1,7 @@
 FROM pytorch/pytorch:1.4-cuda10.1-cudnn7-runtime
 
-RUN pip --no-cache-dir install Cython easydict fire graphviz \
-        h5py matplotlib opencv-python-headless pandas PyYAML \
-        scikit-learn scipy tensorboard tqdm xlwt \
+RUN pip --no-cache-dir install Cython easydict fire gensim \
+		graphviz h5py matplotlib opencv-python-headless pandas \
+		PyYAML scikit-learn scipy tensorboard tqdm xlwt \
     && cd \
     && rm -rf .cache
