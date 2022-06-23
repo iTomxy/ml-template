@@ -32,6 +32,27 @@ def enum_product(*args):
         yield _index, _data
 
 
+def prog_bar(iter_obj, prefix=None):
+    """simple progress bar (better NOT to use `print` inside)
+    Input:
+        - iter_obj: built-in `range`
+        - prefix: str, some message to show
+    Ref:
+        - https://stackoverflow.com/questions/3002085/how-to-print-out-status-bar-and-percentage
+    """
+    n_digit = len(str(iter_obj.stop))
+    if prefix != None:
+        template = "\r{}: [ %*d / %*d ]".format(prefix)
+    else:
+        template = "\r[ %*d / %*d ]"
+    print("", end="")
+    print(template % (n_digit, 0, n_digit, iter_obj.stop), end="")
+    for i in iter_obj:
+        yield i
+        print(template % (n_digit, i + iter_obj.step, n_digit, iter_obj.stop), end="")
+    print(template % (n_digit, iter_obj.stop, n_digit, iter_obj.stop))#, end="")
+
+
 class Logger:
     """log info in stdout & log file"""
 
