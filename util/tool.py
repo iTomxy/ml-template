@@ -35,22 +35,30 @@ def enum_product(*args):
 def prog_bar(iter_obj, prefix=None):
     """simple progress bar (better NOT to use `print` inside)
     Input:
-        - iter_obj: built-in `range`
+        - iter_obj: iter_obj: range, tuple, list, numpy.ndarray
         - prefix: str, some message to show
     Ref:
         - https://stackoverflow.com/questions/3002085/how-to-print-out-status-bar-and-percentage
     """
-    n_digit = len(str(iter_obj.stop))
+    if isinstance(iter_obj, range):
+        _start, _stop, _step = iter_obj.start, iter_obj.stop, iter_obj.step
+    elif isinstance(iter_obj, Iterable):
+        _start, _stop, _step = 0, len(iter_obj), 1
+    else:
+        raise NotImplemented
+
+    n_digit = len(str(_stop))
     if prefix != None:
         template = "\r{}: [ %*d / %*d ]".format(prefix)
     else:
         template = "\r[ %*d / %*d ]"
+
     print("", end="")
-    print(template % (n_digit, 0, n_digit, iter_obj.stop), end="")
-    for i in iter_obj:
-        yield i
-        print(template % (n_digit, i + iter_obj.step, n_digit, iter_obj.stop), end="")
-    print(template % (n_digit, iter_obj.stop, n_digit, iter_obj.stop))#, end="")
+    print(template % (n_digit, _start, n_digit, _stop), end="")
+    for i, x in enumerate(iter_obj):
+        yield x
+        print(template % (n_digit, _start + (i + 1) * _step, n_digit, _stop), end="")
+    print(template % (n_digit, _stop, n_digit, _stop))#, end="")
 
 
 class Logger:
