@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 import os
 import time
 import math
@@ -11,6 +12,35 @@ def timestamp():
     # return time.strftime("%Y-%m-%d-%H-%M", t)
     return "{}-{}-{}-{}-{}".format(
         t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min)
+
+
+class tic_toc:
+    """timer with custom message"""
+
+    def __init__(self, message="time used"):
+        self.msg = message
+
+    def __enter__(self):
+        self.tic = time.time()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        n_second = time.time() - self.tic
+        n_minute = int(n_second // 60)
+        n_hour = n_minute // 60
+        n_day = n_hour // 24
+
+        n_second %= 60
+        n_minute %= 60
+        n_hour %= 24
+
+        s = "{:.4f}s".format(n_second)
+        if n_minute > 0:
+            s = "{:d}m ".format(n_minute) + s
+            if n_hour > 0:
+                s = "{:d}h ".format(n_hour) + s
+                if n_day > 0:
+                    s = "{:d}d ".format(n_day) + s
+        print("{}:".format(self.msg), s)
 
 
 def enum_product(*args):
@@ -47,18 +77,20 @@ def prog_bar(iter_obj, prefix=None):
     else:
         raise NotImplemented
 
-    n_digit = len(str(_stop))
+    # n_digit = len(str(_stop))
     if prefix != None:
-        template = "\r{}: [ %*d / %*d ]".format(prefix)
+        # template = "\r{}: [ %*d / %*d ]".format(prefix)
+        template = "\r{}: [ %d / %d ]".format(prefix)
     else:
-        template = "\r[ %*d / %*d ]"
+        # template = "\r[ %*d / %*d ]"
+        template = "\r[ %d / %d ]"
 
     print("", end="")
-    print(template % (n_digit, _start, n_digit, _stop), end="")
+    print(template % (_start, _stop), end="")
     for i, x in enumerate(iter_obj):
         yield x
-        print(template % (n_digit, _start + (i + 1) * _step, n_digit, _stop), end="")
-    print(template % (n_digit, _stop, n_digit, _stop))#, end="")
+        print(template % (_start + (i + 1) * _step, _stop), end="")
+    print(template % (_stop, _stop))#, end="")
 
 
 class Logger:

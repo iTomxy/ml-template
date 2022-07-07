@@ -209,8 +209,6 @@ events.out.tfevents.*
 *.out
 
 # for this repo
-#!idx_*.npy
 log*/
 data/
 gdut-shell/
-
