@@ -1,17 +1,15 @@
-let g:iswindows = 0
-let g:islinux = 0
-if (has("win32") || has("win64") || has("win95") || has("win16"))
-	let g:iswindows = 1
-else
-	let g:islinux = 1
-endif
-
-
 "--- Vundle ---"
-set nocompatible
-filetype off
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin('~/vim-files/vim-plugin')
+set nocompatible " must
+filetype off     " must, temporarily close, will re-open later
+if(has("win32") || has("win64") || has("win95") || has("win16"))
+	" windows
+	set rtp+=$HOME/vimfiles/bundle/Vundle.vim
+	call vundle#begin('$HOME/vimfiles/bundle')
+else
+	" linux
+	set rtp+=~/.vim/bundle/Vundle.vim
+	call vundle#begin('~/.vim/bundle')
+endif
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'tpope/vim-commentary'
 Plugin 'preservim/nerdtree'
@@ -19,96 +17,120 @@ Plugin 'Vimjas/vim-python-pep8-indent'
 Plugin 'jiangmiao/auto-pairs'
 Plugin 'altercation/solarized'
 Plugin 'tomasiser/vim-code-dark'
-call vundle#end()
+call vundle#end()         " must
+filetype plugin indent on " must, here
 
-
-"--- Setting ---"
-"set nocompatible
-filetype plugin indent on
-set autoread
-set autochdir
-set nobackup
-"set noundofile
-set undodir=~/vim-files/vim-undo
-set hlsearch
-set incsearch
+"--- Settings ---"
+"set nocompatible " not compatible with vi
+"filetype plugin indent on " auto-detect file type
+set autoread " auto-reload file if modified elsewhere
+set autochdir " change working path to current path
+set nobackup " don't create backup files
+"set noundofile " don't create  .un~ files
+if(has("win32") || has("win64") || has("win95") || has("win16"))
+	set undodir=$HOME/vimundo " put .un~ files in undodir
+else
+	set undodir=$HOME/.vim/vimundo " put .un~ files in undodir
+endif
+if !isdirectory(&undodir)
+    call mkdir(&undodir, "p", 0700)
+endif
+set hlsearch " highlight matched string
+set incsearch " real-time match highlighting
 set backspace=indent,eol,start
 let mapleader = '\'
 
+"--- Comment String ---"
+" default: #(space)
+"setlocal commentstring=#\ %s
+" C/C++、Java: //(space)
+autocmd FileType c,cpp,cc,java,h,hpp setlocal commentstring=//\ %s
+" python、shell: #(space)
+autocmd FileType python,shell setlocal commentstring=#\ %s
+" lua、sql: --(space)
+autocmd FileType lua,sql setlocal commentstring=--\ %s
+" matlab: %(space)
+autocmd FileType matlab setlocal commentstring=%\ %s
+" dosbatch: @REM(space)
+autocmd FileType dosbatch setlocal commentstring=\@REM\ %s
 
 "--- Encoding ---"
 set encoding=utf-8
 set fileencoding=utf-8
-set termencoding=chinese
-if 1 == g:iswindows
+if(has("win32") || has("win64") || has("win95") || has("win16"))
+	"set termencoding=chinese " chinese is a variable
 	source $VIMRUNTIME/delmenu.vim
 	source $VIMRUNTIME/menu.vim
+	"language messages zh_CN.utf-8
+	"language messages none
+	"set langmenu=none
 endif
-"language messages zh_CN.utf-8
-"language messages none
-"set langmenu=none
 "set fileformats=unix,dos
 "set fileformat=unix " use `\n`
 "set fileformat=dos " use `\r\n`
 
-
 "--- Tab ---"
-set tabstop=4
+set tabstop=4 " 1 tab = 4 spaces
 set softtabstop=4
 set shiftwidth=4
 set smartindent
-set cindent
-set expandtab
-autocmd FileType h,c,cpp,java set noexpandtab
-
+set cindent " C/C++-style indent
+set noexpandtab " don't convert tabs to spaces by default
+autocmd FileType python set expandtab " convert if Python
 
 "--- Theme ---"
 syntax enable
-syntax on
-set number
-set ruler
-set showcmd
-set showmode
+syntax on " 语法高亮
+set number " show line number
+set ruler " show position
+set showcmd " show command
+set showmode " show mode
 set showmatch
 "set ignorecase
 set smartcase
-set cursorline
-if 1 == g:iswindows
-	set t_Co=256
-	set t_ut=
-	if has ("gui_running")
+set cursorline " highlight current line
+if(has("win32") || has("win64") || has("win95") || has("win16"))
+	set t_Co=256	" for codedark theme
+	set t_ut=		" for codedark theme
+	if has ("gui_running") " gVim
 		"set cursorline
 		colorscheme solarized
-	else
-		colorscheme codedark
-		"colorscheme desert
+	else " vim
+		"colorscheme codedark
+		colorscheme desert
 	endif
-	set guifont=Consolas:h13:cANSI
-	set guifontwide=YouYuan:h13
+	set guifont=Consolas:h13:cANSI " English font
+	set guifontwide=YouYuan:h13 " Chinese font
 endif
-"set listchars=precedes:<,extends:>,tab:\|\ ,eol:¬,space:·
-"set list
+set listchars=precedes:<,extends:>,tab:\|\ ,eol:¬,space:·
+"set list " show special characters
 
-
-"--- adjust background according time: windows GUI + solarized ---"
-if 1 == g:iswindows
-	"autocmd GUIEnter * simalt ~x
-	autocmd GUIEnter * call Init_GUI()
-endif
+"--- GUI Initialisation  ---"
+autocmd GUIEnter * call Init_GUI()
 
 func! Init_GUI()
-    " config window
-    set guioptions-=m
-    set guioptions-=T
-    " simalt ~x
-    set lines=32 columns=110
-    " choose background
+    "" config window
+    set guioptions-=m			" hide menu
+    set guioptions-=T			" hide tool bar
+    " simalt ~x					" maximise window
+    set lines=32 columns=110	" window size
+
+    "" adjust background light/dark along time
+    " dawn
+    let dawn_hour = 6
+	let dawn_minute = 30
+	" evening / night
     let night_hour = 17
     let night_minute = 30
+    " now
     let hour = strftime('%H')
     let minute = strftime('%M')
     " echo hour . ":" . minute
-    if hour < night_hour
+    if hour < dawn_hour
+		set background=dark
+	elseif (hour == dawn_hour) && (minute < dawn_minute)
+		set background=dark
+	elseif hour < night_hour
         set background=light
     elseif (hour == night_hour) && (minute < night_minute)
         set background=light
@@ -117,39 +139,37 @@ func! Init_GUI()
     endif
 endfunc
 
-
-"--- Buffer ---"
-" forward
+"--- Buffer / Window Tab ---"
+" to next buffer
 noremap <C-Left> gt
 inoremap <C-Left> <ESC>gta
 vnoremap <C-Left> <ESC>gt
-" backward
+" to previous buffer
 noremap <C-Right> gT
 inoremap <C-Right> <ESC>gTa
 vnoremap <C-Right> <ESC>gT
-" open tab
-noremap <C-t> :tabe 
-inoremap <C-t> <ESC>:tabe 
-vnoremap <C-t> <ESC>:tabe 
-" close tab <- `Ctrl-W` conflicts with window switching
+" open new buffer (prompt)
+noremap <C-t> :tabe
+inoremap <C-t> <ESC>:tabe
+vnoremap <C-t> <ESC>:tabe
+" close current buffer
+" `Ctrl-w` conflicts with window switching
 "noremap <C-w> :q<CR>
 "inoremap <C-w> <ESC>:q<CR>
 "vnoremap <C-w> <ESC>:q<CR>
-
 
 "--- NERDTree ---"
 " F2 toggle open/close
 noremap <F2> :NERDTreeToggle<CR>
 inoremap <F2> <ESC>:NERDTreeToggle<CR>
-" Ctrl + F2 specify path & open
+" Ctrl + F2 open specific directory (prompt)
 noremap <C-F2> :NERDTree
 inoremap <C-F2> <ESC>:NERDTree
 
-
 "--- Code Folding ---"
-set foldenable
-set foldmethod=manual
-" Ctrl-f toggle open/zip
+set foldenable " enable code folding
+set foldmethod=manual " manual folding creating with `zf` command
+" Ctrl-f toggle open/collapse <- {zo: open, zc: collapse}
 nnoremap <C-f> @=((foldclosed(line('.')) < 0) ? 'zc':'zo')<CR>
 
 
@@ -157,8 +177,7 @@ nnoremap <C-f> @=((foldclosed(line('.')) < 0) ? 'zc':'zo')<CR>
 inoremap <C-a> <ESC>ggvG$
 noremap <C-a> ggvG$
 
-
-"--- switch windows ---"
+"--- Window Swapping ---"
 nmap <silent> <leader>mw :call MarkWindowSwap()<CR>
 nmap <silent> <leader>pw :call DoWindowSwap()<CR>
 
@@ -178,7 +197,7 @@ function! DoWindowSwap()
     "Switch to dest and shuffle source->dest
     exe curNum . "wincmd w"
     "Hide and open so that we aren't prompted and keep history
-    exe 'hide buf' markedBuf 
+    exe 'hide buf' markedBuf
 endfunction
 
 
@@ -201,6 +220,10 @@ func! Compile_iTom()
 		exec "! python %"
 	elseif &filetype == 'matlab'
 		exec "! octave %"
+	elseif &filetype == 'sh'
+		exec "! bash %"
+	elseif &filetype == 'dosbatch'
+		exec "! %"
 	endif
 endfunc
 
@@ -275,7 +298,7 @@ endfunc
 
 
 "--- carrage return ---"
-"autocmd FileType h,c,cpp,java,python inoremap <CR> <C-r>=Carrage_Return()<CR>
+autocmd FileType h,c,cpp,java,python,sh inoremap <CR> <C-r>=Carrage_Return()<CR>
 
 func! Carrage_Return()
 	let line = getline('.')
