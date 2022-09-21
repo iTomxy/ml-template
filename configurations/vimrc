@@ -141,13 +141,13 @@ endfunc
 
 "--- Buffer / Window Tab ---"
 " to next buffer
-noremap <C-Left> gt
-inoremap <C-Left> <ESC>gta
-vnoremap <C-Left> <ESC>gt
+noremap <C-Left> gT
+inoremap <C-Left> <ESC>gTa
+vnoremap <C-Left> <ESC>gT
 " to previous buffer
-noremap <C-Right> gT
-inoremap <C-Right> <ESC>gTa
-vnoremap <C-Right> <ESC>gT
+noremap <C-Right> gt
+inoremap <C-Right> <ESC>gta
+vnoremap <C-Right> <ESC>gt
 " open new buffer (prompt)
 noremap <C-t> :tabe
 inoremap <C-t> <ESC>:tabe
@@ -367,3 +367,4 @@ func! Before_Saving()
         call append(line('$'), "")
     endif
 endfunc
+
