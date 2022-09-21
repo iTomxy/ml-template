@@ -124,4 +124,6 @@ events.out.tfevents.*
 # pytorch
 *.pth
 
-# for this repo
+# vim
+*.swp
+

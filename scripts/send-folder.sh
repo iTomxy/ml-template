@@ -1,33 +1,33 @@
 #!/bin/bash
 
 # Send (specified types of files within) a folder recursively to another machine.
-## Prerequesites
+## Prerequisites
 # SSH password-free login in destination machine should be configured in advance.
 # `scp` is used for sending.
 ## Arguments
 # $1: path of folder to send
 
+IP=1.2.3.4
+PORT=22
+USER=itom
+# $DEST_ROOT: path / parent folder where the folder to send
+#   will be placed in the destination machine,
+#   i.e. <folder-to-send> -> $DEST_ROOT/<folder-to-send>
+DEST_ROOT=/home/itom
+N_PROCESSES=1
+# FILE_TYPE=(scene*_*.sens scene*_*_2d-instance.zip)
+FILE_TYPE=(' ')  # all
+
 SRC=${1-"~/data/ScanNet"}
 if [ ! -d $SRC ]; then
 	echo * NO SUCH FOLDER: $SRC
 	exit
-elif [ $SRC == "." ]; then
-	SRC=`pwd`
-elif [ $SRC == ".." ]; then
-	cd ..
-	SRC=`pwd`
 fi
-
-IP=1.2.3.4
-PORT=22
-USER=itom
-DEST_ROOT=/home/itom
-N_PROCESSES=3
-# FILE_TYPE=(scene*_*.sens scene*_*_2d-instance.zip)
-FILE_TYPE=(' ')  # all
+cd $SRC
+SRC=`pwd` # full path -> begins with '/'
 
 # temporary files
-TMP_P=~/.cache/itom-send-$SRC
+TMP_P=~/.cache/itom-send$SRC # NO '/' cuz $SRC begins with one
 SENT_LOG=${TMP_P}/sent.txt
 if [ ! -d $TMP_P ]; then mkdir -p $TMP_P; fi
 touch $SENT_LOG
@@ -98,11 +98,12 @@ dfs()
 }
 
 gather_logs
-cd $SRC/..
+cd $SRC/..  # `/..` = `/`, no problem
 src=`basename $SRC`
 dfs $src
-gather_logs
+if [ $N_PROCESSES -gt 1 ]; then
+	gather_logs
+fi
 
 clear
 echo Finish sending $SRC
-
