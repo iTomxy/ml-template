@@ -44,7 +44,7 @@ gather_logs()
 #	$1: full path of source file
 #	$2: full path of destination file
 #	$3: process ID
-echo 'scp -P' $PORT '$1' $USER@$IP':$2' > ${TMP_P}/_send.sh # single '>'
+echo 'scp -P' $PORT '$1' $USER@$IP':$2 2>/dev/null' > ${TMP_P}/_send.sh # single '>'
 echo 'if [ $? -eq 0 ]; then' >> ${TMP_P}/_send.sh
 echo '	pid=${3-"0"}' >> ${TMP_P}/_send.sh
 echo '	echo $1 >' ${TMP_P}'/sent-$pid.txt' >> ${TMP_P}/_send.sh

@@ -48,7 +48,7 @@ echo 'if [ -f $2 ]; then' > ${TMP_P}/_fetch.sh # single '>'
 echo '  echo skip: $2' >> ${TMP_P}/_fetch.sh
 echo 'else' >> ${TMP_P}/_fetch.sh
 echo '  echo fetch:' $USER@$IP:'$1 -\> $2' >> ${TMP_P}/_fetch.sh
-echo '  scp -P' $PORT $USER@$IP:'$1 $2.tmp' >> ${TMP_P}/_fetch.sh
+echo '  scp -P' $PORT $USER@$IP:'$1 $2.tmp 2>/dev/null' >> ${TMP_P}/_fetch.sh
 echo '  if [ $? -eq 0 -a ! -f $2 ]; then' >> ${TMP_P}/_fetch.sh
 echo '	  mv $2.tmp $2' >> ${TMP_P}/_fetch.sh
 echo '  elif [ -f $2.tmp ]; then' >> ${TMP_P}/_fetch.sh
