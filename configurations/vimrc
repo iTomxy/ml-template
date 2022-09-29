@@ -11,12 +11,19 @@ else
 	call vundle#begin('~/.vim/bundle')
 endif
 Plugin 'VundleVim/Vundle.vim'
-Plugin 'tpope/vim-commentary'
-Plugin 'preservim/nerdtree'
-Plugin 'Vimjas/vim-python-pep8-indent'
-Plugin 'jiangmiao/auto-pairs'
-Plugin 'altercation/solarized'
-Plugin 'tomasiser/vim-code-dark'
+" Plugin 'tpope/vim-commentary'
+" Plugin 'preservim/nerdtree'
+" Plugin 'Vimjas/vim-python-pep8-indent'
+" Plugin 'jiangmiao/auto-pairs'
+" Plugin 'altercation/solarized'
+" Plugin 'tomasiser/vim-code-dark'
+
+Plugin 'https://gitee.com/bigfacecat924/vim-commentary'
+Plugin 'https://gitee.com/xie-xiaopeng/nerdtree'
+Plugin 'https://gitee.com/tyloeng/vim-python-pep8-indent'
+Plugin 'https://gitee.com/rulei_mirror/auto-pairs'
+Plugin 'https://gitee.com/liazpg/solarized'
+Plugin 'https://gitee.com/bigfacecat924/vim-code-dark'
 call vundle#end()         " must
 filetype plugin indent on " must, here
 
