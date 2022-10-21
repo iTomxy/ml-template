@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 import os
 import time
+import timeit
 import math
 import csv
 import itertools
@@ -21,10 +22,10 @@ class tic_toc:
         self.msg = message
 
     def __enter__(self):
-        self.tic = time.time()
+        self.tic = timeit.default_timer()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        n_second = time.time() - self.tic
+        n_second = timeit.default_timer() - self.tic
         n_minute = int(n_second // 60)
         n_hour = n_minute // 60
         n_day = n_hour // 24
@@ -256,3 +257,4 @@ def dict2csv(csv_file, dict_data):
 if __name__ == "__main__":
     data = {"a": (1, 2, 3), "b": [4, 5, 6]}
     dict2csv("test.csv", data)
+
