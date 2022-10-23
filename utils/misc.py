@@ -7,12 +7,12 @@ import csv
 import itertools
 
 
-def timestamp():
-    """time-stamp string: Y-M-D-h-m"""
+def timestamp(fmt="%Y%m%d-%H%M%S"):
+    """time-stamp string"""
     t = time.localtime(time.time())
-    # return time.strftime("%Y-%m-%d-%H-%M", t)
-    return "{}-{}-{}-{}-{}".format(
-        t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min)
+    # return "{}-{}-{}-{}-{}".format(
+    #     t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min)
+    return time.strftime(fmt, t)
 
 
 class tic_toc:
@@ -118,11 +118,10 @@ class Logger:
         self.log_file.write(_str + "\n")
 
     def open(self):
-        if not os.path.exists(self.log_path):
-            os.makedirs(self.log_path)
         if self.file_name is None:
             self.file_name = "log.{}.txt".format(timestamp())
         log_file_path = os.path.join(self.log_path, self.file_name)
+        os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
         self.log_file = open(log_file_path, "w")
         assert self.log_file is not None
         self.log_file.write("begin time: {}\n".format(time.asctime()))
@@ -257,4 +256,3 @@ def dict2csv(csv_file, dict_data):
 if __name__ == "__main__":
     data = {"a": (1, 2, 3), "b": [4, 5, 6]}
     dict2csv("test.csv", data)
-
