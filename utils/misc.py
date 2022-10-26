@@ -109,13 +109,14 @@ class Logger:
             self.log_file.close()
             # self.log_file = None
 
-    def __call__(self, *text, on_screen=True):
+    def __call__(self, *text, sep=' ', end='\n', on_screen=True):
+        """mimic built-in `print`"""
         if self.log_file is None:
             self.open()
-        _str = " ".join(map(str, text))
+        _str = sep.join(map(str, text))
         if on_screen:
-            print(_str)
-        self.log_file.write(_str + "\n")
+            print(_str, end=end)
+        self.log_file.write(_str + end)
 
     def open(self):
         if self.file_name is None:
@@ -256,3 +257,4 @@ def dict2csv(csv_file, dict_data):
 if __name__ == "__main__":
     data = {"a": (1, 2, 3), "b": [4, 5, 6]}
     dict2csv("test.csv", data)
+
