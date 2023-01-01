@@ -5,6 +5,7 @@ import timeit
 import math
 import csv
 import itertools
+import functools
 
 
 def timestamp(fmt="%Y%m%d-%H%M%S"):
@@ -42,6 +43,21 @@ class tic_toc:
                 if n_day > 0:
                     s = "{:d}d ".format(n_day) + s
         print("{}:".format(self.msg), s)
+
+    def __call__(self, f):
+        """enable to use as a context manager
+        ```python
+        @tic_toc("foo")
+        def bar:
+            pass
+        ```
+        https://stackoverflow.com/questions/9213600/function-acting-as-both-decorator-and-context-manager-in-python
+        """
+        @functools.wraps(f)
+        def decorated(*args, **kwargs):
+            with self:
+                return f(*args, **kwargs)
+        return decorated
 
 
 def enum_product(*args):
