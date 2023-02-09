@@ -79,7 +79,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-*.ipynb
+# *.ipynb
 
 # IPython
 profile_default/
@@ -144,22 +144,27 @@ cython_debug/
 .vscode
 .idea
 
-# data
+# system
 *.exe
-*.gif
-*.h5
-*.jpeg
-*.jpg
 *.lnk
+.DS_Store
+
+# data
+*.h5
 *.mat
 *.np[yz]
 *.obj
 *.pkl
 *.pickle
+
+# media
+*.gif
+*.jpeg
+*.jpg
 *.png
 *.svg
-*.webm
-.DS_Store
+*.web[mp]
+*.mov
 
 # zipped file
 *.zip
@@ -194,7 +199,6 @@ cython_debug/
 ~$*.xls
 ~$*.xlsx
 
-
 # tensorflow
 events.out.tfevents.*
 *.tfrecords
@@ -207,8 +211,3 @@ events.out.tfevents.*
 *.bbl
 *.blg
 *.out
-
-# for this repo
-log*/
-data/
-gdut-shell/
