@@ -128,3 +128,4 @@ alias mrun='matlab -nodesktop -nosplash -r'
 7. [Python 修改 pip 源为国内源](https://www.cnblogs.com/lsgxeva/p/12978981.html)
 8. [python - pip换源，更换pip源到国内镜像](https://blog.csdn.net/xuezhangjun0121/article/details/81664260)
 9. [521xueweihan/GitHub520](https://github.com/521xueweihan/GitHub520)
+10. [解决pip安装超时的问题](https://blog.csdn.net/qq_39161804/article/details/81191977)

@@ -11,9 +11,11 @@ opencv-python-headless
 pandas
 pickleshare
 Pillow
+pyreadline
 PyYAML
 scikit-learn
 scipy
 tensorboard
 tqdm
 xlwt
+
