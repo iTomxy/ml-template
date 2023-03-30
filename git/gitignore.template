@@ -204,6 +204,7 @@ events.out.tfevents.*
 *.tfrecords
 
 # pytorch
+*.pt
 *.pth
 
 # latex
@@ -211,3 +212,4 @@ events.out.tfevents.*
 *.bbl
 *.blg
 *.out
+
