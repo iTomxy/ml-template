@@ -1,5 +1,13 @@
-def get_palette(n_classes, pil_format=False):
+def get_palette(n_classes, pil_format=True):
     """ Returns the color map for visualizing the segmentation mask.
+    Example:
+        ```python
+        palette = get_palette(n_classes, True)
+        seg_mask = seg_model(image) # int, [H, W], in [0, n_classes]
+        seg_img = PIL.Image.fromarray(seg_mask)
+        seg_img.putpalette(palette)
+        seg_img.convert("RGB").save("seg.jpg")
+        ```
     Args:
         n_classes: int, number of classes
         pil_format: bool, whether in format suitable for `PIL.Image.putpalette`.
