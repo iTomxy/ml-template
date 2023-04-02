@@ -2,6 +2,7 @@ from collections.abc import Iterable
 import os
 import time
 import timeit
+import logging
 import math
 import csv
 import itertools
@@ -148,6 +149,45 @@ class Logger:
             self.log_file.flush()
 
 
+def get_logger(
+    logger_name,
+    log_file = None,
+    log_console = True,
+    fmt = '[%(asctime)s] - {%(filename)s:%(lineno)d} - %(levelname)s - %(message)s',
+    datefmt = '%Y-%m-%d %H:%M:%S',
+    logger_level = logging.DEBUG,
+    log_file_level = logging.INFO,
+    log_console_level = logging.DEBUG
+):
+    """using built-in logging module
+    https://blog.csdn.net/weixin_39278265/article/details/115203933
+    Args:
+        logger_name: str, globally unique logger name, usually `__file__`
+        log_file: str, log to file if provided, default = None
+        log_console: bool, whether to log to console, default = True
+        fmt: str, logging message format
+        datefmt: str, date format
+        logger_level, log_file_level, log_console_level: can be logging.NOTSET|DEBUG|INFO|WARNING|ERROR|CRITICAL
+    Return:
+        logger: logging.Logger
+    """
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logger_level)
+    formatter = logging.Formatter(fmt, datefmt=datefmt)
+    if log_file is not None:
+        os.makedirs(os.path.dirname(log_file) or '.', exist_ok=True)
+        fileHandler = logging.FileHandler(log_file, mode='w')
+        fileHandler.setLevel(log_file_level)
+        fileHandler.setFormatter(formatter)
+        logger.addHandler(fileHandler)
+    if log_console:
+        consoleHandler = logging.StreamHandler()
+        consoleHandler.setLevel(log_console_level)
+        consoleHandler.setFormatter(formatter)
+        logger.addHandler(consoleHandler)
+    return logger
+
+
 class Record:
     """record (scalar) performance"""
 
@@ -273,4 +313,3 @@ def dict2csv(csv_file, dict_data):
 if __name__ == "__main__":
     data = {"a": (1, 2, 3), "b": [4, 5, 6]}
     dict2csv("test.csv", data)
-
