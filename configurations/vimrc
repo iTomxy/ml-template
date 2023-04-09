@@ -21,7 +21,7 @@ Plugin 'VundleVim/Vundle.vim'
 Plugin 'https://gitee.com/bigfacecat924/vim-commentary'
 Plugin 'https://gitee.com/xie-xiaopeng/nerdtree'
 Plugin 'https://gitee.com/tyloeng/vim-python-pep8-indent'
-Plugin 'https://gitee.com/rulei_mirror/auto-pairs'
+"Plugin 'https://gitee.com/rulei_mirror/auto-pairs'
 Plugin 'https://gitee.com/liazpg/solarized'
 Plugin 'https://gitee.com/bigfacecat924/vim-code-dark'
 call vundle#end()         " must
@@ -236,14 +236,14 @@ endfunc
 
 
 "--- < & > ---"
-"autocmd FileType xml,html inoremap < <lt>><Left>|
-"	inoremap > <C-r>=Close_Pair('>')<CR>
+autocmd FileType xml,html inoremap < <lt>><Left>|
+	inoremap > <C-r>=Close_Pair('>')<CR>
 
 
 "--- open pair ---"
-"inoremap ( <C-r>=Open_Pair('(', ')')<CR>
-"inoremap [ <C-r>=Open_Pair('[', ']')<CR>
-"inoremap { <C-r>=Open_Pair('{', '}')<CR>
+inoremap ( <C-r>=Open_Pair('(', ')')<CR>
+inoremap [ <C-r>=Open_Pair('[', ']')<CR>
+inoremap { <C-r>=Open_Pair('{', '}')<CR>
 
 func! Open_Pair(open, close)
     let line = getline('.')
@@ -261,9 +261,9 @@ endfunc
 
 
 "--- close pair ---"
-"inoremap ) <C-r>=Close_Pair(')')<CR>
-"inoremap ] <C-r>=Close_Pair(']')<CR>
-"inoremap } <C-r>=Close_Pair('}')<CR>
+inoremap ) <C-r>=Close_Pair(')')<CR>
+inoremap ] <C-r>=Close_Pair(']')<CR>
+inoremap } <C-r>=Close_Pair('}')<CR>
 
 func! Close_Pair(char)
 	if getline('.')[col('.') - 1] == a:char
@@ -275,9 +275,9 @@ endfunc
 
 
 "--- quote ---"
-"inoremap " <C-r>=Same_Pair('"')<CR>
-"inoremap ' <C-r>=Same_Pair("'")<CR>
-"inoremap ` <C-r>=Same_Pair('`')<CR>
+inoremap " <C-r>=Same_Pair('"')<CR>
+inoremap ' <C-r>=Same_Pair("'")<CR>
+inoremap ` <C-r>=Same_Pair('`')<CR>
 
 func! Same_Pair(char)
     let line = getline('.')
@@ -318,7 +318,7 @@ endfunc
 
 
 "--- backspace ---"
-"inoremap <BS> <C-r>=Back_Space()<CR>
+inoremap <BS> <C-r>=Back_Space()<CR>
 
 func! Back_Space()
 	let line = getline('.')
@@ -362,7 +362,12 @@ autocmd BufWritePre * call Before_Saving()
 
 func! Before_Saving()
     " delete trailing white space
-    exec "%s/\s\+$//e"
+    exec "%s/\\s\\+$//e"
+	" keep 1 trailing space after `:tabe` in _vimrc/.vimrc
+    let this_file = expand('%')
+    if this_file == '_vimrc' || this_file == '.vimrc'
+        exec "%s/:tabe$/:tabe /e"
+    endif
     " delete trailing blank lines
     let ln_nb = prevnonblank('$')
     let ln_eof = line('$')
