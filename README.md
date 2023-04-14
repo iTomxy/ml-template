@@ -1,16 +1,18 @@
 # ml-template
 
-ML code templates for quick project starting with, or easy conversion between, these frameworks:
+My personal code snippet library of helper functions and classes and some use case demostrations.
+They are initially developed on these frameworks:
 
-- tensorflow 1.12
-- tensorflow 2.1
-- pytorch 1.4
-- matlab R2018a
+- TensorFlow 1.12 & 2.1
+- PyTorch 1.4
+- Matlab R2018a
 
-**Note**: The hierarchy here **DOES NOT** represent the real one. I usually put these files in one directory.<br/>
-Cause multiple frameworks are involved here, files are organized according to their generality.
+They may also be compatible to other (newer) versions of these frameworks,
+but this is not tested.
 
 - *+itom/*: some tool functions that might be used in matlab codes.
+The leading `+` will add this folder into the searching path.
+
 - *requirements.txt*: some common packages I met that a docker image may not contains.
 
 # TODO
@@ -62,7 +64,7 @@ pip config set global.index-url http://pypi.douban.com/simple/
 - [Linux查看物理CPU个数、核数、逻辑CPU个数](https://www.cnblogs.com/emanlee/p/3587571.html)
 
 ```shell
-# 总核数 = 物理CPU个数 X 每颗物理CPU的核数 
+# 总核数 = 物理CPU个数 X 每颗物理CPU的核数
 # 总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数
 
 # 查看物理CPU个数
