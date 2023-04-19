@@ -1,0 +1,2 @@
+termcapinfo xterm* ti@:te@
+termcapinfo xterm|xterms|xs|rxvt 'hs:ts=\E]2;:fs=07:ds=\E]2;screen07'
