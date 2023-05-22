@@ -131,6 +131,6 @@ alias mrun='matlab -nodesktop -nosplash -r'
 8. [python - pip换源，更换pip源到国内镜像](https://blog.csdn.net/xuezhangjun0121/article/details/81664260)
 9. [521xueweihan/GitHub520](https://github.com/521xueweihan/GitHub520)
 10. [解决pip安装超时的问题](https://blog.csdn.net/qq_39161804/article/details/81191977)
-11. [screen](https://zhuanlan.zhihu.com/p/592016896
+11. [screen](https://zhuanlan.zhihu.com/p/592016896)
 12. [亲测！screen好看好用的配置（Linux）](https://www.jianshu.com/p/89607ef31493)
 13. [How can I run Tensorboard on a remote server?](https://stackoverflow.com/questions/37987839/how-can-i-run-tensorboard-on-a-remote-server)
