@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 import os
+import re
 import time
 import timeit
 import logging
@@ -310,6 +311,17 @@ def dict2csv(csv_file, dict_data):
             writer.writerow(v_list)
 
 
+def natural_sort_key(s, num_pattern=re.compile('([0-9]+)'), lower=False):
+    """https://stackoverflow.com/questions/4836710/is-there-a-built-in-function-for-string-natural-sort"""
+    if lower:
+        return [int(text) if text.isdigit() else text.lower()
+                for text in num_pattern.split(s)]
+    else:
+        return [int(text) if text.isdigit() else text#.lower()
+                for text in num_pattern.split(s)]
+
+
 if __name__ == "__main__":
     data = {"a": (1, 2, 3), "b": [4, 5, 6]}
     dict2csv("test.csv", data)
+
