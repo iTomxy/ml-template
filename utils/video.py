@@ -20,7 +20,7 @@ def i2v(
         if writer is None:
             h, w = img.shape[:2]
             _fourcc = cv2.VideoWriter_fourcc(*fourcc)
-            writer = cv2.VideoWriter(dest_video_file, _fourcc, FPS, (w, h), True)
+            writer = cv2.VideoWriter(dest_video_file, _fourcc, fps, (w, h), True)
         writer.write(img)
     writer.release()
 
