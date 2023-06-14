@@ -7,20 +7,20 @@
 # $2: lower bound of free memory needed per GPU (in MiB)
 ## Output
 # gpu_id: int/str, selected GPU id (list, seperated by ','),
-#   default = -1, can be fed to `CUDA_VISIBLE_DEVICES`.
+#	default = -1, can be fed to `CUDA_VISIBLE_DEVICES`.
 # n_gpu_found: int, # of selected GPU.
 ## Reference
 # https://blog.csdn.net/HackerTom/article/details/126257508
 
 # 1st arg: # of GPU needed, default = 1
-#   <0 means requiring all GPUs.
+#	<0 means requiring all GPUs.
 _n_gpu_req=${1-"1"}
 # 2nd arg: lower bound of free memory needed per GPU (in MiB), default = 0
-#   i.e. only GPUs with free memory >= $2 will be selected.
+#	i.e. only GPUs with free memory >= $2 will be selected.
 _mem_lb=${2-"0"}
 # 3rd arg: fit mode, in {b, w}, default = b
-#   b: best fit, prioritises those have LEAST but enough available memory
-#   w: worst fit, prioritises those have MOST and enough available memory
+#	b: best fit, prioritises those have LEAST but enough available memory
+#	w: worst fit, prioritises those have MOST and enough available memory
 _mode=${3-"b"}
 
 _res=$(nvidia-smi | \
@@ -32,11 +32,11 @@ _res=$(nvidia-smi | \
 
 _i=0
 if [ $_mode == "b" ]; then
-    _res=($(for _s in $_res; do echo $_i $_s && _i=`expr 1 + $_i`; done | \
-        sort -n -k 2))
+	_res=($(for _s in $_res; do echo $_i $_s && _i=`expr 1 + $_i`; done | \
+		sort -n -k 2))
 else
-    _res=($(for _s in $_res; do echo $_i $_s && _i=`expr 1 + $_i`; done | \
-        sort -n -k 2 -r))
+	_res=($(for _s in $_res; do echo $_i $_s && _i=`expr 1 + $_i`; done | \
+		sort -n -k 2 -r))
 fi
 
 if [ ${_n_gpu_req} -lt 0 ]; then
@@ -59,7 +59,7 @@ for i in $(seq 0 2 `expr ${#_res[@]} - 1`); do
 		fi
 		n_gpu_found=`expr 1 + ${n_gpu_found}`
 	# else
-	# 	break
+	#	break
 	fi
 done
 
