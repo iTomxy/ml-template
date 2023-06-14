@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Calling
-# . find-gpu.sh [#gpu required] [min memory per gpu] [b/w]
+# . find-gpu.sh [#gpu required] [min memory per gpu] [b/w] [<IGNORE-GPU-1> ...]
 ## Input
 # $1: # of GPU needed
 # $2: lower bound of free memory needed per GPU (in MiB)
@@ -22,6 +22,8 @@ _mem_lb=${2-"0"}
 #	b: best fit, prioritises those have LEAST but enough available memory
 #	w: worst fit, prioritises those have MOST and enough available memory
 _mode=${3-"b"}
+# rest arg: GPU IDs to be ignored, 0-based
+_ignore=${@:4}
 
 _res=$(nvidia-smi | \
 	grep -E "[0-9]+MiB\s*/\s*[0-9]+MiB" | \
@@ -50,6 +52,16 @@ n_gpu_found=0
 for i in $(seq 0 2 `expr ${#_res[@]} - 1`); do
 	_gid=${_res[i]}
 	_mem=${_res[i+1]}
+
+	_flag=0 # whether ignore this GPU
+	for _ig in ${_ignore[@]}; do
+		if [ $_ig -eq $_gid ]; then
+			_flag=1
+			break
+		fi
+	done
+	if [ $_flag -eq 1 ]; then continue; fi
+
 	# echo $_gid: $_mem
 	if [ ${n_gpu_found} -lt ${_n_gpu_req} -a ${_mem} -ge ${_mem_lb} ]; then
 		if [ ${n_gpu_found} -eq 0 ]; then
