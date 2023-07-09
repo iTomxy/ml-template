@@ -1,0 +1,23 @@
+Bootstrap: docker
+From: pytorch/pytorch:1.2-cuda10.0-cudnn7-runtime
+
+%labels
+
+Python 3.6.9
+CUDA 10.0
+cuDNN 7
+PyTorch 1.2.0
+torchvision 0.4.0
+
+%post
+
+# required by UTS iHPC
+export DEBIAN_FRONTEND=noninteractive
+mkdir -p /data /projects /scratch
+
+# python packages
+pip install --upgrade pip setuptools wheel
+pip install --no-cache-dir \
+    "scikit-learn>=0.23.2" "munkres>=1.1.4" "opencv-python==4.3.0.38" "numpy>=1.19.1" \
+    click Cython easydict fire graphviz h5py matplotlib \
+    ninja pandas PyYAML scipy tensorboard xlwt

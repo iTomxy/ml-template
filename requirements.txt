@@ -1,4 +1,5 @@
 albumentations
+click
 Cython
 easydict
 fire
@@ -11,6 +12,7 @@ opencv-python-headless
 pandas
 pickleshare
 Pillow
+pyspng
 pyreadline
 PyYAML
 scikit-learn
@@ -18,4 +20,3 @@ scipy
 tensorboard
 tqdm
 xlwt
-
