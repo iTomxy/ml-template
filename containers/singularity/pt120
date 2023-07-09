@@ -1,0 +1,10 @@
+Bootstrap: docker
+From: pytorch/pytorch:1.2-cuda10.0-cudnn7-runtime
+
+%post
+
+# required by UTS iHPC
+export DEBIAN_FRONTEND=noninteractive
+mkdir -p /data /projects /scratch
+
+# python packages
