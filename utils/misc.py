@@ -134,8 +134,7 @@ def prog_bar(iter_obj, prefix=None, timing=True):
     # overload built-in `print` temporarily
     _builtin_print = __builtin__.print
     class _overload_print:
-        def __init__(self):
-            self.prev_log = ""
+        prev_log = ""
         def update_prog(self, new_log):
             _builtin_print("\r{}\r".format(' ' * len(self.prev_log)) + new_log, end="", flush=True)
             self.prev_log = new_log
@@ -400,7 +399,7 @@ if __name__ == "__main__":
     for x in prog_bar("abcdefg", "timing"):
         print('1', x, id(print))
         time.sleep(1)
-    for x in prog_bar(range(5, 15, 2), "no timing", False):
+    for x in prog_bar(range(15, 5, -2), "no timing", False):
         print(x, id(print))
         time.sleep(1)
     print("after prog_bar:", id(print))
