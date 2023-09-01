@@ -1,13 +1,17 @@
+try:
+    import __builtin__ # Python 2
+except ImportError:
+    import builtins as __builtin__ # Python 3
 from collections.abc import Iterable
+import csv
+import functools
+import itertools
+import logging
+import math
 import os
 import re
 import time
 import timeit
-import logging
-import math
-import csv
-import itertools
-import functools
 
 
 def timestamp(fmt="%Y%m%d-%H%M%S"):
@@ -16,6 +20,37 @@ def timestamp(fmt="%Y%m%d-%H%M%S"):
     # return "{}-{}-{}-{}-{}".format(
     #     t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min)
     return time.strftime(fmt, t)
+
+
+def human_time(seconds, prec=1):
+    """transfer seconds to human readable time string
+    Input:
+        - seconds: float, time in second
+        - prec: int, decimal precision of second to show
+    Output:
+        - str
+    """
+    prec = max(0, prec)
+    seconds = round(seconds, prec)
+    minutes = int(seconds // 60)
+    hours = minutes // 60
+    days = hours // 24
+
+    seconds %= 60
+    minutes %= 60
+    hours %= 24
+
+    str_list = []
+    if days > 0:
+        str_list.append("{:d}d".format(days))
+    if hours > 0:
+        str_list.append("{:d}h".format(hours))
+    if minutes > 0:
+        str_list.append("{:d}m".format(minutes))
+    if seconds > 0:
+        str_list.append("{0:.{1}f}s".format(seconds, prec))
+
+    return ' '.join(str_list) if len(str_list) > 0 else "0s"
 
 
 class tic_toc:
@@ -29,22 +64,7 @@ class tic_toc:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         n_second = timeit.default_timer() - self.tic
-        n_minute = int(n_second // 60)
-        n_hour = n_minute // 60
-        n_day = n_hour // 24
-
-        n_second %= 60
-        n_minute %= 60
-        n_hour %= 24
-
-        s = "{:.4f}s".format(n_second)
-        if n_minute > 0:
-            s = "{:d}m ".format(n_minute) + s
-            if n_hour > 0:
-                s = "{:d}h ".format(n_hour) + s
-                if n_day > 0:
-                    s = "{:d}d ".format(n_day) + s
-        print("{}:".format(self.msg), s)
+        print("{}:".format(self.msg), human_time(n_second))
 
     def __call__(self, f):
         """enable to use as a context manager
@@ -81,35 +101,83 @@ def enum_product(*args):
         yield _index, _data
 
 
-def prog_bar(iter_obj, prefix=None):
-    """simple progress bar (better NOT to use `print` inside)
+def prog_bar(iter_obj, prefix=None, timing=True):
+    """simple progress bar
+    Will temporarily overload the built-in `print` inside and restore when finish.
     Input:
         - iter_obj: iter_obj: range, tuple, list, numpy.ndarray
         - prefix: str, some message to show
+        - timing: bool, to time each iteration and show it
     Ref:
         - https://stackoverflow.com/questions/3002085/how-to-print-out-status-bar-and-percentage
+        - https://stackoverflow.com/questions/550470/overload-print-python
     """
     if isinstance(iter_obj, range):
-        _start, _stop, _step = iter_obj.start, iter_obj.stop, iter_obj.step
+        _current, _stop, _step = iter_obj.start, iter_obj.stop, iter_obj.step
     elif isinstance(iter_obj, Iterable):
-        _start, _stop, _step = 0, len(iter_obj), 1
+        _current, _stop, _step = 0, len(iter_obj), 1
     else:
         raise NotImplemented
 
-    # n_digit = len(str(_stop))
+    # template: <msg>: [<current iter> / <total iter>, <ETA>]
+    #   ETA: Expected Time of Arrival, i.e. expected time left
+    template = ''
     if prefix != None:
-        # template = "\r{}: [ %*d / %*d ]".format(prefix)
-        template = "\r{}: [ %d / %d ]".format(prefix)
+        template += prefix + ": "
+    if timing:
+        template += "[ {:d} / {:d}, ETA: {} ]"
+        estim_time = 0
+        momentum = 0.9
     else:
-        # template = "\r[ %*d / %*d ]"
-        template = "\r[ %d / %d ]"
+        template += "[ {:d} / {:d} ]"
 
-    print("", end="")
-    print(template % (_start, _stop), end="")
-    for i, x in enumerate(iter_obj):
-        yield x
-        print(template % (_start + (i + 1) * _step, _stop), end="")
-    print(template % (_stop, _stop))#, end="")
+    # overload built-in `print` temporarily
+    _builtin_print = __builtin__.print
+    class _overload_print:
+        def __init__(self):
+            self.prev_log = ""
+        def update_prog(self, new_log):
+            _builtin_print("\r{}\r".format(' ' * len(self.prev_log)) + new_log, end="", flush=True)
+            self.prev_log = new_log
+        def __call__(self, *args, **kwargs):
+            # clean the previous progress log first if the previous print is a progress log
+            _builtin_print("\r{}\r".format(' ' * len(self.prev_log)), end="")
+            _builtin_print(*args, **kwargs)
+            _builtin_print(self.prev_log, end="", flush=True)
+
+    _print_obj = _overload_print()
+    global print
+    __builtin__.print = print = _print_obj
+
+    # iteration
+    _print_obj.update_prog(template.format(_current, _stop, "N/A"))
+    if timing:
+        tic = timeit.default_timer()
+        for i, x in enumerate(iter_obj):
+            t = timeit.default_timer() - tic
+            estim_time = momentum * t + (1 - momentum) * estim_time if i > 1 else t
+            _current += _step
+            eta = estim_time * (_stop - _current + 1)
+
+            _print_obj.update_prog(template.format(_current, _stop, human_time(eta) if i > 0 else "N/A"))
+
+            tic = timeit.default_timer()
+            yield x
+
+        _print_obj.update_prog(template.format(_stop, _stop, "0"))
+    else:
+        for x in iter_obj:
+            _current += _step
+            _print_obj.update_prog(template.format(_current, _stop))
+            yield x
+
+        _print_obj.update_prog(template.format(_stop, _stop))
+
+    # restore the built-in `print`
+    __builtin__.print = print = _builtin_print
+    del _print_obj
+    # finishing
+    print('')
 
 
 class Logger:
@@ -325,3 +393,14 @@ if __name__ == "__main__":
     data = {"a": (1, 2, 3), "b": [4, 5, 6]}
     dict2csv("test.csv", data)
 
+    print(human_time(2 * 24 * 60 * 60 + 50))
+    print(human_time(0.1415, 0))
+
+    print("before prog_bar:", id(print))
+    for x in prog_bar("abcdefg", "timing"):
+        print('1', x, id(print))
+        time.sleep(1)
+    for x in prog_bar(range(5, 15, 2), "no timing", False):
+        print(x, id(print))
+        time.sleep(1)
+    print("after prog_bar:", id(print))
