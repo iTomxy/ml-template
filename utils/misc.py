@@ -101,82 +101,104 @@ def enum_product(*args):
         yield _index, _data
 
 
-def prog_bar(iter_obj, prefix=None, timing=True):
-    """simple progress bar
+class prog_bar:
+    """simple progress bar with timing & ETA estimation
     Will temporarily overload the built-in `print` inside and restore when finish.
-    Input:
-        - iter_obj: iter_obj: range, tuple, list, numpy.ndarray
-        - prefix: str, some message to show
-        - timing: bool, to time each iteration and show it
+    Usage:
+        ```
+        for epoch in prog_bar(range(100), "Epoch"):
+            for iter, (x, y) in prog_bar(enumerate(data_loader), "Iter"):
+                # training
+        ```
     Ref:
         - https://stackoverflow.com/questions/3002085/how-to-print-out-status-bar-and-percentage
         - https://stackoverflow.com/questions/550470/overload-print-python
     """
-    if isinstance(iter_obj, range):
-        _current, _stop, _step = iter_obj.start, iter_obj.stop, iter_obj.step
-    elif isinstance(iter_obj, Iterable):
-        _current, _stop, _step = 0, len(iter_obj), 1
-    else:
-        raise NotImplemented
 
-    # template: <msg>: [<current iter> / <total iter>, <ETA>]
-    #   ETA: Expected Time of Arrival, i.e. expected time left
-    template = ''
-    if prefix != None:
-        template += prefix + ": "
-    if timing:
-        template += "[ {:d} / {:d}, ETA: {} ]"
-        estim_time = 0
-        momentum = 0.9
-    else:
-        template += "[ {:d} / {:d} ]"
+    n_objects       = 0
+    builtin_print   = None
+    prev_log        = ""
 
-    # overload built-in `print` temporarily
-    _builtin_print = __builtin__.print
-    class _overload_print:
-        prev_log = ""
-        def update_prog(self, new_log):
-            _builtin_print("\r{}\r".format(' ' * len(self.prev_log)) + new_log, end="", flush=True)
-            self.prev_log = new_log
-        def __call__(self, *args, **kwargs):
-            # clean the previous progress log first if the previous print is a progress log
-            _builtin_print("\r{}\r".format(' ' * len(self.prev_log)), end="")
-            _builtin_print(*args, **kwargs)
-            _builtin_print(self.prev_log, end="", flush=True)
+    def __init__(self, iter_obj, msg=None):
+        """
+        Input:
+            - iter_obj: range, tuple, list, numpy.ndarray
+            - msg: str, some message to show
+        """
+        self.eta    = True  # estimate Expected Time of Arrival
+        self.msg    = msg + ": [ " if msg else "[ "
 
-    _print_obj = _overload_print()
-    global print
-    __builtin__.print = print = _print_obj
+        if isinstance(iter_obj, range):
+            self.current, self.stop, self.step = iter_obj.start, iter_obj.stop, iter_obj.step
+        elif isinstance(iter_obj, Iterable):
+            self.current, self.step = 0, 1
+            try:
+                self.stop = len(iter_obj)
+            except TypeError:
+                # TypeError: object of type ? has no len()
+                self.stop = '?'
+                self.eta  = False # unable to estimate ETA in this case
+        else:
+            raise NotImplemented
 
-    # iteration
-    _print_obj.update_prog(template.format(_current, _stop, "N/A"))
-    if timing:
+        self.iter_obj = iter_obj
+        prog_bar.n_objects += 1
+        if 1 == prog_bar.n_objects:
+            # overload the built-in `print` temporarily
+            prog_bar.builtin_print = __builtin__.print
+            __builtin__.print = self.print
+
+    def __del__(self):
+        prog_bar.n_objects -= 1
+        # restore the built-in `print`
+        if 0 == prog_bar.n_objects:
+            __builtin__.print = prog_bar.builtin_print
+            print('')
+
+    def __iter__(self):
+        self.update(self.log())
+        estim_time, momentum = 0, 0.9
+
         tic = timeit.default_timer()
-        for i, x in enumerate(iter_obj):
+        for i, x in enumerate(self.iter_obj):
             t = timeit.default_timer() - tic
             estim_time = momentum * t + (1 - momentum) * estim_time if i > 1 else t
-            _current += _step
-            eta = estim_time * (_stop - _current + 1)
-
-            _print_obj.update_prog(template.format(_current, _stop, human_time(eta) if i > 0 else "N/A"))
+            self.current += self.step
+            if self.eta:
+                eta = estim_time * (self.stop - self.current + 1)
+                self.update(self.log(human_time(estim_time), human_time(eta) if i > 0 else "N/A"))
+            else:
+                self.update(self.log(human_time(estim_time)))
 
             tic = timeit.default_timer()
             yield x
 
-        _print_obj.update_prog(template.format(_stop, _stop, "0"))
-    else:
-        for x in iter_obj:
-            _current += _step
-            _print_obj.update_prog(template.format(_current, _stop))
-            yield x
+        self.update(self.log())
 
-        _print_obj.update_prog(template.format(_stop, _stop))
+    def log(self, estim_time=None, eta=None):
+        """construct progress log string & return
+        template: <msg>: [ <current iter> / <total iter>, <time per iter>/it, <ETA> ]
+        estim_time, eta: str if not None (formatted time string returned from `human_time`)
+        """
+        s = self.msg + "{} / {}".format(self.current, self.stop)
+        if estim_time is not None:
+            s += ", " + estim_time + "/it"
+            if eta is not None:
+                s += ", ETA: " + eta
+        return s + " ]"
 
-    # restore the built-in `print`
-    __builtin__.print = print = _builtin_print
-    del _print_obj
-    # finishing
-    print('')
+    def update(self, new_log):
+        # always update the global `prev_log`
+        #   cuz the newest update always comes from the innest embedded loop
+        prog_bar.builtin_print("\r{}\r".format(' ' * len(prog_bar.prev_log)) + new_log, end="", flush=True)
+        prog_bar.prev_log = new_log
+
+    def print(self, *args, **kwargs):
+        # clean the previous progress log first
+        prog_bar.builtin_print("\r{}\r".format(' ' * len(prog_bar.prev_log)), end="")
+        prog_bar.builtin_print(*args, **kwargs)
+        # reprint the progress log at bottum
+        prog_bar.builtin_print(prog_bar.prev_log, end="", flush=True)
 
 
 class Logger:
@@ -395,11 +417,20 @@ if __name__ == "__main__":
     print(human_time(2 * 24 * 60 * 60 + 50))
     print(human_time(0.1415, 0))
 
+    X = ([1, 2], [3, 4], [5, 6], [7, 8])
+    def _generator(_X):
+        for _x in _X:
+            yield _x
     print("before prog_bar:", id(print))
-    for x in prog_bar("abcdefg", "timing"):
-        print('1', x, id(print))
-        time.sleep(1)
-    for x in prog_bar(range(15, 5, -2), "no timing", False):
-        print(x, id(print))
-        time.sleep(1)
+    for epoch in prog_bar("abc", "Epoch"):
+        print('Epoch:', epoch, id(print))
+        for i in prog_bar(range(15, 7, -2), "range"):
+            print("\trange:", i, id(print))
+            time.sleep(0.5)
+            for x in prog_bar(X, "X"):
+                print("\t\tX:", x, id(print))
+                time.sleep(0.2)
+        for x in prog_bar(_generator(X), "iterator"):
+            print("\titerator:", x, id(print))
+            time.sleep(1)
     print("after prog_bar:", id(print))
