@@ -190,7 +190,7 @@ class prog_bar:
     def update(self, new_log):
         # always update the global `prev_log`
         #   cuz the newest update always comes from the innest embedded loop
-        prog_bar.builtin_print("\r{}\r".format(' ' * len(prog_bar.prev_log)) + new_log, end="", flush=True)
+        prog_bar.builtin_print('\r' + new_log + ' ' * (len(prog_bar.prev_log) - len(new_log)), end="", flush=True)
         prog_bar.prev_log = new_log
 
     def print(self, *args, **kwargs):
@@ -427,7 +427,7 @@ if __name__ == "__main__":
         for i in prog_bar(range(15, 7, -2), "range"):
             print("\trange:", i, id(print))
             time.sleep(0.5)
-            for x in prog_bar(X, "X"):
+            for x in prog_bar(X, "X" * 30):
                 print("\t\tX:", x, id(print))
                 time.sleep(0.2)
         for x in prog_bar(_generator(X), "iterator"):
