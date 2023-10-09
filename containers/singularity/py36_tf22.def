@@ -1,0 +1,23 @@
+Bootstrap: docker
+From: nvcr.io/nvidia/tensorflow:20.07-tf2-py3
+
+%labels
+
+Python 3.6.9
+CUDA 11.0
+TensorFlow 2.2.0
+
+%post
+
+# required by UTS iHPC
+export DEBIAN_FRONTEND=noninteractive
+mkdir -p /data /projects /scratch
+
+# python packages
+pip install --no-cache-dir --upgrade pip setuptools wheel
+pip install --no-cache-dir jupyterlab --upgrade
+pip install --no-cache-dir \
+    scikit-learn opencv-python h5py matplotlib pandas scipy imageio \
+    tensorboard jupyter jupyterlab-pygments click fire \
+    Cython easydict ninja PyYAML xlwt \
+    medpy umap SimpleITK nibabel pydicom
