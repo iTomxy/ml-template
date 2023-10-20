@@ -16,16 +16,15 @@ for /l %%n in (0,1,3) do (
 
 @REM prompt, input server id & connect
 set /p "sid=which: "
-if defined servers[%sid%] (
-	if %sid% EQU 0 (
-		goto :eof
-	) else (
-		ssh !servers[%sid%]!
-		@REM cls
-		for /l %%i in (0,1,7) do echo.
-		goto :connect
-	)
+if %sid% LEQ 0 (
+	goto :eof
+) else if defined servers[%sid%] (
+	ssh !servers[%sid%]!
+	@REM cls
+	for /l %%i in (0,1,7) do echo.
+	goto :connect
 ) else (
 	echo No such server: %sid%
 	goto :connect
 )
+
