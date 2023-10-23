@@ -165,6 +165,7 @@ cython_debug/
 *.svg
 *.web[mp]
 *.mov
+*.nii
 
 # zipped file
 *.zip
@@ -212,4 +213,3 @@ events.out.tfevents.*
 *.bbl
 *.blg
 *.out
-
