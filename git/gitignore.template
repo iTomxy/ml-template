@@ -209,7 +209,25 @@ events.out.tfevents.*
 *.pth
 
 # latex
+*.acn
+*.acr
+*.alg
 *.aux
 *.bbl
+*.bcf
 *.blg
+*.fdb_latexmk
+*.fls
+*.glg
+*.glo
+*.gls
+*.idx
+*.ind
+*.ist
+*.lof
+# *.log
+*.lot
 *.out
+*.toc
+*.run.xml
+
