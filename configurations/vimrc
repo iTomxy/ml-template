@@ -12,18 +12,18 @@ else
 endif
 Plugin 'VundleVim/Vundle.vim'
 " Plugin 'tpope/vim-commentary'
-" Plugin 'preservim/nerdtree'
-" Plugin 'Vimjas/vim-python-pep8-indent'
-" Plugin 'jiangmiao/auto-pairs'
-" Plugin 'altercation/solarized'
-" Plugin 'tomasiser/vim-code-dark'
-
 Plugin 'https://gitee.com/bigfacecat924/vim-commentary'
+" Plugin 'preservim/nerdtree'
 Plugin 'https://gitee.com/xie-xiaopeng/nerdtree'
+" Plugin 'Vimjas/vim-python-pep8-indent'
 Plugin 'https://gitee.com/tyloeng/vim-python-pep8-indent'
-"Plugin 'https://gitee.com/rulei_mirror/auto-pairs'
+" Plugin 'jiangmiao/auto-pairs'
+" Plugin 'https://gitee.com/rulei_mirror/auto-pairs'
+" Plugin 'altercation/solarized'
 Plugin 'https://gitee.com/liazpg/solarized'
+" Plugin 'tomasiser/vim-code-dark'
 Plugin 'https://gitee.com/bigfacecat924/vim-code-dark'
+Plugin 'vim-scripts/dosbatch-indent'
 call vundle#end()         " must
 filetype plugin indent on " must, here
 
@@ -305,15 +305,20 @@ endfunc
 
 
 "--- carrage return ---"
-autocmd FileType h,c,cpp,java,python,sh inoremap <CR> <C-r>=Carrage_Return()<CR>
+autocmd FileType h,c,cpp,java,python,sh,dosbatch inoremap <CR> <C-r>=Carrage_Return()<CR>
 
 func! Carrage_Return()
 	let line = getline('.')
-	if line[col('.') - 2] == '{' && line[col('.') - 1] == '}'
+	let pre_char = line[col('.') - 2]
+	let nxt_char = line[col('.') - 1]
+	if &filetype == 'dosbatch'
+		if pre_char == '(' && nxt_char == ')'
+			return "\<CR>\<Up>\<ESC>A\<CR>"
+		endif
+	elseif pre_char == '{' && nxt_char == '}'
 		return "\<CR>\<Up>\<ESC>A\<CR>"
-	else
-		return "\<CR>"
-    endif
+	endif
+	return "\<CR>"
 endfunc
 
 
@@ -379,4 +384,3 @@ func! Before_Saving()
         call append(line('$'), "")
     endif
 endfunc
-
