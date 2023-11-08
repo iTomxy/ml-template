@@ -1,6 +1,12 @@
 @echo off
 setlocal enabledelayedexpansion
 @REM https://blog.csdn.net/HackerTom/article/details/130260546
+@REM https://stackoverflow.com/questions/37987839/how-can-i-run-tensorboard-on-a-remote-server
+@REM https://stackoverflow.com/questions/29936948/ssh-l-forward-multiple-ports
+
+@REM remote tensorboard & jupyter notebook port
+set TB=6006
+set JN=8888
 
 @REM servers
 set servers[0]=QUIT
@@ -19,7 +25,9 @@ set /p "sid=which: "
 if %sid% LEQ 0 (
 	goto :eof
 ) else if defined servers[%sid%] (
-	ssh !servers[%sid%]!
+	ssh -L 1%TB%:127.0.0.1:%TB% ^
+		-L 1%JN%:127.0.0.1:%JN% ^
+		!servers[%sid%]!
 	@REM cls
 	for /l %%i in (0,1,7) do echo.
 	goto :connect
@@ -27,4 +35,3 @@ if %sid% LEQ 0 (
 	echo No such server: %sid%
 	goto :connect
 )
-
