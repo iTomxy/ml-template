@@ -1,3 +1,7 @@
+import numpy as np
+from PIL import Image
+
+
 def get_palette(n_classes, pil_format=True):
     """ Returns the color map for visualizing the segmentation mask.
     Example:
@@ -40,9 +44,36 @@ def get_palette(n_classes, pil_format=True):
     return res
 
 
+def blend_seg(image, label, n_classes=0, alpha=0.7, transparent_bg=True, save_file=""):
+    """blend image & pixel-level label/prediction
+    Input:
+        image: [H, W] or [H, W, C], int numpy.ndarray, in [0, 255]
+        label: [H, W], int numpy.ndarray
+        n_classes: int, num of classes (including background), inferred from `label` if not provided
+        alpha: float in (0, 1)
+        transparent_bg: bool, don't colour (i.e. use original image pixel value for) background pixels if True
+        save_file: str, path to save the blended image
+    Output:
+        blended_image: PIL.Image
+    """
+    img_pil = Image.fromarray(image).convert("RGB")
+    if n_classes < 1:
+        n_classes = np.max(label) + 1
+    lab_pil = Image.fromarray(label).convert("L")
+    lab_pil.putpalette(get_palette(n_classes))
+    blended_image = Image.blend(img_pil, lab_pil.convert("RGB"), alpha)
+    if transparent_bg:
+        blended_image = Image.fromarray(np.where(
+            (0 == label)[:, :, np.newaxis],
+            np.asarray(img_pil),
+            np.asarray(blended_image)
+        ))
+    if save_file:
+        blended_image.save(save_file)
+    return blended_image
+
+
 if "__main__" == __name__:
-    import numpy as np
-    from PIL import Image
     nc, sz = 24, 17
     palette = get_palette(nc, False)
     print(palette)
@@ -50,3 +81,9 @@ if "__main__" == __name__:
     for c, p in enumerate(palette):
         img[:, c*sz: (c+1)*sz] = p
     Image.fromarray(img).save("palette.jpg")
+
+    img = np.load("mr_train_1014_image_63.npy")
+    lab = np.load("mr_train_1014_label_63.npy")
+    img = (img - img.min()) / (img.max() - img.min()) * 255 # normalisation
+    img = img.astype(np.uint8)
+    blend_seg(img, lab, save_file="blend.png")
