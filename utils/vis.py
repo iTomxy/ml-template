@@ -44,18 +44,24 @@ def get_palette(n_classes, pil_format=True):
     return res
 
 
-def blend_seg(image, label, n_classes=0, alpha=0.7, transparent_bg=True, save_file=""):
+def blend_seg(image, label, n_classes=0, alpha=0.7, rescale=False, transparent_bg=True, save_file=""):
     """blend image & pixel-level label/prediction
     Input:
         image: [H, W] or [H, W, C], int numpy.ndarray, in [0, 255]
         label: [H, W], int numpy.ndarray
         n_classes: int, num of classes (including background), inferred from `label` if not provided
         alpha: float in (0, 1)
+        rescale: bool, normalise & scale to [0, 255] if True
         transparent_bg: bool, don't colour (i.e. use original image pixel value for) background pixels if True
         save_file: str, path to save the blended image
     Output:
         blended_image: PIL.Image
     """
+    if rescale:
+        denom = image.max() - image.min()
+        if 0 != denom:
+            image = (image - image.min()) / denom * 255
+        image = np.clip(image, 0, 255).astype(np.uint8)
     img_pil = Image.fromarray(image).convert("RGB")
     if n_classes < 1:
         n_classes = np.max(label) + 1
@@ -87,3 +93,4 @@ if "__main__" == __name__:
     img = (img - img.min()) / (img.max() - img.min()) * 255 # normalisation
     img = img.astype(np.uint8)
     blend_seg(img, lab, save_file="blend.png")
+
