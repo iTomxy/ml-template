@@ -1,3 +1,4 @@
+import os, os.path as osp
 import numpy as np
 from PIL import Image
 
@@ -79,6 +80,20 @@ def blend_seg(image, label, n_classes=0, alpha=0.7, rescale=False, transparent_b
     return blended_image
 
 
+def show_nii(nii_file):
+    """show medical volume in .nii/.nii.gz format
+    Input:
+        nii_file: str, path to .nii/.nii.gz file
+    """
+    if not osp.isfile(nii_file):
+        print("No such file:", nii_file)
+        return
+    import nibabel as nib
+    from nibabel.viewers import OrthoSlicer3D
+    img = nib.load(nii_file)
+    OrthoSlicer3D(img.dataobj).show()
+
+
 if "__main__" == __name__:
     nc, sz = 24, 17
     palette = get_palette(nc, False)
@@ -94,3 +109,4 @@ if "__main__" == __name__:
     img = img.astype(np.uint8)
     blend_seg(img, lab, save_file="blend.png")
 
+    show_nii("sub-verse004_seg-vert_msk.nii.gz")
