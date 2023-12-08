@@ -1,4 +1,4 @@
-import os, os.path as osp
+import os, os.path as osp, math
 import numpy as np
 from PIL import Image
 
@@ -65,7 +65,7 @@ def blend_seg(image, label, n_classes=0, alpha=0.7, rescale=False, transparent_b
         image = np.clip(image, 0, 255).astype(np.uint8)
     img_pil = Image.fromarray(image).convert("RGB")
     if n_classes < 1:
-        n_classes = np.max(label) + 1
+        n_classes = math.ceil(np.max(label)) + 1
     lab_pil = Image.fromarray(label).convert("L")
     lab_pil.putpalette(get_palette(n_classes))
     blended_image = Image.blend(img_pil, lab_pil.convert("RGB"), alpha)
