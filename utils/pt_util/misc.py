@@ -44,3 +44,20 @@ def zero_grad(*modules):
     for m in modules:
         for param in m.parameters():
             param.grad = None
+
+
+def seed_everything(seed=42):
+    """pytorch version seed everything
+    https://wandb.ai/sauravmaheshkar/RSNA-MICCAI/reports/How-to-Set-Random-Seeds-in-PyTorch-and-Tensorflow--VmlldzoxMDA2MDQy
+    """
+    import random, os
+    import numpy as np
+    import torch
+
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = True

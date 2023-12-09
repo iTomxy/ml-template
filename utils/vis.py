@@ -45,6 +45,21 @@ def get_palette(n_classes, pil_format=True):
     return res
 
 
+def color_seg(label, n_classes=0):
+    """put colour on the segmentation mask
+    Input:
+        label: [H, W], int numpy.ndarray
+        n_classes: int, num of classes (including background), inferred from `label` if not provided
+    Output:
+        label_rgb: [H, W, 3], PIL.Image
+    """
+    if n_classes < 1:
+        n_classes = math.ceil(np.max(label)) + 1
+    label_rgb = Image.fromarray(label.astype(np.int32)).convert("L")
+    label_rgb.putpalette(get_palette(n_classes))
+    return label_rgb.convert("RGB")
+
+
 def blend_seg(image, label, n_classes=0, alpha=0.7, rescale=False, transparent_bg=True, save_file=""):
     """blend image & pixel-level label/prediction
     Input:
@@ -64,11 +79,8 @@ def blend_seg(image, label, n_classes=0, alpha=0.7, rescale=False, transparent_b
             image = (image - image.min()) / denom * 255
         image = np.clip(image, 0, 255).astype(np.uint8)
     img_pil = Image.fromarray(image).convert("RGB")
-    if n_classes < 1:
-        n_classes = math.ceil(np.max(label)) + 1
-    lab_pil = Image.fromarray(label.astype(np.int32)).convert("L")
-    lab_pil.putpalette(get_palette(n_classes))
-    blended_image = Image.blend(img_pil, lab_pil.convert("RGB"), alpha)
+    lab_pil = color_seg(label, n_classes)
+    blended_image = Image.blend(img_pil, lab_pil, alpha)
     if transparent_bg:
         blended_image = Image.fromarray(np.where(
             (0 == label)[:, :, np.newaxis],
