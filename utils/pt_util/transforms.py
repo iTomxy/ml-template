@@ -9,14 +9,6 @@ def to_multi(trfm):
         trfm: transformation function/object (custom or from torchvision.transforms)
     Output:
         _multi_transform: function
-    Usage
-        ```
-        from torchvision import transforms
-        train_trans = MultiCompose(list(map(to_multi, [
-            transforms.Resize(224),
-            transforms.RandomRotation(30),
-        ])))
-        ```
     Ref:
     - https://wandb.ai/sauravmaheshkar/RSNA-MICCAI/reports/How-to-Set-Random-Seeds-in-PyTorch-and-Tensorflow--VmlldzoxMDA2MDQy
     - https://gist.github.com/ihoromi4/b681a9088f348942b01711f251e5f964
