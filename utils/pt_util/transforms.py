@@ -3,25 +3,6 @@ import torchvision.transforms.functional as F
 from .misc import seed_everything
 
 
-class MultiCompose:
-    """Extension of torchvision.transforms.Compose that accepts multiple input.
-    Usage is the same as torchvision.transforms.Compose. But one may want to use it together with
-    the `to_multi` wrapping function to ensure consistent multiple transformation. This can be
-    useful when simultaneously transforming images & segmentation masks.
-    """
-    def __init__(self, transforms):
-        """transforms should be wrapped by `to_multi`"""
-        self.transforms = transforms
-
-    def __call__(self, *images):
-        for t in self.transforms:
-            if len(images) == 1:
-                images = t(images)
-            else:
-                images = t(*images)
-        return images
-
-
 def to_multi(trfm):
     """wrap a transform to extend to multiple input with synchronised random seed
     Input:
@@ -58,6 +39,25 @@ def to_multi(trfm):
         return tuple(res)
 
     return _multi_transform
+
+
+class MultiCompose:
+    """Extension of torchvision.transforms.Compose that accepts multiple input.
+    Usage is the same as torchvision.transforms.Compose. This class will wrap input
+    transforms with `to_multi` to support simultaneous multiple transformation.
+    This can be useful when simultaneously transforming images & segmentation masks.
+    """
+    def __init__(self, transforms):
+        """transforms should be wrapped by `to_multi`"""
+        self.transforms = [to_multi(t) for t in transforms]
+
+    def __call__(self, *images):
+        for t in self.transforms:
+            if len(images) == 1:
+                images = t(images)
+            else:
+                images = t(*images)
+        return images
 
 
 class ResizeZoomPad:
