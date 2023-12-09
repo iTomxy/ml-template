@@ -66,7 +66,7 @@ def blend_seg(image, label, n_classes=0, alpha=0.7, rescale=False, transparent_b
     img_pil = Image.fromarray(image).convert("RGB")
     if n_classes < 1:
         n_classes = math.ceil(np.max(label)) + 1
-    lab_pil = Image.fromarray(label).convert("L")
+    lab_pil = Image.fromarray(label.astype(np.int32)).convert("L")
     lab_pil.putpalette(get_palette(n_classes))
     blended_image = Image.blend(img_pil, lab_pil.convert("RGB"), alpha)
     if transparent_bg:
