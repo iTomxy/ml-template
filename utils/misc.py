@@ -16,10 +16,7 @@ import timeit
 
 def timestamp(fmt="%Y%m%d-%H%M%S"):
     """time-stamp string"""
-    t = time.localtime(time.time())
-    # return "{}-{}-{}-{}-{}".format(
-    #     t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min)
-    return time.strftime(fmt, t)
+    return time.strftime(fmt, time.gmtime())
 
 
 def human_time(seconds, prec=1):
