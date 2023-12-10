@@ -17,7 +17,7 @@ def to_multi(trfm):
     def _multi_transform(*images):
         """images: [C, H, W]"""
         if len(images) == 1:
-            return trfm(images)
+            return trfm(images[0])
         _seed = random.randint(min_seed, max_seed)
         res = []
         for img in images:
@@ -40,10 +40,7 @@ class MultiCompose:
 
     def __call__(self, *images):
         for t in self.transforms:
-            if len(images) == 1:
-                images = t(images)
-            else:
-                images = t(*images)
+            images = t(*images)
         return images
 
 

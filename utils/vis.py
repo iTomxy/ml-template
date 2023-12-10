@@ -4,7 +4,7 @@ from PIL import Image
 
 
 def get_palette(n_classes, pil_format=True):
-    """ Returns the color map for visualizing the segmentation mask.
+    """Returns the color map for visualizing the segmentation mask.
     Example:
         ```python
         palette = get_palette(n_classes, True)
