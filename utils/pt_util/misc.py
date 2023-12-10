@@ -48,7 +48,11 @@ def zero_grad(*modules):
 
 def seed_everything(seed=42):
     """pytorch version seed everything
-    https://wandb.ai/sauravmaheshkar/RSNA-MICCAI/reports/How-to-Set-Random-Seeds-in-PyTorch-and-Tensorflow--VmlldzoxMDA2MDQy
+    Ref:
+        - https://wandb.ai/sauravmaheshkar/RSNA-MICCAI/reports/How-to-Set-Random-Seeds-in-PyTorch-and-Tensorflow--VmlldzoxMDA2MDQy
+        - https://gist.github.com/ihoromi4/b681a9088f348942b01711f251e5f964
+        - https://pytorch.org/docs/stable/notes/randomness.html
+        - https://discuss.pytorch.org/t/what-is-the-max-seed-you-can-set-up/145688
     """
     import random, os
     import numpy as np
