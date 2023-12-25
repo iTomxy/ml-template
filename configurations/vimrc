@@ -87,7 +87,7 @@ autocmd FileType python set expandtab " convert if Python
 
 "--- Theme ---"
 syntax enable
-syntax on " 语法高亮
+syntax on
 set number " show line number
 set ruler " show position
 set showcmd " show command
@@ -384,3 +384,4 @@ func! Before_Saving()
         call append(line('$'), "")
     endif
 endfunc
+

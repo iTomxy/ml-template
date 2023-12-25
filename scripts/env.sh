@@ -17,7 +17,8 @@ echo misc
 conda install -n $ENV click scipy tqdm ninja matplotlib imageio pandas -y
 for pkg in \
     imageio-ffmpeg opencv-python-headless omegaconf einops transformers \
-    imgui glfw pyopengl lpips pyspng dlib moviepy imutils wandb
+    imgui glfw pyopengl lpips pyspng dlib moviepy imutils wandb \
+    scikit-learn simpleitk itk nltk tensorboard
 do
     $ENV_BIN/pip install $pkg
 done
