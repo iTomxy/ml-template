@@ -46,6 +46,14 @@ def zero_grad(*modules):
             param.grad = None
 
 
+def eval_bn(*modules):
+    """set BN layers to eval mode"""
+    for m in modules:
+        for sub_m in m.modules():
+            if isinstance(sub_m, torch.nn.modules.batchnorm._BatchNorm):
+                sub_m.eval()
+
+
 def seed_everything(seed=42):
     """pytorch version seed everything
     Ref:
