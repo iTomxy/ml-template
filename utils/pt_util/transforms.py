@@ -3,44 +3,61 @@ import torchvision.transforms.functional as F
 from .misc import seed_everything
 
 
-def to_multi(trfm):
-    """wrap a transform to extend to multiple input with synchronised random seed
-    Input:
-        trfm: transformation function/object (custom or from torchvision.transforms)
-    Output:
-        _multi_transform: function
+class MultiCompose:
+    """Extension of torchvision.transforms.Compose that accepts multiple inputs
+    and ensures the same random seed is applied on each of these inputs at each transforms.
+    This can be useful when simultaneously transforming images & segmentation masks.
+
+    Usage:
+        ```python
+        train_trans = MultiCompose([
+            # interpolation: image uses `bilinear`, label uses `nearest`
+            [transforms.Resize((224, 256), transforms.InterpolationMode.BILINEAR),
+             transforms.Resize((224, 256), transforms.InterpolationMode.NEAREST)],
+            transforms.RandomAffine(30, (0.1, 0.1)),
+            transforms.RandomHorizontalFlip(),
+            # apply `ColorJitter` on image but not on label (thus `None`)
+            (transforms.ColorJitter(0.1, 0.2, 0.3, 0.4), None),
+        ])
+
+        # apply augmentations on both `image` and `seg_label`
+        image, seg_label = train_trans(image, seg_label)
+        ```
     """
+
     # numpy.random.seed range error:
     #   ValueError: Seed must be between 0 and 2**32 - 1
-    min_seed = 0 # - 0x8000_0000_0000_0000
-    max_seed = min(2**32 - 1, 0xffff_ffff_ffff_ffff)
-    def _multi_transform(*images):
-        """images: [C, H, W]"""
-        if len(images) == 1:
-            return trfm(images[0])
-        _seed = random.randint(min_seed, max_seed)
-        res = []
-        for img in images:
-            seed_everything(_seed)
-            res.append(trfm(img))
-        return tuple(res)
+    MIN_SEED = 0 # - 0x8000_0000_0000_0000
+    MAX_SEED = min(2**32 - 1, 0xffff_ffff_ffff_ffff)
 
-    return _multi_transform
-
-
-class MultiCompose:
-    """Extension of torchvision.transforms.Compose that accepts multiple input.
-    Usage is the same as torchvision.transforms.Compose. This class will wrap input
-    transforms with `to_multi` to support simultaneous multiple transformation.
-    This can be useful when simultaneously transforming images & segmentation masks.
-    """
     def __init__(self, transforms):
-        """transforms should be wrapped by `to_multi`"""
-        self.transforms = [to_multi(t) for t in transforms]
+        no_op = lambda x: x  # i.e. identity function
+        self.transforms = []
+        for t in transforms:
+            if isinstance(t, (tuple, list)):
+            	# convert `None` to `no_op` for convenience
+                self.transforms.append([no_op if _t is None else _t for _t in t])
+            else:
+                self.transforms.append(t)
 
     def __call__(self, *images):
         for t in self.transforms:
-            images = t(*images)
+            if isinstance(t, (tuple, list)):
+                # `<=` allows redundant transforms
+                assert len(images) <= len(t), f"#inputs: {len(images)} v.s. #transforms: {len(self.transforms)}"
+            else:
+                t = [t] * len(images)
+
+            _aug_images = []
+            _seed = random.randint(self.MIN_SEED, self.MAX_SEED)
+            for _im, _t in zip(images, t):
+                seed_everything(_seed)
+                _aug_images.append(_t(_im))
+
+            images = _aug_images
+
+        if len(images) == 1:
+            images = images[0]
         return images
 
 
