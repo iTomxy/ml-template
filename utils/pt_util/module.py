@@ -1,4 +1,5 @@
 import math
+from collections import OrderedDict
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -119,3 +120,96 @@ class MixVar(nn.Module):
 
     def extra_repr(self):
         return 'size={}'.format(self.X.size())
+
+
+class IntermediateLayerGetter:
+    """wrap a torch.nn.Module to get its intermediate layer outputs
+    From: https://github.com/sebamenabar/Pytorch-IntermediateLayerGetter
+    Usage:
+        ```python
+        getter = IntermediateLayerGetter(network, {
+            "<module_name>": "<return_key>",
+            ...
+        })
+        inter_output_dict, final_output = getter(input)
+        for return_key, return_value in inter_output_dict.items():
+            print(return_key, return_value.size())
+        ```
+    """
+
+    def __init__(self, model, return_layers):
+        """
+        model: torch.nn.module, the PyTorch module to call
+        return_layers: dict, {<module_name>: <return_key>}
+            <module_name> specifies whose output you want to get,
+            <return_key> specifies how you want to call this output.
+        """
+        self._model = model
+        self.return_layers = return_layers
+
+    def __call__(self, *args, **kwargs):
+        """
+        Input:
+            (the same as how you call the original module)
+        Output:
+            ret: OrderedDict, {<return_key>: <return_value>}
+                In case a submodule is called more than once, <return_value> will be a list.
+            output: tensor, final output
+        """
+        ret = OrderedDict()
+        handles = []
+        for name, new_name in self.return_layers.items():
+            def hook(module, input, output, new_name=new_name):
+                if new_name in ret:
+                    if type(ret[new_name]) is list:
+                        ret[new_name].append(output)
+                    else:
+                        ret[new_name] = [ret[new_name], output]
+                else:
+                    ret[new_name] = output
+
+            try:
+                layer = self._model.get_submodule(name)
+                h = layer.register_forward_hook(hook)
+            except AttributeError as e:
+                raise AttributeError(f'Module {name} not found')
+
+            handles.append(h)
+
+        output = self._model(*args, **kwargs)
+
+        for h in handles:
+            h.remove() # removes the corresponding added hook
+
+        return ret, output
+
+
+if "__main__" == __name__:
+    # build network
+    net = nn.Sequential(OrderedDict([
+        ('conv', nn.Sequential(
+            nn.Conv2d(1, 64, 3),
+            nn.ReLU()
+        )),
+        ('convt', nn.Sequential(
+            nn.ConvTranspose2d(64, 5, 3),
+            nn.ReLU()
+        ))
+    ]))
+
+    # print sub/moduls names <- you get module/layer output by its name
+    print(net)
+    for module_name, module in net.named_modules():
+        print(module_name)
+
+    # get intermedia layer output
+    getter = IntermediateLayerGetter(net, {'convt.0': 'feature_map'})
+
+    # forward
+    x = torch.ones(1, 28, 28)
+    print(x.size())             # [1, 28, 28]
+    y = net(x)                  # normal forward
+    print(y.size())             # [5, 28, 28]
+    ret, y2 = getter(x)         # forward & get intermedia output
+    for k, v in ret.items():
+        print(k, v.size())      # feature_map [5, 28, 28]

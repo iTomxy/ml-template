@@ -18,4 +18,4 @@ pip install --no-cache-dir --upgrade pip setuptools wheel
 pip install --no-cache-dir \
     scikit-learn opencv-python medpy itk simpleitk nibabel kornia \
     click Cython easydict fire graphviz h5py matplotlib \
-    ninja pandas PyYAML scipy tensorboard xlwt
+    ninja pandas PyYAML scipy tensorboard xlwt jupyter
