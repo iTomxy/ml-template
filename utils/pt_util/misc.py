@@ -73,3 +73,22 @@ def seed_everything(seed=42):
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = True
+
+
+def interpolate_int_nearest(x, size):
+    """perform nearest interpolation on int/long tensor (e.g. segmentation label)
+    From: https://discuss.pytorch.org/t/what-is-the-good-way-to-interpolate-int-tensor/29490
+    Input:
+        x: [n, c, h, w], tensor.Tensor of int/long type
+        size: int or (height: int, width: int)
+    Output:
+        x': [n, c, size, size] or [n, c, *size], the resized tensor
+    """
+    if isinstance(size, (tuple, list)):
+        assert len(size) == 2
+        h, w = size
+    else:
+        h = w = size
+    ih = torch.linspace(0, x.size(2) - 1, h).long()
+    iw = torch.linspace(0, x.size(3) - 1, w).long()
+    return x[:, :, ih[:, None], iw]
