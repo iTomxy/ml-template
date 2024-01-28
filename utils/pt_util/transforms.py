@@ -1,4 +1,5 @@
 import random
+import torch
 import torchvision.transforms.functional as F
 from .misc import seed_everything
 
@@ -103,4 +104,66 @@ class ResizeZoomPad:
             pad_left, pad_right = pad_w // 2, (pad_w + 1) // 2
             pad_top, pad_bottom = pad_h // 2, (pad_h + 1) // 2
             image = F.pad(image, (pad_left, pad_top, pad_right, pad_bottom))
+        return image
+
+
+class PermutePatch:
+    """divide image into patches & permute patch order"""
+
+    def __init__(self, h_div, w_div, ensure_displace=False):
+        """
+        Input:
+            h_div: int, #patches to divide into along heigth
+            w_div: int, #patches to divide into along width
+            ensure_displace: bool, ensure NO patch stay in its original position
+        """
+        assert isinstance(h_div, int) and isinstance(w_div, int)
+        self.h_div = h_div
+        self.w_div = w_div
+        self.ensure_displace = ensure_displace
+
+    def permute_axis(self, image, axis, div):
+        """
+        Input:
+            image: [C, H, W], torch.Tensor
+            axis: int, in {1, 2} (i.e. {height, width}), along wich axis to permute patches
+            div: # of patches to divide along this axis
+        Output:
+            the permuted image, [C, H, W], torch.Tensor
+        """
+        assert axis in (1, 2) # only h(1) & w(2)
+        image = torch.moveaxis(image, axis, 0)
+        tmp = torch.zeros_like(image)
+        div = min(div, image.size(0))
+        rnd_idx = torch.randperm(div)
+        if self.ensure_displace:
+            # adjust `rnd_idx` to ensure that rnd_idx[i] != i for all i
+            idx = torch.arange(div)
+            fixed_mask = (rnd_idx == idx)
+            fixed_num = fixed_mask.sum() # num of fixed point
+            if 1 == fixed_num: # find another one to swap
+                fixed_pos = idx[fixed_mask].item()
+                for pos in range(rnd_idx.size(0)):
+                    if pos != fixed_pos and rnd_idx[fixed_pos] != pos and rnd_idx[pos] != fixed_pos:
+                        rnd_idx[fixed_pos], rnd_idx[pos] = rnd_idx[pos].item(), rnd_idx[fixed_pos].item()
+                        break
+            elif fixed_num > 1: # simply left shift
+                fixed_idx = rnd_idx[fixed_mask]
+                rnd_idx[fixed_mask] = torch.cat([fixed_idx[1:], fixed_idx[:1]])
+            assert (rnd_idx == idx).sum() == 0
+        step = image.size(0) // div
+        lens = [step] * (div - 1) + [image.size(0) - step * (div - 1)]
+        starts = [0]
+        for i in range(1, div):
+            starts.append(starts[i - 1] + lens[i - 1])
+        cur = 0
+        for idx in rnd_idx:
+            tmp[cur: cur + lens[idx]] = image[starts[idx]: starts[idx] + lens[idx]]
+            cur += lens[idx]
+        return torch.moveaxis(tmp, 0, axis)
+
+    def __call__(self, image):
+        """image: [C, H, W], torch.Tensor"""
+        image = self.permute_axis(image, 1, self.h_div) # permute vertically
+        image = self.permute_axis(image, 2, self.w_div) # permute horizontally
         return image
