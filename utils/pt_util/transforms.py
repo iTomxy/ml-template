@@ -30,16 +30,28 @@ class MultiCompose:
     #   ValueError: Seed must be between 0 and 2**32 - 1
     MIN_SEED = 0 # - 0x8000_0000_0000_0000
     MAX_SEED = min(2**32 - 1, 0xffff_ffff_ffff_ffff)
+    NO_OP = lambda x: x  # i.e. identity function
 
-    def __init__(self, transforms):
-        no_op = lambda x: x  # i.e. identity function
+    def __init__(self, transforms=[]):
         self.transforms = []
         for t in transforms:
             if isinstance(t, (tuple, list)):
-            	# convert `None` to `no_op` for convenience
-                self.transforms.append([no_op if _t is None else _t for _t in t])
+            	# convert `None` to `NO_OP` for convenience
+                self.transforms.append([MultiCompose.NO_OP if _t is None else _t for _t in t])
             else:
                 self.transforms.append(t)
+
+    def append(self, t):
+        if isinstance(t, (tuple, list)):
+            # convert `None` to `NO_OP` for convenience
+            self.transforms.append([MultiCompose.NO_OP if _t is None else _t for _t in t])
+        else:
+            self.transforms.append(t)
+
+    def extend(self, ts):
+        assert isinstance(ts, (tuple, list))
+        for t in ts:
+            self.append(t)
 
     def __call__(self, *images):
         for t in self.transforms:
