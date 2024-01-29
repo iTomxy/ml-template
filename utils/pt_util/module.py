@@ -184,6 +184,36 @@ class IntermediateLayerGetter:
         return ret, output
 
 
+class UpsampleDeterministic(nn.Module):
+    """deterministic upsample with `nearest` interpolation
+    From: https://github.com/pytorch/pytorch/issues/12207
+    """
+
+    def __init__(self, scale_factor=2):
+        """
+        Input:
+            scale_factor: int or (int, int), ratio to scale (along heigth & width)
+        """
+        super(UpsampleDeterministic, self).__init__()
+        if isinstance(scale_factor, (tuple, list)):
+            assert len(scale_factor) == 2
+            self.scale_h, self.scale_w = scale_factor
+        else:
+            self.scale_h = self.scale_w = scale_factor
+        assert isinstance(self.scale_h, int) and isinstance(self.scale_w, int)
+
+    def forward(self, x):
+        """
+        Input:
+            x: [n, c, h, w], torch.Tensor
+        Output:
+            upsampled x': [n, c, h * scale_h, w * scale_w]
+        """
+        return x[:, :, :, None, :, None].expand(
+            -1, -1, -1, self.scale_h, -1, self.scale_w).reshape(
+                x.size(0), x.size(1), x.size(2) * self.scale_h, x.size(3) * self.scale_w)
+
+
 if "__main__" == __name__:
     # build network
     net = nn.Sequential(OrderedDict([
