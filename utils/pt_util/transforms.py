@@ -179,3 +179,82 @@ class PermutePatch:
         image = self.permute_axis(image, 1, self.h_div) # permute vertically
         image = self.permute_axis(image, 2, self.w_div) # permute horizontally
         return image
+
+
+def permute_patch(image, h_div, w_div, ensure_displace=False):
+    """permute image pathces, also return inverse transform handle
+    Input:
+        image: torch.Tensor, [H, W] or [C, H, W] or [n, C, H, W]
+        h_div: #groups to divide into along height dimension
+        w_div: #groups to divide into along width dimension
+        ensure_displace: bool, ensure NO patch stay in its original position
+    Output:
+        permuted_image: same size of input image
+        restore_handle: function, to restore the permuted image to original order
+    """
+
+    def _permute_index(n, div):
+        """generate permutating indices & its inverse
+        Input:
+            n: int, edge size (i.e. height or width)
+            div: #groups to divide pixels into (will permute group-wise)
+        Output:
+            permute_indices: [n], to permute image column/row order
+            restore_indices: [n], to restore image column/row order
+        """
+        div = min(div, n)
+        rnd_idx = torch.randperm(div)
+        if ensure_displace:
+            # adjust `rnd_idx` to ensure that rnd_idx[i] != i for all i
+            idx = torch.arange(div)
+            fixed_mask = (rnd_idx == idx)
+            fixed_num = fixed_mask.sum() # num of fixed point
+            if 1 == fixed_num: # find another one to swap
+                fixed_pos = idx[fixed_mask].item()
+                for pos in range(rnd_idx.size(0)):
+                    if pos != fixed_pos and rnd_idx[fixed_pos] != pos and rnd_idx[pos] != fixed_pos:
+                        rnd_idx[fixed_pos], rnd_idx[pos] = rnd_idx[pos].item(), rnd_idx[fixed_pos].item() # must `.item()`
+                        break
+            elif fixed_num > 1: # simply left shift
+                fixed_idx = rnd_idx[fixed_mask]
+                rnd_idx[fixed_mask] = torch.cat([fixed_idx[1:], fixed_idx[:1]])
+            assert (rnd_idx == idx).sum() == 0
+
+        indices = torch.arange(n) # original order
+        permute_indices, restore_indices = torch.zeros_like(indices), torch.zeros_like(indices)
+        step = n // div
+        lens = [step] * (div - 1) + [n - step * (div - 1)]
+        starts = [0]
+        for i in range(1, div):
+            starts.append(starts[i - 1] + lens[i - 1])
+        cur = 0
+        for idx in rnd_idx:
+            permute_indices[cur: cur + lens[idx]] = indices[starts[idx]: starts[idx] + lens[idx]]
+            cur += lens[idx]
+        for i, pi in enumerate(permute_indices):
+            restore_indices[pi] = i
+
+        return permute_indices, restore_indices
+
+    h_dim, w_dim = 0 + image.ndim - 2, 1 + image.ndim - 2
+    shuffle_h, restore_h = _permute_index(image.size(h_dim), h_div)
+    shuffle_w, restore_w = _permute_index(image.size(w_dim), w_div)
+    # permute image: 1st h then w
+    for shuf_dim, shuf_idx in zip([h_dim, w_dim], [shuffle_h, shuffle_w]):
+        image = torch.moveaxis(image, shuf_dim, 0)
+        image = image[shuf_idx]
+        image = torch.moveaxis(image, 0, shuf_dim)
+
+    def _restore_handle(img):
+        """restore the permuted image to original patch order
+        Input:
+            img: same size of input image
+        """
+        # restore image: 1st w then h (reversed order)
+        for re_dim, re_idx in zip([w_dim, h_dim], [restore_w, restore_h]):
+            img = torch.moveaxis(img, re_dim, 0)
+            img = img[re_idx]
+            img = torch.moveaxis(img, 0, re_dim)
+        return img
+
+    return image, _restore_handle

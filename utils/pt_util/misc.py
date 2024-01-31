@@ -75,11 +75,11 @@ def seed_everything(seed=42):
     torch.backends.cudnn.benchmark = True
 
 
-def interpolate_int_nearest(x, size):
-    """perform nearest interpolation on int/long tensor (e.g. segmentation label)
+def interpolate_nearest(x, size):
+    """perform nearest interpolation, suitable for int/long tensor (e.g. segmentation label)
     From: https://discuss.pytorch.org/t/what-is-the-good-way-to-interpolate-int-tensor/29490
     Input:
-        x: [n, c, h, w], tensor.Tensor of int/long type
+        x: [n, c, h, w], tensor.Tensor, can be of int/long type
         size: int or (height: int, width: int)
     Output:
         x': [n, c, size, size] or [n, c, *size], the resized tensor
