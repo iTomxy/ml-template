@@ -1,0 +1,23 @@
+# An example yaml configuration file, used in utils/config.py as an example input.
+# Ref: https://pyyaml.org/wiki/PyYAMLDocumentation
+
+log_path: ./log
+none: [~, null, None]
+bool: [true, false, on, off, True, False]
+int: 42
+float: 3.14159
+list: [LITE, RES_ACID, SUS_DEXT]
+list2:
+  - -1
+  - 0
+  - 1
+str:
+  a
+  2
+  0.2
+  # d: tom
+dict: {hp: 13, sp: 5}
+dict2:
+  lr: 0.01
+  decay_rate: 0.1
+  name: jerry
