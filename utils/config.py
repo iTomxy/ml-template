@@ -139,7 +139,7 @@ def parse_cfg(yaml_file, update_dict={}):
         cfg = EasyDict(yaml.safe_load(f))
 
     if update_dict:
-        assert isinstance(update_dict, (dict, EasyDict))
+        assert isinstance(update_dict, dict)
         for k, v in update_dict.items():
             k_list = k.split('.')
             assert len(k_list) > 0
@@ -157,10 +157,22 @@ def parse_cfg(yaml_file, update_dict={}):
     return cfg
 
 
+def easydict2dict(ed):
+    """convert EasyDict to dict for clean yaml"""
+    d = {}
+    for k, v in ed.items():
+        if isinstance(v, EasyDict):
+            d[k] = easydict2dict(v)
+        else:
+            d[k] = v
+    return d
+
+
 if "__main__" == __name__:
     # test command:
     #   python config.py --cfg-options int=5 dict2.lr=8 dict2.newdict.newitem=fly
 
+    import pprint
     parser = ArgumentParser()
     parser.add_argument("--cfg", type=str, default="../config.yaml")
     parser.add_argument(
@@ -175,5 +187,8 @@ if "__main__" == __name__:
         'is allowed.')
     args = parser.parse_args()
 
-    print(args.cfg_options)
-    print(parse_cfg(args.cfg, args.cfg_options))
+    pprint.pprint(args.cfg_options)
+    cfg = parse_cfg(args.cfg, args.cfg_options)
+    pprint.pprint(cfg)
+    with open("backup-config.yaml", 'w') as f:
+        yaml.dump(easydict2dict(cfg), f)
