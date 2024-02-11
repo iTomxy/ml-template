@@ -151,7 +151,8 @@ def parse_cfg(yaml_file, update_dict={}):
                     if i == len(k_list) - 1: # last layer
                         ptr[_k] = v
                     elif _k not in ptr:
-                        ptr[_k] = {}
+                        ptr[_k] = EasyDict()
+
                     ptr = ptr[_k]
 
     return cfg
@@ -191,4 +192,5 @@ if "__main__" == __name__:
     cfg = parse_cfg(args.cfg, args.cfg_options)
     pprint.pprint(cfg)
     with open("backup-config.yaml", 'w') as f:
-        yaml.dump(easydict2dict(cfg), f)
+        # yaml.dump(cfg, f) # OK
+        yaml.dump(easydict2dict(cfg), f) # cleaner yaml
