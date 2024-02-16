@@ -231,6 +231,8 @@ func! Compile_iTom()
 		exec "! bash %"
 	elseif &filetype == 'dosbatch'
 		exec "! %"
+	elseif &filetype == 'ps1'
+		exec "! powershell -executionpolicy bypass -File %"
 	endif
 endfunc
 
@@ -384,4 +386,3 @@ func! Before_Saving()
         call append(line('$'), "")
     endif
 endfunc
-
