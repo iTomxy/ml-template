@@ -127,18 +127,20 @@ class DictAction(Action):
         setattr(namespace, self.dest, options)
 
 
-def parse_cfg(yaml_file, update_dict={}):
+def parse_cfg(yaml_file, *update_dicts):
     """load configurations from a yaml file & update from command-line argments
     Input:
         yaml_file: str, path to a yaml configuration file
-        update_dict: dict, to modify/update options in those yaml configurations
+        update_dicts: dict, to modify/update options in those yaml configurations
     Output:
         cfg: EasyDict
     """
     with open(args.cfg, "r") as f:
         cfg = EasyDict(yaml.safe_load(f))
 
-    if update_dict:
+    for update_dict in update_dicts:
+        if update_dict is None:
+            continue
         assert isinstance(update_dict, dict)
         for k, v in update_dict.items():
             k_list = k.split('.')
@@ -176,6 +178,7 @@ if "__main__" == __name__:
     import pprint
     parser = ArgumentParser()
     parser.add_argument("--cfg", type=str, default="../config.yaml")
+    parser.add_argument("--flag", action="store_true")
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -189,8 +192,13 @@ if "__main__" == __name__:
     args = parser.parse_args()
 
     pprint.pprint(args.cfg_options)
-    cfg = parse_cfg(args.cfg, args.cfg_options)
+    pprint.pprint(args.__dict__)
+    flags = {k: v for k, v in args._get_kwargs() if k not in ("cfg", "cfg_options")}
+    pprint.pprint(flags)
+
+    cfg = parse_cfg(args.cfg, flags, args.cfg_options)
     pprint.pprint(cfg)
+
     with open("backup-config.yaml", 'w') as f:
         # yaml.dump(cfg, f) # OK
         yaml.dump(easydict2dict(cfg), f) # cleaner yaml
