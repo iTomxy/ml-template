@@ -102,16 +102,17 @@ class ResizeZoomPad:
         self.interpolation = interpolation
 
     def __call__(self, image):
-        """image: [C, H, W]"""
-        scale_h, scale_w = float(self.size[0]) / image.size(1), float(self.size[1]) / image.size(2)
+        """image: [..., H, W] (e.g. [H, W], [C, H, W] or [N, C, H, W]) torch.Tensor"""
+        dim_h, dim_w = image.ndim - 2, image.ndim - 1
+        scale_h, scale_w = float(self.size[0]) / image.size(dim_h), float(self.size[1]) / image.size(dim_w)
         scale = min(scale_h, scale_w)
         tmp_size = [ # clipping to ensure size
-            min(int(image.size(1) * scale), self.size[0]),
-            min(int(image.size(2) * scale), self.size[1])
+            min(int(image.size(dim_h) * scale), self.size[0]),
+            min(int(image.size(dim_w) * scale), self.size[1])
         ]
         image = F.resize(image, tmp_size, self.interpolation)
-        assert image.size(1) <= self.size[0] and image.size(2) <= self.size[1]
-        pad_h, pad_w = self.size[0] - image.size(1), self.size[1] - image.size(2)
+        assert image.size(dim_h) <= self.size[0] and image.size(dim_w) <= self.size[1]
+        pad_h, pad_w = self.size[0] - image.size(dim_h), self.size[1] - image.size(dim_w)
         if pad_h > 0 or pad_w > 0:
             pad_left, pad_right = pad_w // 2, (pad_w + 1) // 2
             pad_top, pad_bottom = pad_h // 2, (pad_h + 1) // 2
