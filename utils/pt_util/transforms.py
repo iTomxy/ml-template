@@ -31,7 +31,7 @@ class MultiCompose:
             (transforms.ColorJitter(0.1, 0.2, 0.3, 0.4), None),
         ])
         # apply augmentations on both `images` and `seg_labels`
-        aug_images, aug_seg_labels = seq_trfm([images, seg_labels])
+        aug_images, aug_seg_labels = seq_trfm(images, seg_labels)
 
         ## 3. dict style
         dict_trfm = MultiCompose([
@@ -108,13 +108,12 @@ class MultiCompose:
 
         return images
 
-    def __call__(self, images):
-        if isinstance(images, (tuple, list)):
+    def __call__(self, *images):
+        if isinstance(images[0], dict):
+            assert len(images) == 1
+            return self.call_dict(images[0])
+        else:
             return self.call_sequential(*images)
-        elif isinstance(images, dict):
-            return self.call_dict(images)
-        else: # single input
-            return self.call_sequential(images)
 
 
 class ResizeZoomPad:
