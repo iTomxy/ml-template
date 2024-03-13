@@ -11,7 +11,17 @@ class MultiCompose:
 
     Usage:
         ```python
-        train_trans = MultiCompose([
+        ## 1. compatible with single input (just like torchvision.transforms.Compose)
+        trfm = MultiCompose([
+            transforms.Resize((224, 256), transforms.InterpolationMode.BILINEAR),
+            transforms.RandomAffine(30, (0.1, 0.1)),
+            transforms.RandomHorizontalFlip(),
+            transforms.ColorJitter(0.1, 0.2, 0.3, 0.4)
+        ])
+        aug_images = trfm(images)
+
+        ## 2. sequential style
+        seq_trfm = MultiCompose([
             # interpolation: image uses `bilinear`, label uses `nearest`
             [transforms.Resize((224, 256), transforms.InterpolationMode.BILINEAR),
              transforms.Resize((224, 256), transforms.InterpolationMode.NEAREST)],
@@ -20,9 +30,23 @@ class MultiCompose:
             # apply `ColorJitter` on image but not on label (thus `None`)
             (transforms.ColorJitter(0.1, 0.2, 0.3, 0.4), None),
         ])
+        # apply augmentations on both `images` and `seg_labels`
+        aug_images, aug_seg_labels = seq_trfm([images, seg_labels])
 
-        # apply augmentations on both `image` and `seg_label`
-        image, seg_label = train_trans(image, seg_label)
+        ## 3. dict style
+        dict_trfm = MultiCompose([
+            # interpolation: image uses `bilinear`, label uses `nearest`
+            {"image": transforms.Resize((224, 256), transforms.InterpolationMode.BILINEAR),
+             "label": transforms.Resize((224, 256), transforms.InterpolationMode.NEAREST)},
+            transforms.RandomAffine(30, (0.1, 0.1)),
+            transforms.RandomHorizontalFlip(),
+            # apply `ColorJitter` on image but not on label (lack here)
+            {"image": transforms.ColorJitter(0.1, 0.2, 0.3, 0.4)},
+        ])
+        # apply augmentations on both `images` and `seg_labels`
+        res = dict_trfm({"image": images, "label": seg_labels})
+        aug_images = res["image"]
+        aug_seg_labels = res["label"]
         ```
     """
 
@@ -30,30 +54,27 @@ class MultiCompose:
     #   ValueError: Seed must be between 0 and 2**32 - 1
     MIN_SEED = 0 # - 0x8000_0000_0000_0000
     MAX_SEED = min(2**32 - 1, 0xffff_ffff_ffff_ffff)
-    NO_OP = lambda x: x  # i.e. identity function
 
-    def __init__(self, transforms=[]):
-        self.transforms = []
-        for t in transforms:
-            if isinstance(t, (tuple, list)):
-            	# convert `None` to `NO_OP` for convenience
-                self.transforms.append([MultiCompose.NO_OP if _t is None else _t for _t in t])
-            else:
-                self.transforms.append(t)
+    def __init__(self, transforms, seed=None):
+        """
+        Input:
+            transforms: list/tuple of:
+                - transform object (for all inputs)
+                - embedded list/tuple/dict of transform objects (for each input)
+            seed: int, always use this seed if provided (deterministic for reproducibility)
+        """
+        self.transforms = transforms
+        self.seed = seed
 
     def append(self, t):
-        if isinstance(t, (tuple, list)):
-            # convert `None` to `NO_OP` for convenience
-            self.transforms.append([MultiCompose.NO_OP if _t is None else _t for _t in t])
-        else:
-            self.transforms.append(t)
+        self.transforms.append(t)
 
     def extend(self, ts):
         assert isinstance(ts, (tuple, list))
         for t in ts:
             self.append(t)
 
-    def __call__(self, *images):
+    def call_sequential(self, *images):
         for t in self.transforms:
             if isinstance(t, (tuple, list)):
                 # `<=` allows redundant transforms
@@ -62,16 +83,39 @@ class MultiCompose:
                 t = [t] * len(images)
 
             _aug_images = []
-            _seed = random.randint(self.MIN_SEED, self.MAX_SEED)
+            _seed = random.randint(MultiCompose.MIN_SEED, MultiCompose.MAX_SEED) if self.seed is None else self.seed
             for _im, _t in zip(images, t):
                 seed_everything(_seed)
-                _aug_images.append(_t(_im))
+                _aug_images.append(_im if _t is None else _t(_im))
 
             images = _aug_images
 
         if len(images) == 1:
             images = images[0]
         return images
+
+    def call_dict(self, images):
+        for t in self.transforms:
+            if not isinstance(t, dict):
+                t = {k: t for k in images}
+
+            _aug_images = {}
+            _seed = random.randint(MultiCompose.MIN_SEED, MultiCompose.MAX_SEED) if self.seed is None else self.seed
+            for k in images:
+                seed_everything(_seed)
+                _aug_images[k] = t[k](images[k]) if k in t and t[k] is not None else images[k]
+
+            images = _aug_images
+
+        return images
+
+    def __call__(self, images):
+        if isinstance(images, (tuple, list)):
+            return self.call_sequential(*images)
+        elif isinstance(images, dict):
+            return self.call_dict(images)
+        else: # single input
+            return self.call_sequential(images)
 
 
 class ResizeZoomPad:
@@ -138,13 +182,13 @@ class PermutePatch:
     def permute_axis(self, image, axis, div):
         """
         Input:
-            image: [C, H, W], torch.Tensor
-            axis: int, in {1, 2} (i.e. {height, width}), along wich axis to permute patches
+            image: [..., H, W], torch.Tensor
+            axis: int, along wich axis to permute patches
             div: # of patches to divide along this axis
         Output:
-            the permuted image, [C, H, W], torch.Tensor
+            the permuted image, same size of `image`, torch.Tensor
         """
-        assert axis in (1, 2) # only h(1) & w(2)
+        # assert axis in (1, 2) # only h(1) & w(2)
         image = torch.moveaxis(image, axis, 0)
         tmp = torch.zeros_like(image)
         div = min(div, image.size(0))
@@ -176,9 +220,9 @@ class PermutePatch:
         return torch.moveaxis(tmp, 0, axis)
 
     def __call__(self, image):
-        """image: [C, H, W], torch.Tensor"""
-        image = self.permute_axis(image, 1, self.h_div) # permute vertically
-        image = self.permute_axis(image, 2, self.w_div) # permute horizontally
+        """image: [..., H, W] (e.g. [H, W] or [C, H, W] or [n, C, H, W]), torch.Tensor"""
+        image = self.permute_axis(image, image.ndim - 2, self.h_div) # permute vertically
+        image = self.permute_axis(image, image.ndim - 1, self.w_div) # permute horizontally
         return image
 
 
