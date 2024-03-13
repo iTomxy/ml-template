@@ -57,11 +57,10 @@ class MultiCompose:
 
     def __init__(self, transforms, seed=None):
         """
-        Input:
-            transforms: list/tuple of:
-                - transform object (for all inputs)
-                - embedded list/tuple/dict of transform objects (for each input)
-            seed: int, always use this seed if provided (deterministic for reproducibility)
+        transforms: list/tuple of:
+            - transform object (for all inputs)
+            - embedded list/tuple/dict of transform objects (for each input)
+        seed: int, always use this seed if provided (deterministic for reproducibility)
         """
         self.transforms = transforms
         self.seed = seed
@@ -169,10 +168,9 @@ class PermutePatch:
 
     def __init__(self, h_div, w_div, ensure_displace=False):
         """
-        Input:
-            h_div: int, #patches to divide into along heigth
-            w_div: int, #patches to divide into along width
-            ensure_displace: bool, ensure NO patch stay in its original position
+        h_div: int, #patches to divide into along heigth
+        w_div: int, #patches to divide into along width
+        ensure_displace: bool, ensure NO patch stay in its original position
         """
         assert isinstance(h_div, int) and isinstance(w_div, int)
         self.h_div = h_div
