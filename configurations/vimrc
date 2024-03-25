@@ -386,3 +386,29 @@ func! Before_Saving()
         call append(line('$'), "")
     endif
 endfunc
+
+
+"--- highlight current word ---"
+" From: https://stackoverflow.com/questions/25227281/how-to-auto-highlight-the-current-word-in-vim
+" Highlight all instances of word under cursor, when idle.
+" Useful when studying strange source code.
+" Type z/ to toggle highlighting on/off.
+nnoremap z/ :if AutoHighlightToggle()<Bar>set hls<Bar>endif<CR>
+function! AutoHighlightToggle()
+    let @/ = ''
+    if exists('#auto_highlight')
+        au! auto_highlight
+        augroup! auto_highlight
+        setl updatetime=4000
+        echo 'Highlight current word: off'
+        return 0
+    else
+        augroup auto_highlight
+            au!
+            au CursorHold * let @/ = '\V\<'.escape(expand('<cword>'), '\').'\>'
+        augroup end
+        setl updatetime=500 " after how long of cursor hold before highlighting
+        echo 'Highlight current word: ON'
+        return 1
+    endif
+endfunction
