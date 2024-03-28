@@ -40,7 +40,7 @@ else
 	set undodir=$HOME/.vim/vimundo " put .un~ files in undodir
 endif
 if !isdirectory(&undodir)
-    call mkdir(&undodir, "p", 0700)
+	call mkdir(&undodir, "p", 0700)
 endif
 set hlsearch " highlight matched string
 set incsearch " real-time match highlighting
@@ -116,34 +116,34 @@ set listchars=precedes:<,extends:>,tab:\|\ ,eol:¬,space:·
 autocmd GUIEnter * call Init_GUI()
 
 func! Init_GUI()
-    "" config window
-    set guioptions-=m			" hide menu
-    set guioptions-=T			" hide tool bar
-    " simalt ~x					" maximise window
-    set lines=32 columns=110	" window size
+	"" config window
+	set guioptions-=m			" hide menu
+	set guioptions-=T			" hide tool bar
+	" simalt ~x					" maximise window
+	set lines=32 columns=110	" window size
 
-    "" adjust background light/dark along time
-    " dawn
-    let dawn_hour = 6
+	"" adjust background light/dark along time
+	" dawn
+	let dawn_hour = 6
 	let dawn_minute = 30
 	" evening / night
-    let night_hour = 17
-    let night_minute = 30
-    " now
-    let hour = strftime('%H')
-    let minute = strftime('%M')
-    " echo hour . ":" . minute
-    if hour < dawn_hour
+	let night_hour = 17
+	let night_minute = 30
+	" now
+	let hour = strftime('%H')
+	let minute = strftime('%M')
+	" echo hour . ":" . minute
+	if hour < dawn_hour
 		set background=dark
 	elseif (hour == dawn_hour) && (minute < dawn_minute)
 		set background=dark
 	elseif hour < night_hour
-        set background=light
-    elseif (hour == night_hour) && (minute < night_minute)
-        set background=light
-    else
-        set background=dark
-    endif
+		set background=light
+	elseif (hour == night_hour) && (minute < night_minute)
+		set background=light
+	else
+		set background=dark
+	endif
 endfunc
 
 "--- Buffer / Window Tab ---"
@@ -189,22 +189,22 @@ nmap <silent> <leader>mw :call MarkWindowSwap()<CR>
 nmap <silent> <leader>pw :call DoWindowSwap()<CR>
 
 function! MarkWindowSwap()
-    let g:markedWinNum = winnr()
+	let g:markedWinNum = winnr()
 endfunction
 
 function! DoWindowSwap()
-    "Mark destination
-    let curNum = winnr()
-    let curBuf = bufnr( "%" )
-    exe g:markedWinNum . "wincmd w"
-    "Switch to source and shuffle dest->source
-    let markedBuf = bufnr( "%" )
-    "Hide and open so that we aren't prompted and keep history
-    exe 'hide buf' curBuf
-    "Switch to dest and shuffle source->dest
-    exe curNum . "wincmd w"
-    "Hide and open so that we aren't prompted and keep history
-    exe 'hide buf' markedBuf
+	"Mark destination
+	let curNum = winnr()
+	let curBuf = bufnr( "%" )
+	exe g:markedWinNum . "wincmd w"
+	"Switch to source and shuffle dest->source
+	let markedBuf = bufnr( "%" )
+	"Hide and open so that we aren't prompted and keep history
+	exe 'hide buf' curBuf
+	"Switch to dest and shuffle source->dest
+	exe curNum . "wincmd w"
+	"Hide and open so that we aren't prompted and keep history
+	exe 'hide buf' markedBuf
 endfunction
 
 
@@ -248,17 +248,17 @@ inoremap [ <C-r>=Open_Pair('[', ']')<CR>
 inoremap { <C-r>=Open_Pair('{', '}')<CR>
 
 func! Open_Pair(open, close)
-    let line = getline('.')
+	let line = getline('.')
 	let nxt_char = line[col('.') - 1]
-    if col('.') > strlen(line) || nxt_char == ' '
+	if col('.') > strlen(line) || nxt_char == ' '
 		return a:open.a:close."\<Left>"
-    elseif nxt_char == a:close
-        return a:open
+	elseif nxt_char == a:close
+		return a:open
 	elseif nxt_char == ')' || nxt_char == ']' || nxt_char == '}'
 		return a:open.a:close."\<Left>"
 	else
 		return a:open
-    endif
+	endif
 endfunc
 
 
@@ -282,27 +282,27 @@ inoremap ' <C-r>=Same_Pair("'")<CR>
 inoremap ` <C-r>=Same_Pair('`')<CR>
 
 func! Same_Pair(char)
-    let line = getline('.')
+	let line = getline('.')
 	let pair = a:char.a:char."\<Left>"
-    if col('.') > strlen(line) " || line[col('.') - 1] == ' '
-        return pair
-    elseif line[col('.') - 1] == a:char
-        return "\<Right>"
-    else
+	if col('.') > strlen(line) " || line[col('.') - 1] == ' '
+		return pair
+	elseif line[col('.') - 1] == a:char
+		return "\<Right>"
+	else
 		let pre_char = line[col('.') - 2]
 		let nxt_char = line[col('.') - 1]
 		if pre_char == '(' && nxt_char == ')'
 			return pair
-        elseif pre_char == '[' && nxt_char == ']'
-            return pair
-        elseif pre_char == '{' && nxt_char == '}'
-            return pair
-        elseif pre_char == '<' && nxt_char == '>'
-            return pair
+		elseif pre_char == '[' && nxt_char == ']'
+			return pair
+		elseif pre_char == '{' && nxt_char == '}'
+			return pair
+		elseif pre_char == '<' && nxt_char == '>'
+			return pair
 		else
 			return a:char
 		endif
-    endif
+	endif
 endfunc
 
 
@@ -313,8 +313,12 @@ func! Carrage_Return()
 	let line = getline('.')
 	let pre_char = line[col('.') - 2]
 	let nxt_char = line[col('.') - 1]
-	if &filetype == 'dosbatch'
-		if pre_char == '(' && nxt_char == ')'
+	if pre_char == '(' && nxt_char == ')'
+		if &filetype == 'dosbatch' || &filetype == 'python'
+			return "\<CR>\<Up>\<ESC>A\<CR>"
+		endif
+	elseif pre_char == '[' && nxt_char == ']'
+		if &filetype == 'python'
 			return "\<CR>\<Up>\<ESC>A\<CR>"
 		endif
 	elseif pre_char == '{' && nxt_char == '}'
@@ -356,11 +360,11 @@ endfunc
 "autocmd FileType h,c,cpp,java,python inoremap <S-TAB> <C-r>=Tabulator()<CR>
 
 func! Tabulator()
-    if strlen(getline('.')) < 1
-        return "\<BS>\<CR>"
-    else
-        return "\<TAB>"
-    endif
+	if strlen(getline('.')) < 1
+		return "\<BS>\<CR>"
+	else
+		return "\<TAB>"
+	endif
 endfunc
 
 
@@ -368,23 +372,32 @@ endfunc
 autocmd BufWritePre * call Before_Saving()
 
 func! Before_Saving()
-    " delete trailing white space
-    exec "%s/\\s\\+$//e"
+	" delete trailing white space
+	exec "%s/\\s\\+$//e"
+
+	" retab leadning space/tab
+	if 0 == &expandtab
+		" adjust the # of space after `@<=` according your own `tabstop`
+		exec "%s/\\(^\\s*\\)\\@<=    /\\t/g"
+	else " expandtab
+		exec "%s/\\(^\\s*\\)\\@<=\\t/    /g"
+	endif
+
 	" keep 1 trailing space after `:tabe` in _vimrc/.vimrc
-    let this_file = expand('%')
-    if this_file == '_vimrc' || this_file == '.vimrc'
-        exec "%s/:tabe$/:tabe /e"
-    endif
-    " delete trailing blank lines
-    let ln_nb = prevnonblank('$')
-    let ln_eof = line('$')
-    if ln_eof > ln_nb + 1
-        exec (ln_nb + 1) . "," . ln_eof . "d"
-    endif
-    " add 1 trailing blank line
-    if prevnonblank('$') == line('$')
-        call append(line('$'), "")
-    endif
+	let this_file = expand('%')
+	if this_file == '_vimrc' || this_file == '.vimrc'
+		exec "%s/:tabe$/:tabe /e"
+	endif
+	" delete trailing blank lines
+	let ln_nb = prevnonblank('$')
+	let ln_eof = line('$')
+	if ln_eof > ln_nb + 1
+		exec (ln_nb + 1) . "," . ln_eof . "d"
+	endif
+	" add 1 trailing blank line
+	if prevnonblank('$') == line('$')
+		call append(line('$'), "")
+	endif
 endfunc
 
 
@@ -395,20 +408,20 @@ endfunc
 " Type z/ to toggle highlighting on/off.
 nnoremap z/ :if AutoHighlightToggle()<Bar>set hls<Bar>endif<CR>
 function! AutoHighlightToggle()
-    let @/ = ''
-    if exists('#auto_highlight')
-        au! auto_highlight
-        augroup! auto_highlight
-        setl updatetime=4000
-        echo 'Highlight current word: off'
-        return 0
-    else
-        augroup auto_highlight
-            au!
-            au CursorHold * let @/ = '\V\<'.escape(expand('<cword>'), '\').'\>'
-        augroup end
-        setl updatetime=500 " after how long of cursor hold before highlighting
-        echo 'Highlight current word: ON'
-        return 1
-    endif
+	let @/ = ''
+	if exists('#auto_highlight')
+		au! auto_highlight
+		augroup! auto_highlight
+		setl updatetime=4000
+		echo 'Highlight current word: off'
+		return 0
+	else
+		augroup auto_highlight
+			au!
+			au CursorHold * let @/ = '\V\<'.escape(expand('<cword>'), '\').'\>'
+		augroup end
+		setl updatetime=500 " after how long of cursor hold before highlighting
+		echo 'Highlight current word: ON'
+		return 1
+	endif
 endfunction
