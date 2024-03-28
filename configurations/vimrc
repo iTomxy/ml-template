@@ -377,11 +377,12 @@ func! Before_Saving()
 
 	" retab leadning space/tab
 	if 0 == &expandtab
-		" adjust the # of space after `@<=` according your own `tabstop`
-		exec "%s/\\(^\\s*\\)\\@<=    /\\t/g"
+		" adjust the # of space after `@<=` according to `tabstop`
+		let retabcmd = "silent! %s/\\(^\\s*\\)\\@<=" . repeat(' ', &tabstop) . "/\\t/g"
 	else " expandtab
-		exec "%s/\\(^\\s*\\)\\@<=\\t/    /g"
+		let retabcmd = "silent! %s/\\(^\\s*\\)\\@<=\\t/" . repeat(' ', &tabstop) . "/g"
 	endif
+	exec retabcmd
 
 	" keep 1 trailing space after `:tabe` in _vimrc/.vimrc
 	let this_file = expand('%')
