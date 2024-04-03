@@ -152,6 +152,8 @@ def inherit(cfg, path_prefix='.'):
     base_cfg = {}
     for inc in includes:
         assert isinstance(inc, str)
+        if inc.strip() == '':
+            continue
         if not os.path.isabs(inc):
             inc = os.path.abspath(os.path.join(path_prefix, inc))
         assert os.path.isfile(inc), inc
