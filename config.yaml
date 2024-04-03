@@ -1,6 +1,9 @@
 # An example yaml configuration file, used in utils/config.py as an example input.
 # Ref: https://pyyaml.org/wiki/PyYAMLDocumentation
 
+__include__:
+  - ./a.yaml
+  - ../b.yaml
 log_path: ./log
 none: [~, null, None]
 bool: [true, false, on, off, True, False]
