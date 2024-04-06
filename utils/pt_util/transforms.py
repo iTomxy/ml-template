@@ -62,7 +62,8 @@ class MultiCompose:
             - embedded list/tuple/dict of transform objects (for each input)
         seed: int, always use this seed if provided (deterministic for reproducibility)
         """
-        self.transforms = transforms
+        assert isinstance(transforms, (list, tuple))
+        self.transforms = list(transforms)
         self.seed = seed
 
     def append(self, t):
@@ -72,6 +73,10 @@ class MultiCompose:
         assert isinstance(ts, (tuple, list))
         for t in ts:
             self.append(t)
+
+    def __add__(self, rhs):
+        self.extend(rhs.transforms)
+        return self
 
     def call_sequential(self, *images):
         for t in self.transforms:
