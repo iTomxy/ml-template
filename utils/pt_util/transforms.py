@@ -78,6 +78,9 @@ class MultiCompose:
         self.extend(rhs.transforms)
         return self
 
+    def __getitem__(self, index):
+        return self.transforms[index]
+
     def call_sequential(self, *images):
         for t in self.transforms:
             if isinstance(t, (tuple, list)):
