@@ -16,7 +16,8 @@ Plugin 'https://gitee.com/bigfacecat924/vim-commentary'
 " Plugin 'preservim/nerdtree'
 Plugin 'https://gitee.com/xie-xiaopeng/nerdtree'
 " Plugin 'Vimjas/vim-python-pep8-indent'
-Plugin 'https://gitee.com/tyloeng/vim-python-pep8-indent'
+" Plugin 'https://gitee.com/tyloeng/vim-python-pep8-indent'
+Plugin 'tell-k/vim-autopep8'
 " Plugin 'jiangmiao/auto-pairs'
 " Plugin 'https://gitee.com/rulei_mirror/auto-pairs'
 " Plugin 'altercation/solarized'
@@ -84,6 +85,19 @@ set smartindent
 set cindent " C/C++-style indent
 set noexpandtab " don't convert tabs to spaces by default
 autocmd FileType python set expandtab " convert if Python
+
+"--- Formatting ---"
+noremap <F8> gg=G
+inoremap <F8> <ESC>gg=G
+vnoremap <F8> <ESC>gg=G
+" for python: https://github.com/tell-k/vim-autopep8
+" dependency: `pip install autopep8`
+autocmd FileType python noremap <F8> :Autopep8<CR>|
+	inoremap <F8> <ESC>:Autopep8<CR>|
+	vnoremap <F8> <ESC>:Autopep8<CR>
+let g:autopep8_max_line_length=150
+let g:autopep8_disable_show_diff=1
+"let g:autopep8_on_save=1
 
 "--- Theme ---"
 syntax enable
