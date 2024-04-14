@@ -10,6 +10,7 @@ import logging
 import math
 import os
 import re
+import socket
 import time
 import timeit
 
@@ -405,6 +406,16 @@ def natural_sort_key(s, num_pattern=re.compile('([0-9]+)'), lower=False):
     else:
         return [int(text) if text.isdigit() else text#.lower()
                 for text in num_pattern.split(s)]
+
+
+def free_port():
+    """find an available port, useful for PyTorch DDP
+    Ref: https://www.cnblogs.com/mayanan/p/15997892.html
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp:
+        tcp.bind(("", 0))
+        _, port = tcp.getsockname()
+    return port
 
 
 if __name__ == "__main__":
