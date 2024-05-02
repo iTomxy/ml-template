@@ -34,7 +34,7 @@ def freeze_module(*modules):
             param.requires_grad = False
 
 
-def activate_module(*modules):
+def defrost_module(*modules):
     for m in modules:
         for param in m.parameters():
             param.requires_grad = True
