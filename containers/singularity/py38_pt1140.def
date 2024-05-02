@@ -1,0 +1,21 @@
+Bootstrap: docker
+From: nvcr.io/nvidia/pytorch:22.12-py3
+
+%labels
+
+Python 3.8.10
+CUDA 11.8
+PyTorch 1.14.0
+torchvision 0.15.0
+
+%post
+
+# required by UTS iHPC
+export DEBIAN_FRONTEND=noninteractive
+mkdir -p /data /projects /scratch
+
+# python packages
+pip install --upgrade pip setuptools wheel
+pip install --no-cache-dir easydict fire graphviz h5py ninja xlwt nltk \
+    itk simpleitk medpy nibabel monai
+# opencv numpy scikit-learn Cython scipy tensorboard PyYAML pandas numba jupyter tqdm
