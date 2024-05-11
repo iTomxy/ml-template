@@ -85,6 +85,13 @@ set smartindent
 set cindent " C/C++-style indent
 set noexpandtab " don't convert tabs to spaces by default
 autocmd FileType python set expandtab " convert if Python
+autocmd FileType xml,html call Setup_XHTML()
+function Setup_XHTML()
+	" tab of xml/html
+	set tabstop=2
+	set softtabstop=2
+	set shiftwidth=2
+endfunction
 
 "--- Formatting ---"
 noremap <F8> gg=G
