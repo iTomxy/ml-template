@@ -19,3 +19,4 @@ pip install --upgrade pip setuptools wheel
 pip install --no-cache-dir easydict fire graphviz h5py ninja xlwt nltk \
     itk simpleitk medpy nibabel monai
 # opencv numpy scikit-learn Cython scipy tensorboard PyYAML pandas numba jupyter tqdm
+pip install git+https://github.com/stat-ml/hist-loss.git
