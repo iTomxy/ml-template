@@ -16,7 +16,7 @@ mkdir -p /data /projects /scratch
 
 # python packages
 pip install --upgrade pip setuptools wheel
-pip install --no-cache-dir easydict fire graphviz h5py ninja xlwt nltk \
+pip install --no-cache-dir easydict fire graphviz h5py ninja xlwt nltk scikit-image \
     itk simpleitk medpy nibabel monai
 # opencv numpy scikit-learn Cython scipy tensorboard PyYAML pandas numba jupyter tqdm
 pip install git+https://github.com/stat-ml/hist-loss.git

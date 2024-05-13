@@ -6,7 +6,9 @@ fire
 graphviz
 h5py
 matplotlib
+ninja
 nltk
+numba
 numpy
 opencv-python-headless
 pandas
@@ -15,8 +17,16 @@ Pillow
 pyspng
 pyreadline
 PyYAML
+scikit-image
 scikit-learn
 scipy
 tensorboard
 tqdm
 xlwt
+
+# medical imaging
+itk
+simpleitk
+medpy
+nibabel
+monai
