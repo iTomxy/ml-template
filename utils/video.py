@@ -55,6 +55,7 @@ def v2i(
     dest_dir,           # str, full path to folder to save the extracted frames
     save_type="png",    # extension to specify saving type, in {png, jpg, jpeg}
     overwrite=False,    # whether overwrite if `dest_dir` already exists
+    head=0,             # if >0, only extract the first `head` frames
 ):
     """extract video frames"""
     assert osp.isfile(src_video_file), src_video_file
@@ -74,8 +75,32 @@ def v2i(
             if not flag: break
             cv2.imwrite(osp.join(tmp_dest_dir, str(i_frame)+'.'+save_type), frame)
             i_frame += 1
+            if 0 < head <= i_frame:
+                break
 
         if osp.isdir(dest_dir): shutil.rmtree(dest_dir)
         os.rename(tmp_dest_dir, dest_dir)
     finally:
         cap.release()
+
+
+if "__main__" == __name__:
+    P = osp.join(os.environ["USERPROFILE"], "Videos")
+    vf = osp.join(P, "test.mpvd")
+    frame_dir = osp.join(P, "test-frames")
+    v2i(vf, frame_dir, head=100)
+
+    # detect edge of frames
+    edge_dir = osp.join(P, "test-edges")
+    os.makedirs(edge_dir, exist_ok=True)
+    for f in os.listdir(frame_dir):
+        img = cv2.imread(osp.join(frame_dir, f))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        edge = cv2.Canny(img, 20, 100)
+        edge = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)
+        cv2.imwrite(osp.join(edge_dir, osp.basename(f)), edge)
+
+    # make a video of edge frame
+    edge_frames = sorted(os.listdir(edge_dir), key=lambda f: int(f[:-4]))
+    edge_frames = [osp.join(edge_dir, f) for f in edge_frames]
+    i2v(edge_frames, osp.join(P, "test-edge.mp4"))
