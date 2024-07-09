@@ -1,5 +1,5 @@
 from argparse import Action, ArgumentParser, Namespace
-import copy, os
+import copy, os, json
 # from easydict import EasyDict
 from typing import Any, Optional, Sequence, Tuple, Union
 import yaml
@@ -130,13 +130,26 @@ class DictAction(Action):
 INCLUDE_KEY = "__include__"
 
 
+def load_cfg_file(cfg_file):
+    """read from yaml/json & return parsed dict"""
+    assert os.path.isfile(cfg_file), cfg_file
+    ext = os.path.splitext(cfg_file)[1].lower()
+    with open(cfg_file, "r") as f:
+        if ".json" == ext:
+            cfg = json.load(f)
+        else: # .yaml / .yml
+            cfg = yaml.safe_load(f)
+
+    return cfg
+
+
 def inherit(cfg, path_prefix='.'):
-    """recursively include(inherit) configurations from other yaml files
+    """recursively include(inherit) configurations from other files
     Included files are regarded as `ancestor` who carries common configurations.
     `Descendant` overwrites `ancestor` if duplicated configurations exist.
     Input &
         cfg: dict
-        path_prefix: str, the starting path to locate other included yaml files
+        path_prefix: str, the starting path to locate other included configuration files
             in case they are specified by relative paths.
     Output:
         cfg: dict, updated
@@ -156,9 +169,8 @@ def inherit(cfg, path_prefix='.'):
             continue
         if not os.path.isabs(inc):
             inc = os.path.abspath(os.path.join(path_prefix, inc))
-        assert os.path.isfile(inc), inc
-        with open(inc, "r") as f:
-            _cfg = yaml.safe_load(f)
+
+        _cfg = load_cfg_file(inc)
         # NOTE: Duplicated keys should NOT exist in `sibbling` yaml files,
         # otherwise the overwritting behaviour is undefined.
         base_cfg.update(inherit(_cfg, os.path.dirname(inc))) # `update` deals with embedded dict
@@ -167,19 +179,17 @@ def inherit(cfg, path_prefix='.'):
     return cfg
 
 
-def parse_cfg(yaml_file, *update_dicts):
-    """load configurations from a yaml file & update from command-line argments
+def parse_cfg(cfg_file, *update_dicts):
+    """load configurations from file & update from command-line argments
     Input:
-        yaml_file: str, path to a yaml configuration file
-        update_dicts: dict, to modify/update options in those yaml configurations
+        cfg_file: str, path to a configuration file (e.g. yaml, json)
+        update_dicts: dict, to modify/update options written in `cfg_file`
     Output:
         cfg: dict
     """
-    with open(args.cfg, "r") as f:
-        cfg = yaml.safe_load(f)
-
+    cfg = load_cfg_file(cfg_file)
     # include configurations in other yaml files indicated by `INCLUDE_KEY`
-    cfg = inherit(cfg, os.path.dirname(yaml_file) or '.')
+    cfg = inherit(cfg, os.path.dirname(cfg_file) or '.')
 
     for update_dict in update_dicts:
         if update_dict is None:
