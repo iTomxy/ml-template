@@ -1,4 +1,4 @@
-import os, os.path as osp, math
+import os, math
 import numpy as np
 from PIL import Image
 
@@ -97,13 +97,56 @@ def show_nii(nii_file):
     Input:
         nii_file: str, path to .nii/.nii.gz file
     """
-    if not osp.isfile(nii_file):
+    if not os.path.isfile(nii_file):
         print("No such file:", nii_file)
         return
     import nibabel as nib
     from nibabel.viewers import OrthoSlicer3D
     img = nib.load(nii_file)
     OrthoSlicer3D(img.dataobj).show()
+
+
+def compact_image_grid(image_list, exact=False):
+    """adaptively arrange images in a compactest 2D grid (for better visualisation)
+    Input:
+        image_list: list of images in format of [h, w] or [h, w, c] numpy.ndarray
+        exact: bool, subjest to #grids = #images or not.
+            If False, #grids > #images may happen for a more compact view.
+    Output:
+        grid: [H, W] or [H, W, c], compiled images
+    """
+    n = len(image_list)
+    if 1 == n:
+        return image_list[0]
+
+    # max image resolution
+    max_h, max_w = 0, 0
+    for im in image_list:
+        h, w = im.shape[:2]
+        max_h = max(max_h, h)
+        max_w = max(max_w, w)
+
+    # find compactest layout
+    nr, nc = 1, n
+    min_peri = nr * max_h + nc * max_w # 1 row
+    for r in range(n, 1, -1):
+        if exact and n % r != 0:
+            continue
+        c = math.ceil(n / r)
+        assert r * c >= n and r * (c - 1) <= n
+        peri = r * max_h + c * max_w
+        if peri < min_peri:
+            nr, nc, min_peri = r, c, peri
+    assert nr * nc >= n
+
+    grid_shape = (nr * max_h, nc * max_w) + image_list[0].shape[2:]
+    grid = np.zeros(grid_shape, dtype=image_list[0].dtype)
+    for i, img in enumerate(image_list):
+        r, c = i // nc, i % nc
+        h, w = img.shape[:2]
+        grid[r*max_h: r*max_h+h, c*max_w: c*max_w+w] = img
+
+    return grid
 
 
 if "__main__" == __name__:
@@ -122,3 +165,13 @@ if "__main__" == __name__:
     blend_seg(img, lab, save_file="blend.png")
 
     show_nii("sub-verse004_seg-vert_msk.nii.gz")
+
+    p = os.path.expanduser(r"~\Pictures\wallpaper")
+    img_list = []
+    for i, f in enumerate(os.listdir(p)):
+        img = np.asarray(Image.open(os.path.join(p, f)))
+        if img.ndim < 3: continue
+        img_list.append(img[:, :, :3])
+        if len(img_list) >= 5: break
+    Image.fromarray(compact_image_grid(img_list, False)).save("grid.png")
+    Image.fromarray(compact_image_grid(img_list, True)).save("grid-exact.png")
