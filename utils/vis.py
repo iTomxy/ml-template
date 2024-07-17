@@ -129,7 +129,7 @@ def compact_image_grid(image_list, exact=False):
     # find compactest layout
     nr, nc = 1, n
     min_peri = nr * max_h + nc * max_w # 1 row
-    for r in range(n, 1, -1):
+    for r in range(2, n + 1):
         if exact and n % r != 0:
             continue
         c = math.ceil(n / r)
@@ -169,9 +169,9 @@ if "__main__" == __name__:
     p = os.path.expanduser(r"~\Pictures\wallpaper")
     img_list = []
     for i, f in enumerate(os.listdir(p)):
-        img = np.asarray(Image.open(os.path.join(p, f)))
+        img = np.asarray(Image.open(os.path.join(p, f)).resize((224, 224)))
         if img.ndim < 3: continue
         img_list.append(img[:, :, :3])
-        if len(img_list) >= 5: break
+        if len(img_list) >= 17: break
     Image.fromarray(compact_image_grid(img_list, False)).save("grid.png")
     Image.fromarray(compact_image_grid(img_list, True)).save("grid-exact.png")
