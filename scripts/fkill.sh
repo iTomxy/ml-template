@@ -7,7 +7,7 @@
 # filter string
 fs=$1
 
-if [ -z $fs ]; then
+if [ -z "$fs" ]; then
     ps aux | grep `whoami` | awk '{print $2}' | xargs kill -9
 else
     ps aux | grep `whoami` | grep $fs | awk '{print $2}' | xargs kill -9
