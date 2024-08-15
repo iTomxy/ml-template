@@ -406,8 +406,16 @@ func! Before_Saving()
 	exec retabcmd
 
 	" prettify comments: enforce a following space right after the comment symbol
-	if &filetype == "python" || &filetype == "sh"
+	if &filetype == "python"
 		exec "silent! %s/^\\(\\s*#\\) \\@!/\\1 /g"
+	elseif &filetype == "sh"
+		exec "silent! %s/^\\(\\s*#\\)!\\@! \\@!/\\1 /g"
+	elseif &filetype == "c" || &filetype == "cpp" || &filetype == "java"
+		exec "silent! %s/^\\(\\s*\\/\\/\\) \\@!/\\1 /g"
+	elseif &filetype == "tex" || &filetype == "matlab"
+		exec "silent! %s/^\\(\\s*%\\)!\\@! \\@!/\\1 /g"
+	elseif &filetype == "sql" || &filetype == "lua"
+		exec "silent! %s/^\\(\\s*--\\)!\\@! \\@!/\\1 /g"
 	endif
 
 	" keep 1 trailing space after `:tabe` in _vimrc/.vimrc
