@@ -405,6 +405,11 @@ func! Before_Saving()
 	endif
 	exec retabcmd
 
+	" prettify comments: enforce a following space right after the comment symbol
+	if &filetype == "python" || &filetype == "sh"
+		exec "silent! %s/^\\(\\s*#\\) \\@!/\\1 /g"
+	endif
+
 	" keep 1 trailing space after `:tabe` in _vimrc/.vimrc
 	let this_file = expand('%')
 	if this_file == '_vimrc' || this_file == '.vimrc'
