@@ -51,4 +51,4 @@ if "__main__" == __name__:
     assert img is not None
     img2 = crop(img)
     print(img.shape, img2.shape)
-    cv2.imwrite(crop-img.png, img2)
+    cv2.imwrite("crop-img.png", img2)
