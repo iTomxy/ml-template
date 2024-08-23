@@ -23,8 +23,8 @@
 \usepackage{graphicx}
 \usepackage{subfigure}
 
-% text
-\usepackage{xcolor} % \textcolor
+% text, colour
+\usepackage{xcolor} % \textcolor, \definecolor
 \usepackage{soul} % \st: stridethrough text
 
 % space
@@ -63,6 +63,15 @@
 \else
   \newcommand{\bm}{\boldsymbol}
 \fi
+```
+
+# Custom Colours
+
+You can use these colours to configure the citation, link and url colour of `hyperref`.
+
+```tex
+\definecolor{royalblue}{rgb}{0, 0.445, 0.737} % 0, 113, 188
+\definecolor{bilibili}{rgb}{0.983, 0.446, 0.6} % 251, 114, 153
 ```
 
 # References
