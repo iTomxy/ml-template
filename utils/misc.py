@@ -54,15 +54,16 @@ def human_time(seconds, prec=1):
 class tic_toc:
     """timer with custom message"""
 
-    def __init__(self, message="time used"):
+    def __init__(self, message="time used", end='\n'):
         self.msg = message
+        self.end = end
 
     def __enter__(self):
         self.tic = timeit.default_timer()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         n_second = timeit.default_timer() - self.tic
-        print("{}:".format(self.msg), human_time(n_second))
+        print("{}:".format(self.msg), human_time(n_second), end=self.end)
 
     def __call__(self, f):
         """enable to use as a context manager
