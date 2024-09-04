@@ -1,7 +1,10 @@
 @echo off
 
-echo Configurate the prompt of cmd.exe, similar to the `$PS1` in linux shell.
-echo Use `prompt /?` to see how.
-echo Default prompt is `$P$G`.
+@REM Configurate the prompt of the current cmd.exe window.
+@REM Use `prompt /?` to see how.
+@REM Default prompt is `$P$G`.
 
 prompt $P$_$G$S
+
+@REM To set the default prompt (just like setting `$PS1` in .bashrc on linux),
+@REM add and edit the `PROMPT` environment variable.
