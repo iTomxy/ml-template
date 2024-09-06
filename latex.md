@@ -21,7 +21,8 @@
 
 % figure
 \usepackage{graphicx}
-\usepackage{subfigure}
+%\usepackage{subfigure}
+\usepackage{subcaption}
 
 % text, colour
 \usepackage{xcolor} % \textcolor, \definecolor
