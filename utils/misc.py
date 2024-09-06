@@ -11,6 +11,7 @@ import math
 import os
 import re
 import socket
+import subprocess
 import time
 import timeit
 
@@ -417,6 +418,23 @@ def free_port():
         tcp.bind(("", 0))
         _, port = tcp.getsockname()
     return port
+
+
+def sort_gpu():
+    """sort GPUs descendingly by free memory
+    Return:
+        gpu_ids: List[int], GPU IDs
+        free_mem: List[int], available memory of each GPU
+    """
+    try:
+        output = subprocess.check_output(['nvidia-smi', '--query-gpu=memory.free', '--format=csv,noheader,nounits'])
+        free_memory = [int(x) for x in output.decode('utf-8').strip().split('\n')]
+        gpus = list(enumerate(free_memory))
+        gpus = sorted(gpus, key=lambda t: t[1], reverse=True)
+        gpu_ids, free_mem = list(zip(*gpus))
+        return gpu_ids, free_mem
+    except Exception as e:
+        return [], []
 
 
 if __name__ == "__main__":
