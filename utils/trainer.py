@@ -1,122 +1,112 @@
-import json
-import os
-import os.path as osp
-import time
-import timeit
+import os, os.path as osp, json, datetime, time, timeit, functools
 
-from .misc import timestamp, Logger
+
+class EMATimer:
+    """Measure the time of a repeated procedule (e.g. a training epoch/iteration).
+    Also record the starting time on the instance creation.
+    """
+
+    def __init__(self, momentum=0.01):
+        """
+        momentum: float, in [0, 1], how slow to update the estimated time.
+        """
+        self.momentum = max(0, min(momentum, 1))
+        self.start_time = time.asctime()
+        self.estim_time = -1
+
+    def __enter__(self):
+        self.tic = timeit.default_timer()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        n_seconds = timeit.default_timer() - self.tic
+        if self.estim_time < 0:
+            self.estim_time = n_seconds
+        else:
+            self.estim_time = self.momentum * self.estim_time + (1 - self.momentum) * n_seconds
+
+    def __call__(self, f):
+        """supports decorator-style usage, e.g.:
+        ```python
+        timer = EMATimer(0.5)
+        @timer
+        def train_one_epoch:
+            pass
+        ```
+        https://stackoverflow.com/questions/9213600/function-acting-as-both-decorator-and-context-manager-in-python
+        """
+        @functools.wraps(f)
+        def decorated(*args, **kwargs):
+            with self:
+                return f(*args, **kwargs)
+        return decorated
 
 
 class BaseTrainer:
-    def __init__(self,
-                 time_estim_mometum=0.8,
-                 log_dir='.',
-                 log_file=None):
-        self.log_freq = log_freq
-        self.mometum = time_estim_mometum
+    def __init__(self):
+        self.epoch_timer = EMATimer()
+        self.iter_timer = EMATimer()
 
-        if log_file is None:
-            log_file = "log.{}.json".format(timestamp())
-        log_file = osp.join(log_dir, log_file)
-        log_dir, log_file = osp.dirname(log_file), osp.basename(log_file)  # in case path in `log_file`
-        os.makedirs(log_dir, exist_ok=True)
-        self.logger = Logger(log_dir, log_file)
+    def time_epoch(func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            with self.epoch_timer:
+                return func(self, *args, **kwargs)
+        return wrapper
 
-    def __del__(self):
-        self.logger.flush()
+    def time_iter(func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            with self.iter_timer:
+                return func(self, *args, **kwargs)
+        return wrapper
 
+    def per_epoch(self):
+        """#seconds cost per epoch"""
+        return self.epoch_timer.estim_time
 
-class IterTrainer(BaseTrainer):
-    def __init__(self,
-                 n_iters,
-                 log_freq=10,
-                 time_estim_mometum=0.8,
-                 log_dir='.',
-                 log_file=None):
-        super(time_estim_mometum, log_dir, log_file)
-        self.n_iters = n_iters
-        self.log_freq = log_freq
-        self.iter = 0
-        self.estim_time = {"iter": 0}
-
-    def iter_begin(self):
-        self.tic_iter = timeit.default_timer()
-
-    def iter_end(self, log_dict=None):
-        if (self.iter + 1) % self.log_freq == 0:
-            elapsed_iter = timeit.default_timer() - self.tic_iter
-            self.estim_time["iter"] = self.mometum * (elapsed_iter / self.log_freq) + (1 - self.mometum) * self.estim_time["iter"]
-            expected_train_time = self.estim_time["iter"] * (self.n_iters - self.iter - 1)
-            _log_dict = {
-                "iter": self.iter + 1,
-                "iter_time": int(self.estim_time["iter"]),
-                "elapsed_since_last": elapsed_iter,
-                "expected_train_time": int(expected_train_time),
-            }
-            if log_dict is not None:
-                _log_dict.update(log_dict)
-            self.logger(json.dumps(_log_dict))
-        elif log_dict is not None:
-            self.logger(json.dumps(log_dict))
-
-        self.iter += 1
+    def per_iter(self):
+        """#seconds cost per iteration"""
+        return self.iter_timer.estim_time
 
 
-class EpochTrainer(BaseTrainer):
-    def __init__(self,
-                 n_epochs, n_iters_per_epoch,
-                 log_freq=10,
-                 time_estim_mometum=0.8,
-                 log_dir='.',
-                 log_file=None):
-        super(time_estim_mometum, log_dir, log_file)
-        self.n_epochs = n_epochs
-        self.n_iters_per_epoch = n_iters_per_epoch
-        self.log_freq = log_freq
-        self.epoch = 0
-        self.iter = 0
-        self.estim_time = {"epoch": 0, "iter": 0}
+if "__main__" == __name__:
+    print("usage 1")
+    class Trainer(BaseTrainer):
+        def __init__(self):
+            super().__init__()
+            self.epoch = 7
 
-    def epoch_begin(self):
-        self.tic_epoch = timeit.default_timer()
+        @BaseTrainer.time_epoch
+        def train_epoch(self, epoch):
+            nipe = 2
+            for i in range(nipe):
+                self.train_iter(epoch, i)
+                eta = datetime.timedelta(seconds=int(
+                    (self.epoch - epoch) * self.per_epoch() + (nipe - i) * self.per_iter()
+                ))
+                print("ETA:", eta, ", expected finish time:", datetime.datetime.now() + eta)
 
-    def iter_begin(self):
-        self.tic_iter = timeit.default_timer()
+            print("epoch", self.per_epoch())
 
-    def iter_end(self, log_dict=None):
-        if (self.iter + 1) % self.log_freq == 0:
-            elapsed_iter = timeit.default_timer() - self.tic_iter
-            self.estim_time["iter"] = self.mometum * (elapsed_iter / self.log_freq) + (1 - self.mometum) * self.estim_time["iter"]
-            expected_epoch_time = self.estim_time["iter"] * (self.n_iters_per_epoch - self.iter - 1)
-            expected_train_time = self.estim_time["iter"] * n_iters_per_epoch * (self.n_epochs - self.epoch - 1)
-            _log_dict = {
-                "epoch": self.epoch + 1, "iter": self.iter + 1,
-                "iter_time": int(self.estim_time["iter"]),
-                "elapsed_since_last": elapsed_iter,
-                "expected_epoch_time": int(expected_epoch_time),
-                "expected_train_time": int(expected_train_time),
-            }
-            if log_dict is not None:
-                _log_dict.update(log_dict)
-            self.logger(json.dumps(_log_dict))
-        elif log_dict is not None:
-            self.logger(json.dumps(log_dict))
+        @BaseTrainer.time_iter
+        def train_iter(self, epoch, it):
+            time.sleep(1)
+            print("iter", epoch, it, self.per_iter())
 
-        self.iter += 1
+        def train(self):
+            for epoch in range(self.epoch):
+                self.train_epoch(epoch)
 
-    def epoch_end(self, log_dict=None):
-        elapsed_epoch = timeit.default_timer() - self.tic_epoch
-        self.estim_time["epoch"] = self.mometum * elapsed_epoch + (1 - self.mometum) * self.estim_time["epoch"]
-        expected_train_time = self.estim_time["epoch"] * (self.n_epochs - self.epoch - 1)
-        _log_dict = {
-            "epoch": self.epoch + 1,
-            "epoch_time": int(self.estim_time["epoch"]),
-            "expected_train_time": int(expected_train_time),
-        }
-        if log_dict is not None:
-            _log_dict.update(log_dict)
-        self.logger(json.dumps(_log_dict))
+    Trainer().train()
 
-        self.iter = 0
-        self.epoch += 1
 
+    print("usage 2")
+    timer = EMATimer()
+    @timer
+    def do(i):
+        time.sleep(i)
+        print(i)
+
+    for i in range(7):
+        do(i)
+        print(i, timer.estim_time)

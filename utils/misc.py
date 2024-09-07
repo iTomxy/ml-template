@@ -4,6 +4,7 @@ except ImportError:
     import builtins as __builtin__ # Python 3
 from collections.abc import Iterable
 import csv
+import datetime
 import functools
 import itertools
 import logging
@@ -21,7 +22,7 @@ def timestamp(fmt="%Y%m%d-%H%M%S"):
     return time.strftime(fmt, time.gmtime())
 
 
-def human_time(seconds, prec=1):
+def human_time(seconds, prec=0):
     """transfer seconds to human readable time string
     Input:
         - seconds: float, time in second
@@ -29,27 +30,28 @@ def human_time(seconds, prec=1):
     Output:
         - str
     """
-    prec = max(0, prec)
-    seconds = round(seconds, prec)
-    minutes = int(seconds // 60)
-    hours = minutes // 60
-    days = hours // 24
+    # prec = max(0, prec)
+    # seconds = round(seconds, prec)
+    # minutes = int(seconds // 60)
+    # hours = minutes // 60
+    # days = hours // 24
 
-    seconds %= 60
-    minutes %= 60
-    hours %= 24
+    # seconds %= 60
+    # minutes %= 60
+    # hours %= 24
 
-    str_list = []
-    if days > 0:
-        str_list.append("{:d}d".format(days))
-    if hours > 0:
-        str_list.append("{:d}h".format(hours))
-    if minutes > 0:
-        str_list.append("{:d}m".format(minutes))
-    if seconds > 0:
-        str_list.append("{0:.{1}f}s".format(seconds, prec))
+    # str_list = []
+    # if days > 0:
+    #     str_list.append("{:d}d".format(days))
+    # if hours > 0:
+    #     str_list.append("{:d}h".format(hours))
+    # if minutes > 0:
+    #     str_list.append("{:d}m".format(minutes))
+    # if seconds > 0:
+    #     str_list.append("{0:.{1}f}s".format(seconds, prec))
 
-    return ' '.join(str_list) if len(str_list) > 0 else "0s"
+    # return ' '.join(str_list) if len(str_list) > 0 else "0s"
+    return str(datetime.timedelta(seconds=round(seconds, prec)))
 
 
 class tic_toc:
@@ -67,7 +69,7 @@ class tic_toc:
         print("{}:".format(self.msg), human_time(n_second), end=self.end)
 
     def __call__(self, f):
-        """enable to use as a context manager
+        """supports decorator-style usage, e.g.:
         ```python
         @tic_toc("foo")
         def bar:
