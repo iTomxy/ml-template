@@ -22,7 +22,7 @@
 % figure
 \usepackage{graphicx}
 %\usepackage{subfigure}
-\usepackage{subcaption}
+\usepackage{subcaption} % use it to include subfigure
 
 % text, colour
 \usepackage{xcolor} % \textcolor, \definecolor
@@ -52,6 +52,9 @@
 \def\iid{i.i.d\onedot} \def\wolog{w.l.o.g\onedot}
 \def\etal{\emph{et al}\onedot}
 \makeatother
+
+
+% math
 % argmax, argmin
 \DeclareMathOperator*{\argmin}{\arg\min}
 \DeclareMathOperator*{\argmax}{\arg\max}
@@ -64,6 +67,15 @@
 \else
   \newcommand{\bm}{\boldsymbol}
 \fi
+
+
+% easy reference of figure, table, section
+% - `\eqref`: built in the `amsmath` package
+% - `\nameref`: built in the `nameref` package
+% - `\pageref`: built-in
+\providecommand{\figref}[1]{\figurename~\ref{#1}}
+\providecommand{\tabref}[1]{\tablename~\ref{#1}}
+\providecommand{\secref}[1]{\S\ref{#1}}
 ```
 
 # Custom Colours
