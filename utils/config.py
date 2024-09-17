@@ -147,7 +147,7 @@ def inherit(cfg, path_prefix='.'):
     """recursively include(inherit) configurations from other files
     Included files are regarded as `ancestor` who carries common configurations.
     `Descendant` overwrites `ancestor` if duplicated configurations exist.
-    Input &
+    Input:
         cfg: dict
         path_prefix: str, the starting path to locate other included configuration files
             in case they are specified by relative paths.

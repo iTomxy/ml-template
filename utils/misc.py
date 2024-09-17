@@ -66,7 +66,7 @@ class tic_toc:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         n_second = timeit.default_timer() - self.tic
-        print("{}:".format(self.msg), human_time(n_second), end=self.end)
+        print("{}: {}".format(self.msg, datetime.timedelta(seconds=int(n_second))), end=self.end)
 
     def __call__(self, f):
         """supports decorator-style usage, e.g.:
