@@ -28,19 +28,21 @@ CONJUNCTION = [
     "until" "when", "whether", "yet",
 ]
 AUXILIARY_VERT = ["am", "is", "was", "were", "can", "could", "may", "might", "must", "ought", "shall", "should", "would"]
-MINOR_WORDS = set(ABBREVIATION + PREPOSITION + CONJUNCTION + AUXILIARY_VERT)
+ARTICLE = ["a", "an", "the"]
+# MISC = ["using", "based"]
+MINOR_WORDS = set(ABBREVIATION + PREPOSITION + CONJUNCTION + AUXILIARY_VERT + ARTICLE)# + MISC)
 
 is_first = True
 res = ""
 for ss in args.text:
     for s in ss.split():
-        if not s.isupper(): # not all capital
-            s = s.lower()
-            if is_first:
-                s = s.capitalize()
-                is_first = False
-            elif s not in MINOR_WORDS:
-                s = s.capitalize()
+        # if not s.isupper(): # not all capital
+        s = s.lower()
+        if is_first:
+            s = s.capitalize()
+            is_first = False
+        elif s not in MINOR_WORDS:
+            s = s.capitalize()
 
         res += s + ' '
         if not s[-1].isalnum():
@@ -49,3 +51,4 @@ for ss in args.text:
 if ' ' == res[-1]:
     res = res[:-1] # rm last space
 print(res)
+
