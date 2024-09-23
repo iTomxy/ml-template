@@ -4,7 +4,10 @@ alias tb='tensorboard --bind_all --logdir'
 alias mlrun='matlab -nodesktop -nosplash -r'
 alias what='ps aux | grep `whoami`'
 # command line prompt
+ip=$(ifconfig | grep "inet addr" | grep -v "127.0.0.1" | awk '{print $2}' | sed "s/^addr://")
 # 1) use predefined, e.g. `1;33`
-PS1="\u@\h \[\033[1;33m\]\w\[\e[0m\]\n\$ "
+# PS1="\u@\h \[\033[1;33m\]\w\[\e[0m\]\n\$ "
+PS1="\u@"${ip}":\[\033[1;33m\]\w\[\e[0m\]\n\$ "
 # 2) use custom RGB, e.g. (255, 163, 26)
 PS1="\u@\h \[\033[38;2;255;163;26m\]\w\[\e[0m\]\n\$ "
+
