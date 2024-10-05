@@ -32,21 +32,21 @@ ARTICLE = ["a", "an", "the"]
 # MISC = ["using", "based"]
 MINOR_WORDS = set(ABBREVIATION + PREPOSITION + CONJUNCTION + AUXILIARY_VERT + ARTICLE)# + MISC)
 
-is_first = True
+is_first = True # first word of the title or after some delimiter
 res = ""
-for ss in args.text:
-    for s in ss.split():
-        # if not s.isupper(): # not all capital
+for i, s in enumerate(args.text):
+    # for s in ss.split():
+    if not (s.isupper() and ':' == s[-1] and 0 == i): # not all capital
         s = s.lower()
-        if is_first:
+        if is_first: # captialise no matter it is minor words or not
             s = s.capitalize()
             is_first = False
         elif s not in MINOR_WORDS:
             s = s.capitalize()
 
-        res += s + ' '
-        if not s[-1].isalnum():
-            is_first = True
+    res += s + ' '
+    if not s[-1].isalnum(): # meets delimiter
+        is_first = True
 
 if ' ' == res[-1]:
     res = res[:-1] # rm last space
