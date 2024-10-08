@@ -25,12 +25,13 @@ _mode=${3-"b"}
 # rest arg: GPU IDs to be ignored, 0-based
 _ignore=${@:4}
 
-_res=$(nvidia-smi | \
-	grep -E "[0-9]+MiB\s*/\s*[0-9]+MiB" | \
-	sed "s/^|//" | \
-	awk '{print ($8" "$10)}' | \
-	sed "s/\([0-9]\+\)MiB \([0-9]\+\)MiB/\1 \2/" | \
-	awk '{print $2 - $1}')
+# _res=$(nvidia-smi | \
+# 	grep -E "[0-9]+MiB\s*/\s*[0-9]+MiB" | \
+# 	sed "s/^|//" | \
+# 	awk '{print ($8" "$10)}' | \
+# 	sed "s/\([0-9]\+\)MiB \([0-9]\+\)MiB/\1 \2/" | \
+# 	awk '{print $2 - $1}')
+_res=`nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits`
 
 _i=0
 if [ $_mode == "b" ]; then
@@ -76,4 +77,3 @@ for i in $(seq 0 2 `expr ${#_res[@]} - 1`); do
 done
 
 # echo found: ${n_gpu_found}
-

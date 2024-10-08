@@ -4,7 +4,6 @@ except ImportError:
     import builtins as __builtin__ # Python 3
 from collections.abc import Iterable
 import csv
-import datetime
 import functools
 import itertools
 import logging
@@ -15,73 +14,7 @@ import socket
 import subprocess
 import time
 import timeit
-
-
-def timestamp(fmt="%Y%m%d-%H%M%S"):
-    """time-stamp string"""
-    return time.strftime(fmt, time.gmtime())
-
-
-def human_time(seconds, prec=0):
-    """transfer seconds to human readable time string
-    Input:
-        - seconds: float, time in second
-        - prec: int, decimal precision of second to show
-    Output:
-        - str
-    """
-    # prec = max(0, prec)
-    # seconds = round(seconds, prec)
-    # minutes = int(seconds // 60)
-    # hours = minutes // 60
-    # days = hours // 24
-
-    # seconds %= 60
-    # minutes %= 60
-    # hours %= 24
-
-    # str_list = []
-    # if days > 0:
-    #     str_list.append("{:d}d".format(days))
-    # if hours > 0:
-    #     str_list.append("{:d}h".format(hours))
-    # if minutes > 0:
-    #     str_list.append("{:d}m".format(minutes))
-    # if seconds > 0:
-    #     str_list.append("{0:.{1}f}s".format(seconds, prec))
-
-    # return ' '.join(str_list) if len(str_list) > 0 else "0s"
-    return str(datetime.timedelta(seconds=round(seconds, prec)))
-
-
-class tic_toc:
-    """timer with custom message"""
-
-    def __init__(self, message="time used", end='\n'):
-        self.msg = message
-        self.end = end
-
-    def __enter__(self):
-        self.tic = timeit.default_timer()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        n_second = timeit.default_timer() - self.tic
-        print("{}: {}".format(self.msg, datetime.timedelta(seconds=int(n_second))), end=self.end)
-
-    def __call__(self, f):
-        """supports decorator-style usage, e.g.:
-        ```python
-        @tic_toc("foo")
-        def bar:
-            pass
-        ```
-        https://stackoverflow.com/questions/9213600/function-acting-as-both-decorator-and-context-manager-in-python
-        """
-        @functools.wraps(f)
-        def decorated(*args, **kwargs):
-            with self:
-                return f(*args, **kwargs)
-        return decorated
+from .timing import *
 
 
 def enum_product(*args):

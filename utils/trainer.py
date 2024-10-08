@@ -1,44 +1,5 @@
 import os, os.path as osp, json, datetime, time, timeit, functools
-
-
-class EMATimer:
-    """Measure the time of a repeated procedule (e.g. a training epoch/iteration).
-    Also record the starting time on the instance creation.
-    """
-
-    def __init__(self, momentum=0.01):
-        """
-        momentum: float, in [0, 1], how slow to update the estimated time.
-        """
-        self.momentum = max(0, min(momentum, 1))
-        self.start_time = time.asctime()
-        self.estim_time = -1
-
-    def __enter__(self):
-        self.tic = timeit.default_timer()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        n_seconds = timeit.default_timer() - self.tic
-        if self.estim_time < 0:
-            self.estim_time = n_seconds
-        else:
-            self.estim_time = self.momentum * self.estim_time + (1 - self.momentum) * n_seconds
-
-    def __call__(self, f):
-        """supports decorator-style usage, e.g.:
-        ```python
-        timer = EMATimer(0.5)
-        @timer
-        def train_one_epoch:
-            pass
-        ```
-        https://stackoverflow.com/questions/9213600/function-acting-as-both-decorator-and-context-manager-in-python
-        """
-        @functools.wraps(f)
-        def decorated(*args, **kwargs):
-            with self:
-                return f(*args, **kwargs)
-        return decorated
+from timing import EMATimer
 
 
 class BaseTrainer:
