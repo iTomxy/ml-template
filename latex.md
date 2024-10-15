@@ -93,6 +93,12 @@ You can use these colours to configure the citation, link and url colour of `hyp
 "a", ``b'', 'c', `d'.
 ```
 
+# Fonts
+
+- [LaTeX/Fonts](https://en.wikibooks.org/wiki/LaTeX/Fonts)
+- [What are all the font styles I can use in math mode?](https://tex.stackexchange.com/questions/58098/what-are-all-the-font-styles-i-can-use-in-math-mode)
+- [Superscript outside math mode](https://tex.stackexchange.com/questions/47324/superscript-outside-math-mode)
+
 # References
 
 1. [latex空心小写字母、数字、括号](https://blog.csdn.net/HackerTom/article/details/134221777)
