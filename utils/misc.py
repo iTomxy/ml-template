@@ -4,16 +4,15 @@ except ImportError:
     import builtins as __builtin__ # Python 3
 from collections.abc import Iterable
 import csv
-import functools
+import fnmatch, functools
+import glob
 import itertools
 import logging
 import math
 import os
 import re
-import socket
-import subprocess
-import time
-import timeit
+import shutil, socket, subprocess
+import time, timeit
 from .timing import *
 
 
@@ -370,6 +369,88 @@ def sort_gpu():
         return gpu_ids, free_mem
     except Exception as e:
         return [], []
+
+
+def rm_empty_dir(root_dir):
+    """remove empty directories recursively, including `root_dir`"""
+    # avoid invalid path at first call
+    if not os.path.isdir(root_dir):
+        return
+    # clean sub-folders
+    for fd in os.listdir(root_dir):
+        fd = os.path.join(root_dir, fd)
+        if os.path.isdir(fd):
+            rm_empty_dir(fd)
+    # clean itself
+    if len(os.listdir(root_dir)) == 0:
+        os.rmdir(root_dir)
+
+
+def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore_symlink=True):
+    """Back-up files (e.g. codes) by copying recursively, selecting files based on white & black list.
+    Only files match one of the white patterns will be candidates, and will be ignored if
+    match any black pattern. I.e. black list is prioritised over white list.
+
+    Example (back-up codes in a Python project):
+    ```python
+    backup_files(
+        "./logs/1st-run/backup_code",
+        white_list=["*.py", "scripts/*.sh"],
+        black_list=["logs", ".*"],  # `.*` for `.idea/`, `.ipynb_checkpoints/`
+    )
+    ```
+
+    Input:
+        backup_root: root folder to back-up file
+        src_root: str, path to the root folder to search
+        white_list: List[str], file pattern/s to back-up
+        black_list: List[str], file/folder pattern/s to ignore
+        ignore_symlink: bool, ignore (i.e. don't back-up & search) symbol link to file/folder
+    """
+    assert os.path.isdir(src_root), src_root
+    assert not os.path.isdir(backup_root), f"* Back-up folder already exists: {backup_root}"
+    assert isinstance(white_list, (list, tuple)) and len(white_list) > 0
+
+    # resolve `~` and make them absolute path to servive
+    # the working directory changing later
+    src_root = os.path.expanduser(src_root)
+    backup_root = os.path.realpath(os.path.expanduser(backup_root))
+
+    # rm `./` prefix, or it will cause stupid matching failure like:
+    #     fnmatch.fnmatch("./utils/misc.py", "utils/*") # <- got False
+    # but works for:
+    #     fnmatch.fnmatch("utils/misc.py", "utils/*") # <- got True
+    white_list = [os.path.relpath(s) for s in white_list]
+    black_list = [os.path.relpath(s) for s in black_list]
+
+    def _check(_s, _list):
+        """check if `_s` matches any listed pattern"""
+        _s = os.path.relpath(_s)
+        for _pat in _list:
+            if fnmatch.fnmatch(_s, _pat):
+                return True
+        return False
+
+    cwd = os.getcwd() # full path
+    os.chdir(src_root)
+
+    for root, dirs, files in os.walk('.'):
+        if '.' != root and _check(root, black_list):
+            continue
+        if ignore_symlink and os.path.islink(root):
+            continue
+
+        bak_d = os.path.join(backup_root, root)
+        os.makedirs(bak_d, exist_ok=True)
+        for f in files:
+            ff = os.path.join(root, f)
+            if ignore_symlink and os.path.islink(ff):
+                continue
+            if _check(ff, white_list) and not _check(ff, black_list):
+                shutil.copy(ff, os.path.join(bak_d, f))
+
+    os.chdir(cwd) # return to current working dir on finish
+    rm_empty_dir(backup_root)
 
 
 if __name__ == "__main__":
