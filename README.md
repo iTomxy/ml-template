@@ -1,32 +1,26 @@
 # ml-template
 
-My personal code snippet library of helper functions and classes and some use case demostrations.
-They are initially developed on these frameworks:
+My personal code snippet library of helper functions and classes, some with example.
 
-- TensorFlow 1.12 & 2.1
-- PyTorch 1.4
-- Matlab R2018a
-
-They may also be compatible to other (newer) versions of these frameworks,
-but this is not tested.
-
-- *+itom/*: some tool functions that might be used in matlab codes.
+- [+itom/](+itom): Tool functions that might be used in MATLAB codes.
 The leading `+` will add this folder into the searching path.
 
-- *requirements.txt*: some common packages I met that a docker image may not contains.
+- [configurations/](configurations): Configuration files.
 
-# TODO
+- [containers/](containers): Definition files of Docker and Singularity image.
 
-1. add model saving & resuming, with info string indicating the information of model, loss, epoch, performance, etc.
-2. add forward/backward hook to diagnose model, see [3]
-3. hard mining for triplet, see [5]
+- [git/](git): git-related command showcases and *.gitignore* template.
 
-# Docker
+- [scripts/](scripts): Utility scripts.
 
-1. [TensorFlow 1.12](https://hub.docker.com/layers/tensorflow/tensorflow/1.12.0-gpu-py3/images/sha256-413b9533f92a400117a23891d050ab829e277a6ff9f66c9c62a755b7547dbb1e?context=explore)
-2. [TensorFlow 2.1](https://hub.docker.com/layers/tensorflow/tensorflow/2.1.0-gpu-py3/images/sha256-1010e051dde4a9b62532a80f4a9a619013eafc78491542d5ef5da796cc2697ae?context=explore)
-3. [PyTorch 1.4](https://hub.docker.com/layers/pytorch/pytorch/1.4-cuda10.1-cudnn7-runtime/images/sha256-ee783a4c0fccc7317c150450e84579544e171dd01a3f76cf2711262aced85bf7?context=explore)
-4. [PyTorch 0.3](https://hub.docker.com/layers/floydhub/pytorch/0.3.1-gpu.cuda9cudnn7-py3.38/images/sha256-f130384d52e5e5542a78db8b7d7ead8885fd73a84cca8cc5a7c7a755a192da37?context=explore)
+- [utils/](utils): Utilities.
+
+- [args.py](args.py): An example of using the `argparse` package in Python.
+
+- [config.yaml](config.yaml): An example of writing arguments in YAML.
+Can be used together with [utils/config.py](utils/config.py).
+
+- [requirements.txt](requirements.txt): Common packages I met that a Docker image may not contain.
 
 # hosts
 
@@ -56,67 +50,6 @@ pip config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple
 # Douban
 pip config set global.index-url http://pypi.douban.com/simple/
 ```
-
-# CPU cores
-
-## linux
-
-- [Linux查看物理CPU个数、核数、逻辑CPU个数](https://www.cnblogs.com/emanlee/p/3587571.html)
-
-```shell
-# 总核数 = 物理CPU个数 X 每颗物理CPU的核数
-# 总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数
-
-# 查看物理CPU个数
-cat /proc/cpuinfo | grep "physical id" | sort | uniq | wc -l
-
-# 查看每个物理CPU中core的个数(即核数)
-cat /proc/cpuinfo | grep "cpu cores" | uniq
-
-# 查看逻辑CPU的个数
-cat /proc/cpuinfo | grep "processor" | wc -l
-```
-
-## python
-
-- [python 查看cpu的核数](https://blog.csdn.net/m0_37360684/article/details/104048542)
-
-```python
-from multiprocessing import cpu_count
-
-print(cpu_count())
-```
-
-# *.bashrc*
-
-## prompt
-
-Add new line (`\n`) before the prompt (`\$`) to suit long path
-
-1. Search `PS1` in the *.bashrc* file to locate the lines look like the followings.
-2. add a `\n` before the two `\$`s (as shown below).
-
-```shell
-if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\n\$ '
-else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\n\$ '
-fi
-```
-
-## custom var
-
-```shell
-# quick switching within a docker container
-export TOM=/home/tom  # home dir in host machine
-export CODE=/home/tom/codes  # code dir
-export DATA=/home/dataset  # data dir
-
-# for matlab
-export PATH=/usr/local/R2018a/bin:$PATH
-alias mrun='matlab -nodesktop -nosplash -r'
-```
-
 
 
 # References

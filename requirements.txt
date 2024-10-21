@@ -1,4 +1,3 @@
-albumentations
 click
 Cython
 easydict
@@ -12,10 +11,7 @@ numba
 numpy
 opencv-python-headless
 pandas
-pickleshare
-Pillow
 pyspng
-pyreadline
 PyYAML
 scikit-image
 scikit-learn
@@ -23,6 +19,9 @@ scipy
 tensorboard
 tqdm
 xlwt
+
+# save & load PyTorch model safely
+safetensors
 
 # medical imaging
 itk

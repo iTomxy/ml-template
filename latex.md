@@ -81,10 +81,13 @@
 # Custom Colours
 
 You can use these colours to configure the citation, link and url colour of `hyperref`.
+See [8] for some named colours.
 
 ```tex
-\definecolor{royalblue}{rgb}{0, 0.445, 0.737} % 0, 113, 188
 \definecolor{bilibili}{rgb}{0.983, 0.446, 0.6} % 251, 114, 153
+\definecolor{citegreen}{rgb}{0, 0.6, 0} % 0, 153, 0, from nips18masking
+\definecolor{phub}{rgb}{1, 0.64, 0.1} % 255, 163, 26
+\definecolor{royalblue}{rgb}{0, 0.445, 0.737} % 0, 113, 188
 ```
 
 # Quotation Marks
@@ -108,3 +111,4 @@ You can use these colours to configure the citation, link and url colour of `hyp
 5. [guanyingc/latex_paper_writing_tips](https://github.com/guanyingc/latex_paper_writing_tips)
 6. [MLNLP-World/Paper-Writing-Tips](https://github.com/MLNLP-World/Paper-Writing-Tips)
 7. [MLNLP-World/Paper-Picture-Writing-Code](https://github.com/MLNLP-World/Paper-Picture-Writing-Code)
+8. [LaTeX Color](https://latexcolor.com/)
