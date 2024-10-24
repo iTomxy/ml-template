@@ -12,19 +12,20 @@ with the package name `email` and that will raise error.
 """
 
 def send_email(
-    from_name, from_addr, to_name_list, to_addr_list,
-    subject, text,
-    server, password
+    subject, text, to_name_list, to_addr_list,
+    server, from_name, from_addr, password, port=0, ssl=False
 ):
     """send text E-mail
-    from_name: str, sender's name
-    from_addr: str, sender's E-mail address
-    to_name_list: List[str], list of receivers' name
-    to_addr_list: List[str], list of receivers' E-mail address
     subject: str, E-mail subject
     text: str, E-mail body
+    to_name_list: List[str], list of receivers' name
+    to_addr_list: List[str], list of receivers' E-mail address
     server: str, SMTP server IP
+    from_name: str, sender's name
+    from_addr: str, sender's E-mail address
     password: str, password or authorisation code of the sender account on the server
+    port: int = 0, connect to which port of the SMTP server
+    ssl: bool = False, use SMTP_SSL instead of SMTP for those servers that require so
     """
     assert isinstance(to_addr_list, (list, tuple)) and len(to_addr_list) > 0
     for i, t in enumerate(to_addr_list):
@@ -35,15 +36,19 @@ def send_email(
     msg['From'] = formataddr((Header(from_name, 'utf-8').encode(), from_addr)) if from_name else from_addr
     to_list = [formataddr((Header(tn, 'utf-8').encode(), ta)) for tn, ta in zip(to_name_list, to_addr_list)]
     to_list.extend(to_addr_list[len(to_name_list):])
-    msg['To'] = ", ".join(to_list)
+    msg['To'] = ",".join(to_list)
 
     msg['Subject'] = Header(subject, 'utf-8').encode()
 
-    with smtplib.SMTP(server) as server:
-        server.set_debuglevel(1)
-        server.login(from_addr, password)
-        server.sendmail(from_addr, to_addr_list, msg.as_string())
-        # server.quit()
+    # with smtplib.SMTP(server, port) as server:
+    if ssl:
+        server = smtplib.SMTP_SSL(server, port)
+    else:
+        server = smtplib.SMTP(server, port)
+    server.set_debuglevel(1)
+    server.login(from_addr, password)
+    server.sendmail(from_addr, to_addr_list, msg.as_string())
+    server.quit()
 
 
 if "__main__" == __name__:
@@ -58,7 +63,8 @@ if "__main__" == __name__:
     parser.add_argument('-F', '--from-name', type=str, metavar="NAME", default="Sender",
         help="sender name. Concatenate with `_` if multiple words, e.g. `Thomas_Cat`.")
     parser.add_argument('-p', '--password', type=str, metavar="PSW", default="", help="password (or authorisation code) of sender email account")
-    # parser.add_argument('-P', '--smtp-port', type=int, metavar="PORT", default=465)
+    parser.add_argument('-P', '--smtp-port', type=int, metavar="PORT", default=0)
+    parser.add_argument('--ssl', action="store_true", help="set if using SSL is required by the SMTP server")
     args = parser.parse_args()
 
     assert len(args.to_addr) > 0, "Please specify receiver email address/es, e.g. jerry.mouse@get-cheese.edu"
@@ -71,7 +77,7 @@ if "__main__" == __name__:
     args.to_name = [tn.replace('_', ' ') for tn in args.to_name]
 
     send_email(
-        args.from_name, args.from_addr, args.to_name, args.to_addr,
-        ' '.join(args.subject), ' '.join(args.text),
-        args.smtp_server, args.password
+        ' '.join(args.subject), ' '.join(args.text), args.to_name, args.to_addr,
+        args.smtp_server, args.from_name, args.from_addr, args.password, args.smtp_port,
+        args.ssl
     )
