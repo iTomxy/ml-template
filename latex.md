@@ -78,6 +78,12 @@
 \providecommand{\secref}[1]{\S\ref{#1}}
 ```
 
+# Detailed Citation
+
+To cite a specific section/figure/table of another paper,
+e.g. `[7, Section 2]`,
+cite with argument like `\cite[Section 2]{cvpr23abc}`.
+
 # Custom Colours
 
 You can use these colours to configure the citation, link and url colour of `hyperref`.
