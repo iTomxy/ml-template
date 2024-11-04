@@ -47,7 +47,8 @@
 \def\ie{\emph{i.e}\onedot} \def\Ie{\emph{I.e}\onedot}
 \def\viz{\emph{viz}\onedot}
 \def\cf{\emph{cf}\onedot} \def\Cf{\emph{Cf}\onedot}
-\def\etc{\emph{etc}\onedot} \def\vs{\emph{vs}\onedot}
+\def\etc{\emph{etc}\onedot}
+\def\vs{\emph{vs}\onedot} # `vs.` not `v.s.`
 \def\wrt{w.r.t\onedot} \def\dof{d.o.f\onedot}
 \def\iid{i.i.d\onedot} \def\wolog{w.l.o.g\onedot}
 \def\etal{\emph{et al}\onedot}
@@ -80,7 +81,7 @@
 
 # Detailed Citation
 
-To cite a specific section/figure/table of another paper,
+To cite a specific section/figure/theorem/etc. of another paper,
 e.g. `[7, Section 2]`,
 cite with argument like `\cite[Section 2]{cvpr23abc}`.
 
