@@ -58,10 +58,10 @@ if "__main__" == __name__:
     parser.add_argument('-S', '--smtp-server', type=str, metavar="IP", default="", help="SMTP server IP address")
     parser.add_argument('-t', '--to-addr', type=str, nargs='+', metavar="ADDR", default=[], help="receivers' address/account")
     parser.add_argument('-T', '--to-name', type=str, metavar="NAME", nargs='+', default=["Receiver_1"],
-        help="receivers' name, differnt receivers separated by space. Concatenate with `_` for multiple-word names, e.g. `Jerry_Mouse Spike_Dog`.")
+        help="receivers' name, separated by space. Concatenate with `_` for multi-word names, e.g. `Jerry_Mouse Spike_Dog`.")
     parser.add_argument('-f', '--from-addr', type=str, metavar="ADDR", default="", help="sender address/account")
     parser.add_argument('-F', '--from-name', type=str, metavar="NAME", default="Sender",
-        help="sender name. Concatenate with `_` if multiple words, e.g. `Thomas_Cat`.")
+        help="sender name. Concatenate with `_` if multi-word, e.g. `Thomas_Cat`.")
     parser.add_argument('-p', '--password', type=str, metavar="PSW", default="", help="password (or authorisation code) of sender email account")
     parser.add_argument('-P', '--smtp-port', type=int, metavar="PORT", default=0)
     parser.add_argument('--ssl', action="store_true", help="set if using SSL is required by the SMTP server")
@@ -72,7 +72,7 @@ if "__main__" == __name__:
     assert args.password, "Please specify sender account password (or authorisation code)"
     assert args.smtp_server, "Please specify SMTP server, e.g. smtp.sina.cn"
 
-    # deal with name # e.g. `Spike_Dog` -> `Spike Dog`
+    # deal with name, e.g. `Spike_Dog` -> `Spike Dog`
     args.from_name = args.from_name.replace('_', ' ')
     args.to_name = [tn.replace('_', ' ') for tn in args.to_name]
 
