@@ -1,16 +1,32 @@
-# Commonly Used Packages
+# Mathematics
 
 ```tex
-% math
-\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
 % \usepackage{bm} % defines \bm
 \usepackage{mathtools} % hollow char, see [1]
 \usepackage{stmaryrd} % hollow bracket, see [1]
 
-% pseudo code
+% argmax, argmin
+\DeclareMathOperator*{\argmin}{\arg\min}
+\DeclareMathOperator*{\argmax}{\arg\max}
+% iverson bracket
+\DeclarePairedDelimiter{\iverson}{\llbracket}{\rrbracket}
+```
+
+# Algorithm/Pseudo-code & Code
+
+```tex
+% pseudo code (algorithm)
 \usepackage{algorithm}
 \usepackage{algorithmic}
 
+% code
+\usepackage{listings}
+```
+
+# Figure & Table
+
+```tex
 % table
 \usepackage{bigstrut}
 \usepackage{booktabs}
@@ -23,22 +39,13 @@
 \usepackage{graphicx}
 %\usepackage{subfigure}
 \usepackage{subcaption} % use it to include subfigure
-
-% text, colour
-\usepackage{xcolor} % \textcolor, \definecolor
-\usepackage{soul} % \st: stridethrough text
-
-% space
-\usepackage{xspace}
-
-% url & cite
-\definecolor{royalblue}{rgb}{0, 0.445, 0.737} % 0, 113, 188
-\usepackage[pagebackref,breaklinks,colorlinks,bookmarks=true,citecolor=royalblue]{hyperref}
 ```
 
-# Custom Commands
+# Abbreviations
 
 ```tex
+\usepackage{xspace}
+
 % abbreviations
 \makeatletter
 \DeclareRobustCommand\onedot{\futurelet\@let@token\@onedot}
@@ -48,19 +55,17 @@
 \def\viz{\emph{viz}\onedot}
 \def\cf{\emph{cf}\onedot} \def\Cf{\emph{Cf}\onedot}
 \def\etc{\emph{etc}\onedot}
-\def\vs{\emph{vs}\onedot} # `vs.` not `v.s.`
+\def\vs{\emph{vs}\onedot} % `vs.` not `v.s.`
 \def\wrt{w.r.t\onedot} \def\dof{d.o.f\onedot}
 \def\iid{i.i.d\onedot} \def\wolog{w.l.o.g\onedot}
 \def\etal{\emph{et al}\onedot}
 \makeatother
+```
 
+# Text & Symbol
 
-% math
-% argmax, argmin
-\DeclareMathOperator*{\argmin}{\arg\min}
-\DeclareMathOperator*{\argmax}{\arg\max}
-% iverson bracket
-\DeclarePairedDelimiter{\iverson}{\llbracket}{\rrbracket}
+```tex
+\usepackage{soul} % \st: stridethrough text
 
 % \bs := \boldsymbol
 \ifdefined\bm
@@ -68,22 +73,7 @@
 \else
   \newcommand{\bm}{\boldsymbol}
 \fi
-
-
-% easy reference of figure, table, section
-% - `\eqref`: built in the `amsmath` package
-% - `\nameref`: built in the `nameref` package
-% - `\pageref`: built-in
-\providecommand{\figref}[1]{\figurename~\ref{#1}}
-\providecommand{\tabref}[1]{\tablename~\ref{#1}}
-\providecommand{\secref}[1]{\S\ref{#1}}
 ```
-
-# Detailed Citation
-
-To cite a specific section/figure/theorem/etc. of another paper,
-e.g. `[7, Section 2]`,
-cite with argument like `\cite[Section 2]{cvpr23abc}`.
 
 # Custom Colours
 
@@ -91,11 +81,46 @@ You can use these colours to configure the citation, link and url colour of `hyp
 See [8] for some named colours.
 
 ```tex
-\definecolor{bilibili}{rgb}{0.983, 0.446, 0.6} % 251, 114, 153
-\definecolor{citegreen}{rgb}{0, 0.6, 0} % 0, 153, 0, from nips18masking
-\definecolor{phub}{rgb}{1, 0.64, 0.1} % 255, 163, 26
-\definecolor{royalblue}{rgb}{0, 0.445, 0.737} % 0, 113, 188
+\usepackage{xcolor} % \textcolor, \definecolor
+
+\definecolor{bilibili}{RGB}{251, 114, 153}
+\definecolor{phub}{RGB}{255, 163, 26}
+\definecolor{halfgreen}{RGB}{0, 153, 0} % FROM: https://arxiv.org/abs/1805.08193
+\definecolor{kaiming-green}{RGB}{57, 181, 74} % FROM: https://arxiv.org/abs/2402.10739
+\definecolor{royalblue}{RGB}{0, 113, 188}
+\definecolor{halfblue}{RGB}{0, 0, 128} % ICML citation blue
 ```
+
+# Citation & Reference
+
+```tex
+% url & cite
+\usepackage[
+  pagebackref,
+  breaklinks,
+  colorlinks,
+  bookmarks=true,
+  citecolor=royalblue % custom colour defined above
+]{hyperref}
+
+% easy reference of figure, table, section
+% - `\eqref`: built in the `amsmath` package
+% - `\nameref`: built in the `nameref` package
+% - `\pageref`: built-in
+\providecommand{\eqnref}[1]{Eq.~\eqref{#1}}
+\providecommand{\Eqnref}[1]{Equation~\eqref{#1}}
+\providecommand{\figref}[1]{\figurename~\ref{#1}}
+\providecommand{\tabref}[1]{\tablename~\ref{#1}}
+\providecommand{\secref}[1]{\S\ref{#1}}
+\providecommand{\Secref}[1]{Section~\ref{#1}}
+% ALTERNATIVE: use \autoref provided in hyperref pkg
+```
+
+## Detailed Citation
+
+To cite a specific section/figure/theorem/etc. of another paper,
+e.g. `[7, Section 2]`,
+cite with argument like `\cite[Section 2]{cvpr23abc}`.
 
 # Quotation Marks
 
@@ -108,6 +133,35 @@ See [8] for some named colours.
 - [LaTeX/Fonts](https://en.wikibooks.org/wiki/LaTeX/Fonts)
 - [What are all the font styles I can use in math mode?](https://tex.stackexchange.com/questions/58098/what-are-all-the-font-styles-i-can-use-in-math-mode)
 - [Superscript outside math mode](https://tex.stackexchange.com/questions/47324/superscript-outside-math-mode)
+
+# Figure in Title & Text
+
+See TeX source of:
+
+- (arxiv'24) PointMamba: A Simple State Space Model for Point Cloud Analysis - [arXiv](https://arxiv.org/abs/2402.10739)
+
+Its custom `\charimage` command:
+
+```tex
+\newcommand{\charimage}[1]{\raisebox{-0.25\height}{\includegraphics[height=\baselineskip]{figure/logo.png}}}
+```
+
+Its hacked `\title`:
+```tex
+\title{
+\vspace{-1.em}
+\renewcommand{\windowpagestuff}{
+\quad\includegraphics[width=1.cm, trim={0cm 10cm 0cm 0cm}, clip=False]{figure/logo.png}
+}
+\begin{cutout}{0}{0.3cm}{22cm}{1}
+\vspace{-30pt}
+{\color{white} empty} \protect\linebreak
+\protect\linebreak
+{\color{white} \qquad } PointMamba: A Simple State Space Model for Point Cloud Analysis
+\end{cutout}
+\vspace{-0.7em}
+}
+```
 
 # References
 

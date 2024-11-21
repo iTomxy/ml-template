@@ -216,6 +216,8 @@ events.out.tfevents.*
 *.bbl
 *.bcf
 *.blg
+*.brf
+*.dvi
 *.fdb_latexmk
 *.fls
 *.glg
@@ -227,7 +229,9 @@ events.out.tfevents.*
 *.lof
 # *.log
 *.lot
+*.nav
 *.out
-*.toc
 *.run.xml
-
+*.snm
+*.toc
+*.vrb
