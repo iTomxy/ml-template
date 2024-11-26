@@ -113,8 +113,11 @@ See [8] for some named colours.
 \providecommand{\tabref}[1]{\tablename~\ref{#1}}
 \providecommand{\secref}[1]{\S\ref{#1}}
 \providecommand{\Secref}[1]{Section~\ref{#1}}
-% ALTERNATIVE: use \autoref provided in hyperref pkg
 ```
+
+~~Alternative: use `\autoref` provided in `hyperref` package~~.
+
+Alternative: use [cleveref](https://au.mirrors.cicku.me/ctan/macros/latex/contrib/cleveref/cleveref.pdf).
 
 ## Detailed Citation
 

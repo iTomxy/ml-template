@@ -391,6 +391,8 @@ def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore
     Only files match one of the white patterns will be candidates, and will be ignored if
     match any black pattern. I.e. black list is prioritised over white list.
 
+    Potential alternative: shutil.copytree
+
     Example (back-up codes in a Python project):
     ```python
     backup_files(

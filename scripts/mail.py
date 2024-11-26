@@ -13,7 +13,7 @@ with the package name `email` and that will raise error.
 
 def send_email(
     subject, text, to_name_list, to_addr_list,
-    server, from_name, from_addr, password, port=0, ssl=False
+    server, from_name, from_addr, password, port=0, ssl=False, debuglevel=1
 ):
     """send text E-mail
     subject: str, E-mail subject
@@ -26,6 +26,7 @@ def send_email(
     password: str, password or authorisation code of the sender account on the server
     port: int = 0, connect to which port of the SMTP server
     ssl: bool = False, use SMTP_SSL instead of SMTP for those servers that require so
+    debuglevel: int = 1, set 0 to depress verbose output
     """
     assert isinstance(to_addr_list, (list, tuple)) and len(to_addr_list) > 0
     for i, t in enumerate(to_addr_list):
@@ -45,7 +46,7 @@ def send_email(
         server = smtplib.SMTP_SSL(server, port)
     else:
         server = smtplib.SMTP(server, port)
-    server.set_debuglevel(1)
+    server.set_debuglevel(debuglevel)
     server.login(from_addr, password)
     server.sendmail(from_addr, to_addr_list, msg.as_string())
     server.quit()
@@ -65,6 +66,7 @@ if "__main__" == __name__:
     parser.add_argument('-p', '--password', type=str, metavar="PSW", default="", help="password (or authorisation code) of sender email account")
     parser.add_argument('-P', '--smtp-port', type=int, metavar="PORT", default=0)
     parser.add_argument('--ssl', action="store_true", help="set if using SSL is required by the SMTP server")
+    parser.add_argument('-d', '--debug-level', type=int, metavar="INT", default=1)
     args = parser.parse_args()
 
     assert len(args.to_addr) > 0, "Please specify receiver email address/es, e.g. jerry.mouse@get-cheese.edu"
@@ -79,5 +81,5 @@ if "__main__" == __name__:
     send_email(
         ' '.join(args.subject), ' '.join(args.text), args.to_name, args.to_addr,
         args.smtp_server, args.from_name, args.from_addr, args.password, args.smtp_port,
-        args.ssl
+        args.ssl, args.debug_level
     )
