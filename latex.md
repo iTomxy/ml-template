@@ -41,6 +41,28 @@
 \usepackage{subcaption} % use it to include subfigure
 ```
 
+## draw box
+
+To show hierarchy with box-drawing characters,
+e.g. in quantitative result tables:
+```
+Base Method
+  ├─ + Plugin A
+  └─ + Plugin B
+```
+
+use
+
+```tex
+\usepackage{pmboxdraw}
+
+\textSFii   % └
+\textSFviii % ├
+\textSFx    % ─
+```
+
+Refer: [Print box drawing characters with pdfLaTeX](https://tex.stackexchange.com/questions/281368/print-box-drawing-characters-with-pdflatex)
+
 # Abbreviations
 
 ```tex
