@@ -1,14 +1,15 @@
 #!/bin/bash
 
 ## Calling
-# . find-gpu.sh [#gpu required] [min memory per gpu] [b/w] [<IGNORE-GPU-1> ...]
+# . find-gpu.sh [#gpu required] [min free memory per gpu] [b/w] [<IGNORE-GPU-1> ...]
 ## Input
-# $1: # of GPU needed
-# $2: lower bound of free memory needed per GPU (in MiB)
-## Output
-# gpu_id: int/str, selected GPU id (list, seperated by ','),
-#	default = -1, can be fed to `CUDA_VISIBLE_DEVICES`.
-# n_gpu_found: int, # of selected GPU.
+# $1: int = 1, number of GPU needed, <0 (e.g. -1) to select all
+# $2: int = 0, least required free memory per GPU (in MiB)
+# $3: char = b, {b: Best fit, w: Worst fit}
+# ${@:4}: list[int], GPU IDs to exclude
+## Output (i.e. set/assigned variables)
+# gpu_id: int/str, selected GPU id (list, seperated by ','), can be fed to `CUDA_VISIBLE_DEVICES`.
+# n_gpu_found: int, number of selected GPU.
 ## Reference
 # https://blog.csdn.net/HackerTom/article/details/126257508
 
@@ -31,15 +32,18 @@ _ignore=${@:4}
 # 	awk '{print ($8" "$10)}' | \
 # 	sed "s/\([0-9]\+\)MiB \([0-9]\+\)MiB/\1 \2/" | \
 # 	awk '{print $2 - $1}')
-_res=`nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits`
+
+# _res=`nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits`
 
 _i=0
 if [ $_mode == "b" ]; then
-	_res=($(for _s in $_res; do echo $_i $_s && _i=`expr 1 + $_i`; done | \
-		sort -n -k 2))
+	# _res=($(for _s in $_res; do echo $_i $_s && _i=`expr 1 + $_i`; done | \
+	# 	sort -n -k 2))
+	_res=(`nvidia-smi --query-gpu=index,memory.free --format=csv,noheader,nounits | sed "s/,//" | sort -nk 2`)
 else
-	_res=($(for _s in $_res; do echo $_i $_s && _i=`expr 1 + $_i`; done | \
-		sort -n -k 2 -r))
+	# _res=($(for _s in $_res; do echo $_i $_s && _i=`expr 1 + $_i`; done | \
+	# 	sort -n -k 2 -r))
+	_res=(`nvidia-smi --query-gpu=index,memory.free --format=csv,noheader,nounits | sed "s/,//" | sort -nrk 2`)
 fi
 
 if [ ${_n_gpu_req} -lt 0 ]; then
@@ -48,7 +52,8 @@ if [ ${_n_gpu_req} -lt 0 ]; then
 	# echo ${n_gpu_req}
 fi
 
-gpu_id=-1
+# gpu_id=-1
+unset gpu_id
 n_gpu_found=0
 for i in $(seq 0 2 `expr ${#_res[@]} - 1`); do
 	_gid=${_res[i]}

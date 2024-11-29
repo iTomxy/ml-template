@@ -41,7 +41,7 @@
 \usepackage{subcaption} % use it to include subfigure
 ```
 
-## draw box
+## draw hierarchy
 
 To show hierarchy with box-drawing characters,
 e.g. in quantitative result tables:
@@ -61,14 +61,31 @@ use
 \textSFx    % ─
 ```
 
-Refer: [Print box drawing characters with pdfLaTeX](https://tex.stackexchange.com/questions/281368/print-box-drawing-characters-with-pdflatex)
+- [Print box drawing characters with pdfLaTeX](https://tex.stackexchange.com/questions/281368/print-box-drawing-characters-with-pdflatex)
+- [pmboxdraw – Poor man’s box drawing characters](https://ctan.org/pkg/pmboxdraw)
+
+## wrap figure/table
+
+Let a figure / table be wrapped around by text instead of spanning the whole row,
+use `wrapfigure` and `wraptable` in
+
+```tex
+\usepackage{wrapfig}
+```
+
+References and examples:
+
+- (wrapfigure) [4]
+- (wraptable) [Wrap text around a tabular](https://tex.stackexchange.com/questions/49300/wrap-text-around-a-tabular)
+- [wrapfig – Produces figures which text can flow around](https://ctan.org/pkg/wrapfig)
 
 # Abbreviations
+
+- Note: (some of) these may be already defined by the template, e.g. the `cvpr.sty` in [4].
 
 ```tex
 \usepackage{xspace}
 
-% abbreviations
 \makeatletter
 \DeclareRobustCommand\onedot{\futurelet\@let@token\@onedot}
 \def\@onedot{\ifx\@let@token.\else.\null\fi\xspace}
