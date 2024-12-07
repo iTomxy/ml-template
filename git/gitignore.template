@@ -241,8 +241,10 @@ events.out.tfevents.*
 *.out
 *.run.xml
 *.snm
+*.spl
 *.st[ap]
 *.sv[ntx]
 *.toc
 *.url
 *.vrb
+

@@ -114,6 +114,25 @@ References and examples:
 \fi
 ```
 
+## encoding
+
+Sometimes there may be some accent character in author names in the bibliography,
+e.g.:
+
+- `Stanis{\l}aw Jastrz{\k{e}}bski`
+
+Include the following two packages to avoid compiling errors with `pdflatex`:
+
+```tex
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+```
+
+Reference:
+
+- [Using \c{e} and other special characters in .bib files with pdflatex+biblatex+biber: How to avoid Package inputenc Error?](https://tex.stackexchange.com/questions/311776/using-ce-and-other-special-characters-in-bib-files-with-pdflatexbiblatexbi)
+
+
 # Custom Colours
 
 You can use these colours to configure the citation, link and url colour of `hyperref`.
