@@ -79,6 +79,25 @@ References and examples:
 - (wraptable) [Wrap text around a tabular](https://tex.stackexchange.com/questions/49300/wrap-text-around-a-tabular)
 - [wrapfig – Produces figures which text can flow around](https://ctan.org/pkg/wrapfig)
 
+## album layout
+
+Album layout: a big figure on one side, several small figures forming a grid on the other side:
+
+```
+ _____    ___   ___
+|     |  |___| |___|
+|     |   ___   ___
+|_____|  |___| |___|
+```
+
+I use the solution in [1] using the `subcaption` package and `\newbox`, `\bigpicturebox`, `\sbox` and `\usebox` commands.
+
+1. [Big picture with several smaller ones on the side](https://tex.stackexchange.com/questions/302121/big-picture-with-several-smaller-ones-on-the-side)
+2. [How can I create this layout of 3 subfigures?](https://tex.stackexchange.com/questions/646910/how-can-i-create-this-layout-of-3-subfigures)
+3. [How to place two figures in one column, and then another figure in the 2nd column with double the size?](https://tex.stackexchange.com/questions/611153/how-to-place-two-figures-in-one-column-and-then-another-figure-in-the-2nd-colum)
+4. [用floatrow宏包实现插图的异形布置](https://ask.latexstudio.net/ask/article/94.html)
+5. [Specific image layout](https://tex.stackexchange.com/questions/49764/specific-image-layout)
+
 # Abbreviations
 
 - Note: (some of) these may be already defined by the template, e.g. the `cvpr.sty` in [4].

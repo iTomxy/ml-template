@@ -260,6 +260,22 @@ def sort_gpu():
         return [], []
 
 
+def gpus_type():
+    """detect types of each GPU based on the `nvidia-smi` command"""
+    gpu_types = {}
+    try:
+        output = subprocess.check_output(["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"], encoding="utf-8")
+        gpus = output.strip().split("\n")
+        gpu_types = {i: gpu for i, gpu in enumerate(gpus)}
+        print("GPU types:", gpu_types)
+    except FileNotFoundError:
+        print("`nvidia-smi` is not installed or no NVIDIA GPU found.")
+    except Exception as e:
+        print(f"Error: {e}")
+
+    return gpu_types
+
+
 def rm_empty_dir(root_dir):
     """remove empty directories recursively, including `root_dir`"""
     # avoid invalid path at first call

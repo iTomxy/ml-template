@@ -61,3 +61,17 @@ def get_off(*tensors):
     if len(res) == 1:
         res = res[0]
     return res
+
+
+def gpus_type():
+    """detect types of each GPU based on PyTorch
+    NOTE: this method is limited by `CUDA_VISIBLE_DEVICES`,
+    i.e. it only shows GPUs that visible to PyTorch.
+    """
+    if torch.cuda.is_available():
+        gpu_types = {i: torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())}
+    else:
+        gpu_types = {}
+
+    print("GPU types:", gpu_types)
+    return gpu_types

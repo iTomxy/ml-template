@@ -244,6 +244,7 @@ events.out.tfevents.*
 *.spl
 *.st[ap]
 *.sv[ntx]
+*.synctex.gz
 *.toc
 *.url
 *.vrb
