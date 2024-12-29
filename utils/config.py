@@ -162,7 +162,7 @@ def inherit(cfg, path_prefix='.'):
         includes = [includes]
     assert isinstance(includes, (list, tuple))
 
-    base_cfg = {}
+    base_cfg = {} # summary of ancestor configurations
     for inc in includes:
         assert isinstance(inc, str)
         if inc.strip() == '':
@@ -170,13 +170,15 @@ def inherit(cfg, path_prefix='.'):
         if not os.path.isabs(inc):
             inc = os.path.abspath(os.path.join(path_prefix, inc))
 
-        _cfg = load_cfg_file(inc)
-        # NOTE: Duplicated keys should NOT exist in `sibbling` yaml files,
+        _cfg = inherit(load_cfg_file(inc), os.path.dirname(inc))
+        # NOTE: Duplicated keys should NOT exist in `sibbling` ancestor yaml files,
         # otherwise the overwritting behaviour is undefined.
-        base_cfg.update(inherit(_cfg, os.path.dirname(inc))) # `update` deals with embedded dict
+        base_cfg.update(_cfg) # `update` deals with embedded dict
 
-    cfg.update(base_cfg) # descendant overwrites ancestor
-    return cfg
+    # cfg.update(base_cfg) # ancestor overwrites descendant
+    # return cfg
+    base_cfg.update(cfg) # descendant overwrites ancestor
+    return base_cfg
 
 
 def parse_cfg(cfg_file, *update_dicts):
