@@ -45,18 +45,23 @@ def get_palette(n_classes, pil_format=True):
     return res
 
 
-def color_seg(label, n_classes=0):
+def color_seg(label, n_classes=0, palette=[]):
     """put colour on the segmentation mask
     Input:
         label: [H, W], int numpy.ndarray
-        n_classes: int, num of classes (including background), inferred from `label` if not provided
+        n_classes: int = 0, num of classes (including background), inferred from `label` if not provided.
+        palette: list = [], PIL-format palette, use this if provided, else use generated one.
     Output:
         label_rgb: [H, W, 3], PIL.Image
     """
     if n_classes < 1:
         n_classes = math.ceil(np.max(label)) + 1
     label_rgb = Image.fromarray(label.astype(np.int32)).convert("L")
-    label_rgb.putpalette(get_palette(n_classes))
+    if len(palette) > 0:
+        assert len(palette) >= 3 * n_classes # RGB for each class
+    else:
+        palette = get_palette(n_classes)
+    label_rgb.putpalette(palette)
     return label_rgb.convert("RGB")
 
 
@@ -149,6 +154,17 @@ def compact_image_grid(image_list, exact=False):
     return grid
 
 
+def show_ply(ply_file):
+    """show .ply file with open3d"""
+    if not os.path.isfile(ply_file):
+        print("No such file:", ply_file)
+        return
+
+    import open3d as o3d
+    pcd = o3d.io.read_point_cloud(ply_file)
+    o3d.visualization.draw_geometries([pcd])
+
+
 if "__main__" == __name__:
     nc, sz = 24, 17
     palette = get_palette(nc, False)
@@ -175,3 +191,5 @@ if "__main__" == __name__:
         if len(img_list) >= 17: break
     Image.fromarray(compact_image_grid(img_list, False)).save("grid.png")
     Image.fromarray(compact_image_grid(img_list, True)).save("grid-exact.png")
+
+    show_ply("pred-501-err.ply")

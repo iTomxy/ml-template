@@ -208,6 +208,9 @@ events.out.tfevents.*
 *.pt
 *.pth
 
+# torch
+*.t7
+
 # latex
 *.ac[nr]
 *.alg

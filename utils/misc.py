@@ -12,7 +12,7 @@ import os
 import re
 import shutil, socket, subprocess
 import time, timeit
-from .timing import *
+from timing import *
 
 
 def enum_product(*args):
@@ -174,9 +174,10 @@ class Logger:
 
 def get_logger(
     logger_name,
-    log_file = None,
+    log_file = '',
     log_console = True,
-    fmt = '[%(asctime)s] - {%(filename)s:%(lineno)d} - %(levelname)s - %(message)s',
+    # fmt = '[%(asctime)s] - {%(filename)s:%(lineno)d} - %(levelname)s - %(message)s',
+    fmt = "{{'time': %(asctime)s, 'file': %(filename)s, 'lineno': %(lineno)d, 'level': %(levelname)s, 'msg': %(message)s}}",
     datefmt = '%Y-%m-%d %H:%M:%S',
     logger_level = logging.DEBUG,
     log_file_level = logging.INFO,
@@ -197,7 +198,7 @@ def get_logger(
     logger = logging.getLogger(logger_name)
     logger.setLevel(logger_level)
     formatter = logging.Formatter(fmt, datefmt=datefmt)
-    if log_file is not None:
+    if log_file:
         os.makedirs(os.path.dirname(log_file) or '.', exist_ok=True)
         fileHandler = logging.FileHandler(log_file, mode='w')
         fileHandler.setLevel(log_file_level)
@@ -384,3 +385,7 @@ if __name__ == "__main__":
             print("\titerator:", x, id(print))
             time.sleep(1)
     print("after prog_bar:", id(print))
+
+    import json
+    logger = get_logger("dynamic", log_file="dynamic.json", log_console=False, fmt="%(message)s")
+    logger.info(json.dumps({"time": time.asctime(), "acc": 0.78}))

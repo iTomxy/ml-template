@@ -152,7 +152,7 @@ def inherit(cfg, path_prefix='.'):
         path_prefix: str, the starting path to locate other included configuration files
             in case they are specified by relative paths.
     Output:
-        cfg: dict, updated
+        base_cfg: dict, updated
     """
     if INCLUDE_KEY not in cfg:
         return cfg
@@ -260,3 +260,4 @@ if "__main__" == __name__:
     with open("backup-config.yaml", 'w') as f:
         # yaml.dump(cfg, f) # OK
         yaml.dump(easydict2dict(cfg), f) # cleaner yaml
+
