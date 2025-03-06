@@ -181,7 +181,8 @@ def get_logger(
     datefmt = '%Y-%m-%d %H:%M:%S',
     logger_level = logging.DEBUG,
     log_file_level = logging.INFO,
-    log_console_level = logging.DEBUG
+    log_console_level = logging.DEBUG,
+    log_file_mode='a',
 ):
     """using built-in logging module
     https://blog.csdn.net/weixin_39278265/article/details/115203933
@@ -192,6 +193,7 @@ def get_logger(
         fmt: str, logging message format
         datefmt: str, date format
         logger_level, log_file_level, log_console_level: can be logging.NOTSET|DEBUG|INFO|WARNING|ERROR|CRITICAL
+        log_file_mode: str = 'a', in {'a', 'w'}. If log to file, set the writing mode.
     Return:
         logger: logging.Logger
     """
@@ -200,7 +202,7 @@ def get_logger(
     formatter = logging.Formatter(fmt, datefmt=datefmt)
     if log_file:
         os.makedirs(os.path.dirname(log_file) or '.', exist_ok=True)
-        fileHandler = logging.FileHandler(log_file, mode='w')
+        fileHandler = logging.FileHandler(log_file, mode=log_file_mode)
         fileHandler.setLevel(log_file_level)
         fileHandler.setFormatter(formatter)
         logger.addHandler(fileHandler)

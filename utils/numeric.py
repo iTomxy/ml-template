@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 
 class Record:
@@ -97,7 +98,9 @@ class MeanValue:
             self.mean_old = self.mean
             self.std = math.sqrt(self.m_s / (self.n - 1.0))
 
-    def value(self):
+    def value(self, prec=None):
+        if isinstance(prec, int):
+            return round(self.mean, prec), round(self.std, prec)
         return self.mean, self.std
 
     def reset(self):
@@ -109,3 +112,23 @@ class MeanValue:
         self.mean_old = 0.0
         self.m_s = 0.0
         self.std = math.nan
+
+
+def med_mean_std(lst, prec=None, scale=None):
+    """median, mean and standard error of a list
+    It can be useful when you want to know these statistics of a list and
+    dump them in a json log/string.
+    Input:
+        lst: list of number
+        prec: int|None = None, round to which decimal place if it is an int
+        scale: int|float|None = None, scale the elements in `lst` if it is an int or float
+            Use it when `lst` contains normalised number (i.e. in [0, 1]) and you want to
+            present them in percentage (i.e. 0.xyz -> xy.z%)
+    """
+    if isinstance(scale, (int, float)):
+        lst = list(map(lambda x: scale * x, lst))
+    ret = [float(np.median(lst)), float(np.mean(lst)), float(np.std(lst))]
+    if isinstance(prec, int):
+        ret = list(map(lambda x: round(x, prec), ret))
+
+    return ret

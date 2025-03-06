@@ -151,6 +151,19 @@ Reference:
 
 - [Using \c{e} and other special characters in .bib files with pdflatex+biblatex+biber: How to avoid Package inputenc Error?](https://tex.stackexchange.com/questions/311776/using-ce-and-other-special-characters-in-bib-files-with-pdflatexbiblatexbi)
 
+## special symbols
+
+Use [pifont](https://ctan.org/pkg/pifont) for special symbols.
+For example:
+
+```tex
+\usepackage{pifont}
+
+\ding{51} % ✓
+\ding{55} % ✗
+```
+
+Also see many symbol and formatting tricks in the TeX source of [Point Transformer V3: Simpler, Faster, Stronger](https://arxiv.org/abs/2312.10035).
 
 # Custom Colours
 
@@ -162,8 +175,7 @@ See [8] for some named colours.
 
 \definecolor{bilibili}{RGB}{251, 114, 153}
 \definecolor{phub}{RGB}{255, 163, 26}
-\definecolor{halfgreen}{RGB}{0, 153, 0} % FROM: https://arxiv.org/abs/1805.08193
-\definecolor{kaiming-green}{RGB}{57, 181, 74} % FROM: https://arxiv.org/abs/2402.10739
+\definecolor{citegreen}{RGB}{34, 139, 34} % FROM: Mask R-CNN (https://arxiv.org/abs/1703.06870)
 \definecolor{royalblue}{RGB}{0, 113, 188}
 \definecolor{halfblue}{RGB}{0, 0, 128} % ICML citation blue
 ```
@@ -195,12 +207,53 @@ See [8] for some named colours.
 ~~Alternative: use `\autoref` provided in `hyperref` package~~.
 
 Alternative: use [cleveref](https://au.mirrors.cicku.me/ctan/macros/latex/contrib/cleveref/cleveref.pdf).
+`cleveref` configurations:
+```tex
+\usepackage[capitalize]{cleveref}
+
+\Crefname{section}{Section}{Sections}
+\Crefname{table}{Table}{Tables}
+\Crefname{figure}{Figure}{Figures}
+
+\crefname{section}{Sec.}{Secs.}
+\crefname{table}{Tab.}{Tabs.}
+\crefname{figure}{Fig.}{Figs.}
+```
 
 ## Detailed Citation
 
 To cite a specific section/figure/theorem/etc. of another paper,
 e.g. `[7, Section 2]`,
 cite with argument like `\cite[Section 2]{cvpr23abc}`.
+
+# Table of Content
+
+A **local** table of content for the appendix is used in [Point Transformer V3: Simpler, Faster, Stronger](https://arxiv.org/abs/2312.10035).
+To do so,
+use [etoc](https://ctan.org/pkg/etoc):
+
+```tex
+\documentclass{article}
+\usepackage{etoc}
+\begin{document}
+
+\appendix
+\section*{Appendix}
+
+% enable LOCAL ToC for the appendix here
+\etoctoccontentsline{part}{Appendix}
+\localtableofcontents
+
+\section{Appendix 1}
+blabla
+
+\section{Appendix 2}
+foo bar
+
+\bibliographystyle{plain}
+\bibliography{myBibFile}
+\end{document}
+```
 
 # Quotation Marks
 

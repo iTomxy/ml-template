@@ -1,4 +1,4 @@
-import os, math
+import os, math, itertools
 import numpy as np
 from PIL import Image
 
@@ -165,6 +165,80 @@ def show_ply(ply_file):
     o3d.visualization.draw_geometries([pcd])
 
 
+def vis_point_cloud(xyz, labels=None, n_classes=0, palette=None):
+    """
+    xyz: int[n, 3], numpy.ndarray
+    labels: int[n] = None
+    n_classes: int = 0
+    palette: List[Tuple(R, G, B)] = None, [(R1, G1, B1), ..., (R_k, G_k, B_k)]
+    """
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(xyz)
+    if labels is not None:
+        assert len(labels) == xyz.shape[0]
+        labels = np.asarray(labels)
+        if n_classes < 1:
+            n_classes = labels.max() + 1
+        if palette is None:
+            palette = np.asarray(get_palette(n_classes, False))
+        elif not isinstance(palette, np.ndarray):
+            palette = np.asarray(palette)
+        assert (n_classes, 3) == palette.shape
+        colors = np.asarray([palette[c] for c in labels])
+        colors = colors.astype(np.float32) / 255
+        pcd.colors = o3d.utility.Vector3dVector(colors)
+
+    o3d.visualization.draw_geometries([pcd])
+
+
+def bbox3d_points(point1, point2):
+    """Generate all integer positions (xyz) of a 3D bounding-box defined by its two diagonal points.
+    Input:
+        point1: List or tuple [x1, y1, z1] representing one diagonal corner.
+        point2: List or tuple [x2, y2, z2] representing the opposite diagonal corner.
+    Output:
+        return: int[n, 3]
+    """
+    # Get min/max values
+    x_min, x_max = min(point1[0], point2[0]), max(point1[0], point2[0])
+    y_min, y_max = min(point1[1], point2[1]), max(point1[1], point2[1])
+    z_min, z_max = min(point1[2], point2[2]), max(point1[2], point2[2])
+
+    # Generate 8 vertices
+    vertices = list(itertools.product([x_min, x_max], [y_min, y_max], [z_min, z_max]))
+
+    # Define edges using pairs of vertex indices
+    edge_indices = np.array([
+        [0, 1], [0, 2], [0, 4],
+        [1, 3], [1, 5],
+        [2, 3], [2, 6],
+        [3, 7],
+        [4, 5], [4, 6],
+        [5, 7], [6, 7]
+    ])
+
+    # Store all edge points
+    all_edge_points = set()
+
+    # Generate integer points along each edge
+    for edge in edge_indices:
+        start, end = np.array(vertices[edge[0]]), np.array(vertices[edge[1]])
+        # Get range for each coordinate axis
+        x_range = np.arange(start[0], end[0] + np.sign(end[0] - start[0]), np.sign(end[0] - start[0])) if start[0] != end[0] else [start[0]]
+        y_range = np.arange(start[1], end[1] + np.sign(end[1] - start[1]), np.sign(end[1] - start[1])) if start[1] != end[1] else [start[1]]
+        z_range = np.arange(start[2], end[2] + np.sign(end[2] - start[2]), np.sign(end[2] - start[2])) if start[2] != end[2] else [start[2]]
+
+        # Create points along the edge
+        for x, y, z in zip(
+            np.broadcast_to(x_range, max(len(x_range), len(y_range), len(z_range))),
+            np.broadcast_to(y_range, max(len(x_range), len(y_range), len(z_range))),
+            np.broadcast_to(z_range, max(len(x_range), len(y_range), len(z_range)))
+        ):
+            all_edge_points.add((x, y, z))
+
+    return np.array(list(all_edge_points))
+
+
 if "__main__" == __name__:
     nc, sz = 24, 17
     palette = get_palette(nc, False)
@@ -192,4 +266,4 @@ if "__main__" == __name__:
     Image.fromarray(compact_image_grid(img_list, False)).save("grid.png")
     Image.fromarray(compact_image_grid(img_list, True)).save("grid-exact.png")
 
-    show_ply("pred-501-err.ply")
+    show_ply(r"C:\Users\24647087\OneDrive - UTS\Desktop\test\ptcloud\pred-507-err.ply")

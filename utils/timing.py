@@ -1,5 +1,5 @@
 
-import datetime, time, timeit
+import datetime, time, timeit, termcolor
 
 
 def timestamp(fmt="%Y%m%d-%H%M%S"):
@@ -42,16 +42,18 @@ def human_time(seconds, prec=0):
 class tic_toc:
     """timer with custom message"""
 
-    def __init__(self, message="time used", end='\n'):
+    def __init__(self, message="time used", end='\n', color="light_yellow"):
+        assert color in termcolor.COLORS, "{} not in termcolor.COLORS".format(color)
         self.msg = message
         self.end = end
+        self.color = color
 
     def __enter__(self):
         self.tic = timeit.default_timer()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         n_second = timeit.default_timer() - self.tic
-        print("{}: {}".format(self.msg, datetime.timedelta(seconds=int(n_second))), end=self.end)
+        print("{}: {}".format(termcolor.colored(self.msg, self.color), datetime.timedelta(seconds=int(n_second))), end=self.end)
 
     def __call__(self, f):
         """supports decorator-style usage, e.g.:
@@ -148,3 +150,8 @@ class RepeatingEventTimer:
 
     def time(self):
         return max(0, self.estim_time)
+
+
+if "__main__" == __name__:
+    with tic_toc("test color", color="magenta"):
+        time.sleep(1)

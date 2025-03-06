@@ -9,6 +9,10 @@ import yaml
 Ref:
     https://github.com/open-mmlab/mmdetection/blob/main/tools/train.py
     https://github.com/open-mmlab/mmengine/blob/main/mmengine/config/config.py
+
+(2025.3.5) I suggest using hydra (https://github.com/facebookresearch/hydra)
+together with OmegaConf (https://github.com/omry/omegaconf)
+instead of these handcraft toys here.
 """
 
 

@@ -1,6 +1,7 @@
 import os, os.path as osp, shutil
 import numpy as np
 import cv2
+from PIL import Image
 
 
 def i2v(
@@ -82,6 +83,27 @@ def v2i(
         os.rename(tmp_dest_dir, dest_dir)
     finally:
         cap.release()
+
+
+def i2gif(sorted_images, output_gif_file, duration=200, loop=0):
+    """convert a image sequence into a gif
+    Input:
+        sorted_images: list of images, can be str, numpy.ndarray or PIL.Image.Image
+        output_gif: str
+        duration: int = 200, duration of each frame, in millisecond (ms)
+        loop: int = 0, how many loops after initial play, 0 means infinite
+    """
+    images = []
+    for im in sorted_images:
+        if isinstance(im, Image.Image):
+            images.append(im)
+        elif isinstance(im, np.ndarray):
+            images.append(Image.fromarray(im))
+        elif isinstance(im, str):
+            images.append(Image.open(str))
+
+    os.makedirs(os.path.basename(output_gif) or '.', exist_ok=True)
+    images[0].save(output_gif, save_all=True, append_images=images[1:], duration=duration, loop=loop)
 
 
 if "__main__" == __name__:
