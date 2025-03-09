@@ -98,6 +98,51 @@ I use the solution in [1] using the `subcaption` package and `\newbox`, `\bigpic
 4. [用floatrow宏包实现插图的异形布置](https://ask.latexstudio.net/ask/article/94.html)
 5. [Specific image layout](https://tex.stackexchange.com/questions/49764/specific-image-layout)
 
+## gif
+
+To show a gif in pdf, use [animate](https://ctan.org/pkg/animate). A minimal example adapted from [Magic Mirror: ID-Preserved Video Generation in Video Diffusion Transformers](https://arxiv.org/abs/2501.03931):
+
+```tex
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{animate}
+\begin{document}
+
+%\begin{minipage}[b]{\textwidth}
+%\centering
+\animategraphics[width=\linewidth,autoplay,loop,every=2]{6}{D:/figs/gifs/output1_frames_blended/}{0}{47}
+%\end{minipage}
+
+\end{document}
+```
+
+However, pdf opened in browser only shows one static image instead of a gif. Has to see it in Adobe Acrobat.
+
+## colourful table cell
+
+Fill background colour of some columns or rows of a table.
+An example:
+
+- Use `\usepackage[table]{xcolor}`.
+
+```tex
+% \usepackage[table]{xcolor}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{c>{\columncolor{blue!20}}c} % column bg colour
+    \hline
+    Column 1 & Column 2 \\
+    \hline
+    Data 1 & Data 2 \\
+    \rowcolor{gray!20} % row bg colour
+    Data 3 & Data 4 \\
+    \hline
+    \end{tabular}
+    \caption{caption}
+\end{table}
+```
+
 # Abbreviations
 
 - Note: (some of) these may be already defined by the template, e.g. the `cvpr.sty` in [4].
@@ -171,13 +216,20 @@ You can use these colours to configure the citation, link and url colour of `hyp
 See [8] for some named colours.
 
 ```tex
-\usepackage{xcolor} % \textcolor, \definecolor
+\usepackage[table]{xcolor} % \textcolor, \definecolor
 
 \definecolor{bilibili}{RGB}{251, 114, 153}
 \definecolor{phub}{RGB}{255, 163, 26}
 \definecolor{citegreen}{RGB}{34, 139, 34} % FROM: Mask R-CNN (https://arxiv.org/abs/1703.06870)
 \definecolor{royalblue}{RGB}{0, 113, 188}
 \definecolor{halfblue}{RGB}{0, 0, 128} % ICML citation blue
+```
+
+## temporarily define colour
+
+```tex
+% speficy RGB in-place
+\textcolor[RGB]{0, 113, 188}{foo bar}
 ```
 
 # Citation & Reference
@@ -225,6 +277,20 @@ Alternative: use [cleveref](https://au.mirrors.cicku.me/ctan/macros/latex/contri
 To cite a specific section/figure/theorem/etc. of another paper,
 e.g. `[7, Section 2]`,
 cite with argument like `\cite[Section 2]{cvpr23abc}`.
+
+# Numbering of Table/Figure/Equation
+
+In appendix and rebuttal,
+if you want to set the beginning counting of figures/table/equations
+to avoid conflict to the paper,
+set these:
+
+```tex
+% Say you have 3 figures, 6 tables and 2 equations in the paper.
+\setcounter{figure}{3} % new figure countings begin with 4, i.e. 3 + 1.
+\setcounter{table}{6}
+\setcounter{equation}{2}
+```
 
 # Table of Content
 
@@ -295,6 +361,40 @@ Its hacked `\title`:
 \vspace{-0.7em}
 }
 ```
+
+# Layout
+
+To make the appendix be one-column in a two-column article, use `\onecolumn` command:
+
+- ref: [Single Column Appendix in twocolumn article](https://tex.stackexchange.com/questions/230256/single-column-appendix-in-twocolumn-article)
+
+```tex
+\documentclass[twocolumn]{article} % two-column template
+\begin{document}
+Body here.
+
+\appendix
+\onecolumn % make the appendix section be one-column
+\section{Foo Bar}
+Appendix here.
+\end{document}
+```
+
+Or one can use the `strip` environment provided by the [cuted](https://ctan.org/pkg/cuted) package to embed a one-column block. An example from [Magic Mirror: ID-Preserved Video Generation in Video Diffusion Transformers](https://arxiv.org/abs/2501.03931):
+
+```tex
+% \usepackage{cuted}
+
+\begin{strip}
+\begin{minipage}[b]{\textwidth}
+    \centering
+    \animategraphics[width=\linewidth,autoplay,loop,every=2]{6}{figs/gifs/output1_frames_blended/}{0}{47}
+\end{minipage}%
+\captionof{figure}{caption}
+\end{strip}
+```
+
+
 
 # References
 

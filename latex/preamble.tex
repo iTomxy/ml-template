@@ -1,0 +1,137 @@
+% --- algorithm
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% --- code
+\usepackage{listings}
+
+% --- colour
+\usepackage[table]{xcolor} % \textcolor, \definecolor
+\definecolor{bilibili}{RGB}{251, 114, 153}
+\definecolor{phub}{RGB}{255, 163, 26}
+\definecolor{citegreen}{RGB}{34, 139, 34} % FROM: Mask R-CNN (https://arxiv.org/abs/1703.06870)
+\definecolor{royalblue}{RGB}{0, 113, 188}
+\definecolor{halfblue}{RGB}{0, 0, 128} % ICML citation blue
+
+% --- encoding
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+% --- figure
+\usepackage{graphicx}
+%\usepackage{subfigure}
+\usepackage{subcaption} % use it to include subfigure
+% wrap figure / table
+\usepackage{wrapfig}
+
+% --- table
+\usepackage{bigstrut}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{extarrows}
+\usepackage{makecell}
+\usepackage{multirow}
+
+% --- math
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+% \usepackage{bm} % defines \bm
+\usepackage{mathtools} % hollow char
+\usepackage{stmaryrd} % hollow bracket
+
+% argmax, argmin
+\DeclareMathOperator*{\argmin}{\arg\min}
+\DeclareMathOperator*{\argmax}{\arg\max}
+% iverson bracket
+\DeclarePairedDelimiter{\iverson}{\llbracket}{\rrbracket}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+% bm
+\ifdefined\bm
+  \PackageWarning{\jobname}{\string\bm\space is already defined.}
+\else
+  \newcommand{\bm}{\boldsymbol}
+\fi
+
+% --- symble
+\usepackage{pifont} % \ding{51} (✓), \ding{55} (✗)
+\usepackage{pmboxdraw} % \textSFii (└), \textSFviii (├), \textSFx (─)
+
+% --- text
+\usepackage{soul} % \st: stridethrough text
+\usepackage{lipsum} % generate dummy text
+
+% --- table of content
+\usepackage{etoc}
+
+% --- misc
+\usepackage{xspace}
+\usepackage{xparse} % parsing multiple arguments in custom commands
+
+% --- reference
+\usepackage[capitalize]{cleveref}
+\Crefname{section}{Section}{Sections}
+\Crefname{table}{Table}{Tables}
+\Crefname{figure}{Figure}{Figures}
+
+\crefname{section}{Sec.}{Secs.}
+\crefname{table}{Tab.}{Tabs.}
+\crefname{figure}{Fig.}{Figs.}
+
+% Easy reference of figure, table, section
+% - `\eqref`: built in the `amsmath` package
+% - `\nameref`: built in the `nameref` package
+% - `\pageref`: built-in
+\providecommand{\eqnref}[1]{Eq.~\eqref{#1}}
+\providecommand{\Eqnref}[1]{Equation~\eqref{#1}}
+\providecommand{\figref}[1]{Fig.~\ref{#1}}
+\providecommand{\Figref}[1]{\figurename~\ref{#1}}
+\providecommand{\tabref}[1]{Tab.~\ref{#1}}
+\providecommand{\Tabref}[1]{\tablename~\ref{#1}}
+\providecommand{\secref}[1]{\S\ref{#1}}
+\providecommand{\Secref}[1]{Section~\ref{#1}}
+
+% Fake \cite & \ref
+% In rebuttal, when you want to \cite or \ref something from the paper
+% but you can't have real cross-reference because it is in a separate file,
+% use hand-craft style to mimic them.
+\providecommand{\fref}[1]{\textcolor{red}{#1}}
+\providecommand{\feqref}[1]{(\fref{#1})}
+\providecommand{\feqnref}[1]{Eq.~\feqref{#1}}
+\providecommand{\ffigref}[1]{Fig.~\fref{#1}}
+\providecommand{\ftabref}[1]{Tab.~\fref{#1}}
+\providecommand{\fsecref}[1]{\S\fref{#1}}
+%\providecommand{\fcite}[1]{$\!${\scriptsize [\textcolor{citegreen}{#1}]}}
+\makeatletter
+\providecommand{\fcite}[1]{[\@fcite#1,\@nil]}
+\def\@fcite#1,#2\@nil{%
+  \textcolor{citegreen}{#1}%
+  \ifx\@nil#2\@nil\else,\@fcite#2\@nil\fi%
+}
+\makeatother
+
+
+% --- hyperref (at last?)
+\usepackage[
+  pagebackref,
+  breaklinks,
+  colorlinks,
+  bookmarks=true,
+  citecolor=citegreen % custom colour defined above
+]{hyperref}
+
+
+% abbreviations
+\makeatletter
+\DeclareRobustCommand\onedot{\futurelet\@let@token\@onedot}
+\def\@onedot{\ifx\@let@token.\else.\null\fi\xspace}
+\def\eg{\emph{e.g}\onedot} \def\Eg{\emph{E.g}\onedot}
+\def\ie{\emph{i.e}\onedot} \def\Ie{\emph{I.e}\onedot}
+\def\viz{\emph{viz}\onedot}
+\def\cf{\emph{cf}\onedot} \def\Cf{\emph{Cf}\onedot}
+\def\etc{\emph{etc}\onedot}
+\def\vs{\emph{vs}\onedot} % `vs.` not `v.s.`
+\def\wrt{w.r.t\onedot} \def\dof{d.o.f\onedot}
+\def\iid{i.i.d\onedot} \def\wolog{w.l.o.g\onedot}
+\def\etal{\emph{et al}\onedot}
+\makeatother
