@@ -31,6 +31,8 @@
 \usepackage{extarrows}
 \usepackage{makecell}
 \usepackage{multirow}
+\usepackage{colortbl} % \cellcolor
+\usepackage{pgfplotstable} % dynamically colour cells according to their value (with custom colouring command)
 
 % --- math
 \usepackage{amsmath,amssymb,amsfonts,amsthm}
@@ -41,8 +43,8 @@
 % argmax, argmin
 \DeclareMathOperator*{\argmin}{\arg\min}
 \DeclareMathOperator*{\argmax}{\arg\max}
-% iverson bracket
-\DeclarePairedDelimiter{\iverson}{\llbracket}{\rrbracket}
+% pair / delimiter
+\DeclarePairedDelimiter{\iverson}{\llbracket}{\rrbracket} % Iverson bracket
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 
@@ -53,7 +55,7 @@
   \newcommand{\bm}{\boldsymbol}
 \fi
 
-% --- symble
+% --- symbol
 \usepackage{pifont} % \ding{51} (✓), \ding{55} (✗)
 \usepackage{pmboxdraw} % \textSFii (└), \textSFviii (├), \textSFx (─)
 
@@ -66,7 +68,7 @@
 
 % --- misc
 \usepackage{xspace}
-\usepackage{xparse} % parsing multiple arguments in custom commands
+%\usepackage{xparse} % parsing multiple arguments in custom commands
 
 % --- reference
 \usepackage[capitalize]{cleveref}
@@ -93,9 +95,9 @@
 
 % Fake \cite & \ref
 % In rebuttal, when you want to \cite or \ref something from the paper
-% but you can't have real cross-reference because it is in a separate file,
+% but you can't have real cross-reference cuz it is in another separate file,
 % use hand-craft style to mimic them.
-\providecommand{\fref}[1]{\textcolor{red}{#1}}
+\providecommand{\fref}[1]{\textcolor{red}{#1}} % mod reference colour here to match \ref
 \providecommand{\feqref}[1]{(\fref{#1})}
 \providecommand{\feqnref}[1]{Eq.~\feqref{#1}}
 \providecommand{\ffigref}[1]{Fig.~\fref{#1}}
@@ -105,7 +107,7 @@
 \makeatletter
 \providecommand{\fcite}[1]{[\@fcite#1,\@nil]}
 \def\@fcite#1,#2\@nil{%
-  \textcolor{citegreen}{#1}%
+  \textcolor{citegreen}{#1}% mod citation colour here to match \cite
   \ifx\@nil#2\@nil\else,\@fcite#2\@nil\fi%
 }
 \makeatother

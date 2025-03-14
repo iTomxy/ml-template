@@ -120,13 +120,16 @@ However, pdf opened in browser only shows one static image instead of a gif. Has
 
 ## colourful table cell
 
-Fill background colour of some columns or rows of a table.
+Fill background colour of some columns/rows/cell of a table.
 An example:
 
-- Use `\usepackage[table]{xcolor}`.
+- `\usepackage[table]{xcolor}`: \columncolor, \rowcolor
+- `\usepackage{colortbl}`: \cellcolor
+- `\usepackage{pgfplotstable}`: more advanced usages
 
 ```tex
 % \usepackage[table]{xcolor}
+% \usepackage{colortbl}
 
 \begin{table}[h]
     \centering
@@ -134,7 +137,7 @@ An example:
     \hline
     Column 1 & Column 2 \\
     \hline
-    Data 1 & Data 2 \\
+    \cellcolor{citegreen!20}Data 1 & Data 2 \\ % cell bg colour
     \rowcolor{gray!20} % row bg colour
     Data 3 & Data 4 \\
     \hline

@@ -167,11 +167,12 @@ def show_ply(ply_file):
 
 def vis_point_cloud(xyz, labels=None, n_classes=0, palette=None):
     """
-    xyz: int[n, 3], numpy.ndarray
+    xyz: int|float[n, 3], numpy.ndarray
     labels: int[n] = None
     n_classes: int = 0
     palette: List[Tuple(R, G, B)] = None, [(R1, G1, B1), ..., (R_k, G_k, B_k)]
     """
+    import open3d as o3d
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(xyz)
     if labels is not None:
