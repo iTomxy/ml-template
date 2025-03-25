@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from tdigest import TDigest # for online percentile estimation
 
 
 class Record:
@@ -114,12 +115,13 @@ class MeanValue:
         self.std = math.nan
 
 
-def med_mean_std(lst, prec=None, scale=None):
-    """median, mean and standard error of a list
+def calc_stat(lst, percentages=[], prec=None, scale=None):
+    """list of statistics: median, mean, standard error, min, max, percentiles
     It can be useful when you want to know these statistics of a list and
     dump them in a json log/string.
     Input:
         lst: list of number
+        percentages: List[float] = [], what percentiles (quantile) to cauculate
         prec: int|None = None, round to which decimal place if it is an int
         scale: int|float|None = None, scale the elements in `lst` if it is an int or float
             Use it when `lst` contains normalised number (i.e. in [0, 1]) and you want to
@@ -127,8 +129,77 @@ def med_mean_std(lst, prec=None, scale=None):
     """
     if isinstance(scale, (int, float)):
         lst = list(map(lambda x: scale * x, lst))
-    ret = [float(np.median(lst)), float(np.mean(lst)), float(np.std(lst))]
+
+    ret = {
+        "min": float(np.min(lst)),
+        "max": float(np.max(lst)),
+        "mean": float(np.mean(lst)),
+        "std": float(np.std(lst)),
+        "median": float(np.median(lst))
+    }
+    if len(percentages) > 0:
+        percentages = [max(1e-7, min(p, 100 - 1e-7)) for p in percentages]
+        percentiles = np.pencentile(lst, percentages)
+        for ptage, ptile in zip(percentages, percentiles):
+            ret["p_{}".format(ptage)] = float(ptile)
+
     if isinstance(prec, int):
-        ret = list(map(lambda x: round(x, prec), ret))
+        ret = {k: round(v, prec) for k, v in ret.items()}
 
     return ret
+
+
+class OnlineStatEstim:
+    """online estimation of min, max, mean, median, percentile"""
+
+    def __init__(self, percentages=[]):
+        """percentages: List[float] in (0, 100)"""
+        for p in percentages:
+            assert 0 < p < 100, "percentages should be within open interval (0, 100)"
+        self.percentages = [max(1e-7, min(p, 100 - 1e-7)) for p in percentages]
+        self.avg_std = MeanMeter()
+        self.reset()
+
+    def __call__(self, x):
+        """x: List[int|float]"""
+        if isinstance(x, str):
+            x = float(x)
+        if isinstance(x, (int, float)):
+            x = [x]
+
+        x = np.asarray(x, dtype=float).flatten()
+
+        # min, max
+        self.min = min(self.min, float(x.min()))
+        self.max = max(self.max, float(x.max()))
+        # mean & standard deviation
+        self.avg_std.add(x.sum(), x.size)
+        # rank-based statistics: quantile/percentile
+        self.digest.batch_update(x)
+
+    def reset(self):
+        self.min = math.inf
+        self.max = - math.inf
+        self.avg_std.reset() # mean & standard deviation
+        self.digest = TDigest() # rank-based statistics: quantile/percentile
+
+    def value(self, prec=None):
+        mean, std = self.avg_std.value(prec)
+        median = self.digest.percentile(50)
+        ans = {
+            "min": round(self.min, prec) if isinstance(prec, int) else self.min,
+            "max": round(self.max, prec) if isinstance(prec, int) else self.max,
+            "mean": mean,
+            "std": std,
+            "median": round(median, prec) if isinstance(prec, int) else median
+        }
+        if len(self.percentages) > 0:
+            ans["percentile"] = {}
+            for p in self.percentages:
+                v = self.digest.percentile(p)
+                if isinstance(prec, int):
+                    v = round(v, prec)
+
+                ans["percentile"][str(p)] = v
+
+        return ans

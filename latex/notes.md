@@ -9,8 +9,46 @@
 % argmax, argmin
 \DeclareMathOperator*{\argmin}{\arg\min}
 \DeclareMathOperator*{\argmax}{\arg\max}
+```
+
+## pared delimiters
+
+Combine the opening and closing bracket into a single command to avoid missing
+and achieve easy auto-sizing (`\left` and `\right`).
+
+- use `\DeclarePairedDelimiter` to define.
+- add `*` to enable auto-sizing. E.g. `\paren{x}` gives `(x)`, while `\paren*{x}` gives `\left( x \right)`.
+
+```tex
 % iverson bracket
 \DeclarePairedDelimiter{\iverson}{\llbracket}{\rrbracket}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclarePairedDelimiter{\paren}{(}{)} % PARENtheses
+\DeclarePairedDelimiter{\sqrbrk}{[}{]} % SQuaRe BRacKets
+\DeclarePairedDelimiter{\curbrk}{\{}{\}} % CURly BRacKets
+\DeclarePairedDelimiter{\card}{|}{|} % CARDinality
+\DeclarePairedDelimiter{\norm}{\|}{\|}
+
+% examples
+\begin{align}
+    \paren{\sum^{A^*_t}_{i=\theta_0} x} \quad
+    \paren*{\sum^{A^*_t}_{i=\theta_0} x} \\
+    \sqrbrk{\sum^{A^*_t}_{i=\theta_0} x} \quad
+    \sqrbrk*{\sum^{A^*_t}_{i=\theta_0} x} \\
+    \curbrk{\sum^{A^*_t}_{i=\theta_0} x} \quad
+    \curbrk*{\sum^{A^*_t}_{i=\theta_0} x} \\
+    \card{\sum^{A^*_t}_{i=\theta_0} x} \quad
+    \card*{\sum^{A^*_t}_{i=\theta_0} x} \\
+    \norm{\sum^{A^*_t}_{i=\theta_0} x} \quad
+    \norm*{\sum^{A^*_t}_{i=\theta_0} x} \\
+    \iverson{\sum^{A^*_t}_{i=\theta_0} x} \quad
+    \iverson*{\sum^{A^*_t}_{i=\theta_0} x} \\
+    \floor{\sum^{A^*_t}_{i=\theta_0} x} \quad
+    \floor*{\sum^{A^*_t}_{i=\theta_0} x} \\
+    \ceil{\sum^{A^*_t}_{i=\theta_0} x} \quad
+    \ceil*{\sum^{A^*_t}_{i=\theta_0} x}
+\end{align}
 ```
 
 # Algorithm/Pseudo-code & Code
@@ -156,14 +194,17 @@ An example:
 \makeatletter
 \DeclareRobustCommand\onedot{\futurelet\@let@token\@onedot}
 \def\@onedot{\ifx\@let@token.\else.\null\fi\xspace}
+\def\aka{\emph{a.k.a}\onedot}
 \def\eg{\emph{e.g}\onedot} \def\Eg{\emph{E.g}\onedot}
 \def\ie{\emph{i.e}\onedot} \def\Ie{\emph{I.e}\onedot}
 \def\viz{\emph{viz}\onedot}
 \def\cf{\emph{cf}\onedot} \def\Cf{\emph{Cf}\onedot}
 \def\etc{\emph{etc}\onedot}
 \def\vs{\emph{vs}\onedot} % `vs.` not `v.s.`
-\def\wrt{w.r.t\onedot} \def\dof{d.o.f\onedot}
-\def\iid{i.i.d\onedot} \def\wolog{w.l.o.g\onedot}
+\def\wrt{w.r.t\onedot}
+\def\dof{d.o.f\onedot}
+\def\iid{i.i.d\onedot}
+\def\wolog{w.l.o.g\onedot}
 \def\etal{\emph{et al}\onedot}
 \makeatother
 ```
