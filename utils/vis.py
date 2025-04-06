@@ -111,12 +111,13 @@ def show_nii(nii_file):
     OrthoSlicer3D(img.dataobj).show()
 
 
-def compact_image_grid(image_list, exact=False):
+def compact_image_grid(image_list, exact=False, high_first=False):
     """adaptively arrange images in a compactest 2D grid (for better visualisation)
     Input:
         image_list: list of images in format of [h, w] or [h, w, c] numpy.ndarray
         exact: bool, subjest to #grids = #images or not.
             If False, #grids > #images may happen for a more compact view.
+        high_first: bool = True, if two layouts have the same compatness, high triumph wide
     Output:
         grid: [H, W] or [H, W, c], compiled images
     """
@@ -132,6 +133,10 @@ def compact_image_grid(image_list, exact=False):
         max_w = max(max_w, w)
 
     # find compactest layout
+    if high_first:
+        # consider transposed case
+        max_h, max_w = max_w, max_h
+
     nr, nc = 1, n
     min_peri = nr * max_h + nc * max_w # 1 row
     for r in range(2, n + 1):
@@ -142,6 +147,12 @@ def compact_image_grid(image_list, exact=False):
         peri = r * max_h + c * max_w
         if peri < min_peri:
             nr, nc, min_peri = r, c, peri
+
+    if high_first:
+        # transpose back
+        nr, nc = nc, nr
+        max_h, max_w = max_w, max_h
+
     assert nr * nc >= n
 
     grid_shape = (nr * max_h, nc * max_w) + image_list[0].shape[2:]
@@ -184,7 +195,8 @@ def vis_point_cloud(xyz, labels=None, n_classes=0, palette=None):
             palette = np.asarray(get_palette(n_classes, False))
         elif not isinstance(palette, np.ndarray):
             palette = np.asarray(palette)
-        assert (n_classes, 3) == palette.shape
+        # assert (n_classes, 3) == palette.shape
+        assert palette.shape[0] >= n_classes and 3 == palette.shape[1]
         colors = np.asarray([palette[c] for c in labels])
         colors = colors.astype(np.float32) / 255
         pcd.colors = o3d.utility.Vector3dVector(colors)

@@ -11,7 +11,7 @@
 \DeclareMathOperator*{\argmax}{\arg\max}
 ```
 
-## pared delimiters
+## paired delimiters
 
 Combine the opening and closing bracket into a single command to avoid missing
 and achieve easy auto-sizing (`\left` and `\right`).
@@ -20,8 +20,7 @@ and achieve easy auto-sizing (`\left` and `\right`).
 - add `*` to enable auto-sizing. E.g. `\paren{x}` gives `(x)`, while `\paren*{x}` gives `\left( x \right)`.
 
 ```tex
-% iverson bracket
-\DeclarePairedDelimiter{\iverson}{\llbracket}{\rrbracket}
+\DeclarePairedDelimiter{\iverson}{\llbracket}{\rrbracket} % Iverson bracket
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 \DeclarePairedDelimiter{\paren}{(}{)} % PARENtheses
