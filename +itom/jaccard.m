@@ -1,9 +1,11 @@
-function S = jaccard(L, varargin)
 % Jaccard similarity of labels
-% jaccard(L [, L2])
-% L, L2: [n, c], [m, c], in {0, 1}
-% S: [n, m], with S(i,j) = jaccard(l_i, l2_j)
-% -------------------------------------------
+% Usage:
+%   jaccard(L [, L2])
+% Input:
+%   L, L2: [n, c], [m, c], in {0, 1}
+% Output:
+%   S: [n, m], with S(i,j) = jaccard(l_i, l2_j)
+function S = jaccard(L, varargin)
     args = inputParser;
     addOptional(args, 'L2', L, @(L2) (size(L, 2) == size(L2, 2)));
     parse(args, varargin{:});

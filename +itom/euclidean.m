@@ -1,10 +1,12 @@
-function D = euclidean(X, varargin)
 % (square) euclidean distance
-% euclidean(X [, Y] [, 'square', 0/1])
-% X, Y: [n, d], [m, d], feature vectors
-% square: 0/1, square the euclidean distance or not, default = 1
-% D: [n, m], with D(i,j) = euc_dist(xi, yj)
-% -----------------------------------------
+% Usage
+%   euclidean(X [, Y] [, 'square', 0/1])
+% Input:
+%   X, Y: [n, d], [m, d], feature vectors
+%   square: 0/1, square the euclidean distance or not, default = 1
+% Output:
+%   D: [n, m], with D(i,j) = euc_dist(xi, yj)
+function D = euclidean(X, varargin)
     args = inputParser;
     addOptional(args, 'Y', 1, @(Y) (size(X, 2) == size(Y, 2)));
     addParameter(args, 'square', 1);

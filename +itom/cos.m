@@ -1,11 +1,10 @@
-function S = cos(X, varargin)
 % cosine similarity
 % calling: cos(X [, Y])
 % Input:
 %   X, Y: [n, d], [m, d], feature vectors
 % Output:
 %   S: [n, m], with D(i,j) = dot(X(i,;), Y(j,:)) / (||X(i,:)|| * ||Y(j,:)||)
-% --------------------------------------------------------------------------
+function S = cos(X, varargin)
     args = inputParser;
     addOptional(args, 'Y', 1, @(Y) (size(X, 2) == size(Y, 2)));
     parse(args, varargin{:});

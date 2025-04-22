@@ -183,6 +183,10 @@ An example:
 \end{table}
 ```
 
+## table in figure
+
+Inspect the TeX source of figure 1 in [(iclr'25) Hydra-SGG: Hybrid Relation Assignment for One-stage Scene Graph Generation](https://arxiv.org/abs/2409.10262): use `\put` and `\scalebox` to write those texts and table cells manually.
+
 # Abbreviations
 
 - Note: (some of) these may be already defined by the template, e.g. the `cvpr.sty` in [4].
@@ -315,11 +319,20 @@ Alternative: use [cleveref](https://au.mirrors.cicku.me/ctan/macros/latex/contri
 \crefname{figure}{Fig.}{Figs.}
 ```
 
-## Detailed Citation
+## Cite with Text
 
 To cite a specific section/figure/theorem/etc. of another paper,
 e.g. `[7, Section 2]`,
 cite with argument like `\cite[Section 2]{cvpr23abc}`.
+
+To add text both before and/or after the citation like `[DDPMs; 7, Section 2]`
+(seen in [Diffusion models as plug-and-play priors](https://arxiv.org/abs/2206.09012)),
+you should use `\usepackage{natbib}`:
+```tex
+% \usepackage{natbib}
+\cite[DDPMs;][Section 2]{cvpr23abc}
+```
+Refer to [Natbib citation styles](https://www.overleaf.com/learn/latex/Natbib_citation_styles).
 
 # Numbering of Table/Figure/Equation
 
@@ -436,8 +449,6 @@ Or one can use the `strip` environment provided by the [cuted](https://ctan.org/
 \captionof{figure}{caption}
 \end{strip}
 ```
-
-
 
 # References
 
