@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+authors:
+- family-names: "Liang"
+  given-names: "Tianyou"
+  orcid: "https://orcid.org/0000-0002-2213-3029"
+title: "ml-template"
+version: 2025.5.8
+date-released: 2025-05-08
+url: "https://github.com/iTomxy/ml-template"
+license: "MIT"

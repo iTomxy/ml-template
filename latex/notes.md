@@ -450,6 +450,34 @@ Or one can use the `strip` environment provided by the [cuted](https://ctan.org/
 \end{strip}
 ```
 
+# Cross Reference in Markdown/HTML
+
+In HTML and markdown (e.g. your project page),
+we sometimes want to refer to some location within the same site for easy navigation,
+e.g. a section (title), figure or a table.
+In LaTeX,
+this is achieved by `\label` and `\ref`:
+```tex
+\section{Bar}
+\label{foo} % set a label
+% ...blabla...
+As mentioned in \ref{foo}, % refer to that label
+```
+In HTML, this is realised by the `a` tag with its `name` attribute [9]:
+```html
+<h1>Bar</h1>
+<a name="foo"></a> <!-- set a label -->
+<!-- ...blabla... -->
+As mentioned in <a href="#foo">Bar</a>, <!-- refer to this label -->
+```
+In markdown,
+as HTML tags can be embedded into markdown directly,
+one can set and refer to labels in the same way as in HTML.
+But one can also refer with a simplified syntax:
+```markdown
+As mentioned in [Bar](#foo),
+```
+
 # References
 
 1. [latex空心小写字母、数字、括号](https://blog.csdn.net/HackerTom/article/details/134221777)
@@ -460,3 +488,4 @@ Or one can use the `strip` environment provided by the [cuted](https://ctan.org/
 6. [MLNLP-World/Paper-Writing-Tips](https://github.com/MLNLP-World/Paper-Writing-Tips)
 7. [MLNLP-World/Paper-Picture-Writing-Code](https://github.com/MLNLP-World/Paper-Picture-Writing-Code)
 8. [LaTeX Color](https://latexcolor.com/)
+9. [try writing blogs with GitHub issue #1](https://github.com/iTomxy/blogs/issues/1)
