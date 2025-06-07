@@ -5,26 +5,43 @@ if(has("win32") || has("win64") || has("win95") || has("win16"))
 	" windows
 	set rtp+=$HOME/vimfiles/bundle/Vundle.vim
 	call vundle#begin('$HOME/vimfiles/bundle')
+
+	" for fzf. Suppose fzf.exe lies at D:/GnuWin32/bin/fzf.exe
+	set rtp+=D:/GnuWin32/bin
 else
 	" linux
 	set rtp+=~/.vim/bundle/Vundle.vim
 	call vundle#begin('~/.vim/bundle')
 endif
 Plugin 'VundleVim/Vundle.vim'
-" Plugin 'tpope/vim-commentary'
-Plugin 'https://gitee.com/bigfacecat924/vim-commentary'
-" Plugin 'preservim/nerdtree'
-Plugin 'https://gitee.com/xie-xiaopeng/nerdtree'
+
+Plugin 'tpope/vim-commentary'
+" Plugin 'https://gitee.com/bigfacecat924/vim-commentary'
+
+Plugin 'preservim/nerdtree'
+" Plugin 'https://gitee.com/xie-xiaopeng/nerdtree'
+
 Plugin 'Vimjas/vim-python-pep8-indent'
 " Plugin 'https://gitee.com/tyloeng/vim-python-pep8-indent'
 Plugin 'tell-k/vim-autopep8'
+
 " Plugin 'jiangmiao/auto-pairs'
 " Plugin 'https://gitee.com/rulei_mirror/auto-pairs'
-" Plugin 'altercation/solarized'
-Plugin 'https://gitee.com/liazpg/solarized'
-" Plugin 'tomasiser/vim-code-dark'
-Plugin 'https://gitee.com/bigfacecat924/vim-code-dark'
+
+Plugin 'altercation/solarized'
+" Plugin 'https://gitee.com/liazpg/solarized'
+Plugin 'tomasiser/vim-code-dark'
+" Plugin 'https://gitee.com/bigfacecat924/vim-code-dark'
+
+" indent for dos batch
 Plugin 'vim-scripts/dosbatch-indent'
+
+" BeanCount accounting syntax highlight
+Plugin 'nathangrigg/vim-beancount'
+
+" fzf fuzzy finding
+Plugin 'junegunn/fzf'
+Plugin 'junegunn/fzf.vim'
 call vundle#end()         " must
 filetype plugin indent on " must, here
 
@@ -48,7 +65,7 @@ set incsearch " real-time match highlighting
 set backspace=indent,eol,start
 let mapleader = '\'
 
-"--- Comment String ---"
+"--- Comment String (tpope/vim-commentary) ---"
 " default: #(space)
 "setlocal commentstring=#\ %s
 " C/C++、Java: //(space)
@@ -186,7 +203,7 @@ vnoremap <C-t> <ESC>:tabe
 "inoremap <C-w> <ESC>:q<CR>
 "vnoremap <C-w> <ESC>:q<CR>
 
-"--- NERDTree ---"
+"--- NERDTree (preservim/nerdtree) ---"
 " F2 toggle open/close
 noremap <F2> :NERDTreeToggle<CR>
 inoremap <F2> <ESC>:NERDTreeToggle<CR>
