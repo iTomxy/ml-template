@@ -12,7 +12,7 @@ To search some strings in a file with fuzzy matching:
 cat FILE | fzf
 ```
 or
-```batch
+```bat
 @REM on windows
 type FILE | fzf
 ```
@@ -24,6 +24,23 @@ fzf --walker=file --walker-root=folder1/folder2
 cd folder1/folder2
 fzf --walker=file
 ```
+To preview file:
+```bat
+@REM `type` is the `cat` command on Windows.
+fzf --preview "type {}"
+```
+To open the selected file with Vim when pressing Enter within fzf:
+```shell
+fzf --bind "enter:execute(vim {})"
+```
+
+On Linux,
+you can use `alias` in .bashrc to set a abbreviation of fzf with these parameters.
+On Windows,
+you can make a folder under your home directory (e.g. *%USERPROFILE%\scripts/*),
+add that to PATH,
+and create batch file as alias.
+See [fo.bat](scripts/fo.bat) for an example.
 
 # bat
 

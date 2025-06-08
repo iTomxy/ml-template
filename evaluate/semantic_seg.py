@@ -113,6 +113,30 @@ class Evaluator:
 
                 self.records[metr][c].append(a)
 
+    def load_from_dict(self, vw_dict):
+        """Useful when aggregating volume-wise results to an overall one.
+        Assumes the dict structure to be the same as what `reduce` produces, i.e.
+        {
+            "vid": <VOLUME-ID>,
+            "metrics": {
+                "<METRIC>": float,
+                "<METRIC>_cw": List[float]
+            }
+        }
+        """
+        for metr in vw_dict["metrics"]:
+            if not metr.endswith("_cw") or metr.startswith("empty_"): # only use class-wise records
+                continue
+            cw_list = vw_dict["metrics"][metr]
+            assert len(cw_list) == self.n_classes
+            metr = metr[:-3] # remove "_cw"
+            for c, v in enumerate(cw_list):
+                if c in self.ignore_classes or (metr in self.DISTANCE_BASED and c in self.bg_classes):
+                    # always ignore bg for distance metrics
+                    self.records[metr][c].append(np.nan)
+                else:
+                    self.records[metr][c].append(v)
+
     def reduce(self, prec=4):
         """calculate class-wise & overall average
         Input:

@@ -294,7 +294,7 @@ def rm_empty_dir(root_dir):
         os.rmdir(root_dir)
 
 
-def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore_symlink=True):
+def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore_symlink_dir=True, ignore_symlink_file=False):
     """Back-up files (e.g. codes) by copying recursively, selecting files based on white & black list.
     Only files match one of the white patterns will be candidates, and will be ignored if
     match any black pattern. I.e. black list is prioritised over white list.
@@ -347,20 +347,38 @@ def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore
     for root, dirs, files in os.walk('.'):
         if '.' != root and _check(root, black_list):
             continue
-        if ignore_symlink and os.path.islink(root):
+        if ignore_symlink_dir and os.path.islink(root):
             continue
 
         bak_d = os.path.join(backup_root, root)
         os.makedirs(bak_d, exist_ok=True)
         for f in files:
             ff = os.path.join(root, f)
-            if ignore_symlink and os.path.islink(ff):
+            if ignore_symlink_file and os.path.islink(ff):
                 continue
             if _check(ff, white_list) and not _check(ff, black_list):
                 shutil.copy(ff, os.path.join(bak_d, f))
 
     os.chdir(cwd) # return to current working dir on finish
     rm_empty_dir(backup_root)
+
+
+def backup_by_renaming(*fd_list, suffix="bak"):
+    """Back-up files or folders by renaming them."""
+    for fd in fd_list:
+        fd = os.path.abspath(os.path.expanduser(fd))
+        if not os.path.exists(fd):
+            print("No such file or folder:", fd)
+            continue
+
+        # ensure unique back-up file/folder name
+        multiplicity = 0
+        suf = suffix
+        while os.path.exists(fd + suf):
+            multiplicity += 1
+            suf = suffix + str(multiplicity)
+
+        os.rename(fd, fd + suf)
 
 
 if __name__ == "__main__":
