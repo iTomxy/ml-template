@@ -478,6 +478,13 @@ But one can also refer with a simplified syntax:
 As mentioned in [Bar](#foo),
 ```
 
+# Rebuttal Tracking Template
+
+After receving the review comments,
+we need to analyse them to direct our rebuttal.
+See [Rebuttal Tracking Template.xlsx](Rebuttal_Tracking_Template.xlsx) for an analysing template.
+Source: [GAMES003: 图形视觉科研基本素养](https://pengsida.net/games003/) -> Ninth week [Slides](https://pengsida.net/games003/GAMES003_files/week_9.pdf) -> [Rebuttal Tracking Template](https://docs.google.com/spreadsheets/d/1-FqA8RfQY5XwycJLqjVLLM0QIVNwzelGJqpWSInCen0/edit?usp=sharing).
+
 # References
 
 1. [latex空心小写字母、数字、括号](https://blog.csdn.net/HackerTom/article/details/134221777)
