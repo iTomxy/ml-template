@@ -1,4 +1,4 @@
-import os, math, itertools
+import os, math, itertools, multiprocessing as mp
 import numpy as np
 from PIL import Image
 
@@ -176,32 +176,61 @@ def show_ply(ply_file):
     o3d.visualization.draw_geometries([pcd])
 
 
-def vis_point_cloud(xyz, labels=None, n_classes=0, palette=None):
-    """
+def vis_point_cloud(xyz, label=None, n_classes=0, palette=None, window_name="Open3D"):
+    """visualise 1 point cloud (label or prediction)
     xyz: int|float[n, 3], numpy.ndarray
-    labels: int[n] = None
+    label: int[n] = None
     n_classes: int = 0
-    palette: List[Tuple(R, G, B)] = None, [(R1, G1, B1), ..., (R_k, G_k, B_k)]
+    palette: int[m, 3] = None, m >= n_classes
+    window_name: str = "Open3D"
     """
-    import open3d as o3d
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(xyz)
-    if labels is not None:
-        assert len(labels) == xyz.shape[0]
-        labels = np.asarray(labels)
+    if label is not None:
+        assert len(label) == xyz.shape[0]
+        label = np.asarray(label)
         if n_classes < 1:
-            n_classes = labels.max() + 1
+            n_classes = label.max() + 1
         if palette is None:
             palette = np.asarray(get_palette(n_classes, False))
         elif not isinstance(palette, np.ndarray):
             palette = np.asarray(palette)
-        # assert (n_classes, 3) == palette.shape
-        assert palette.shape[0] >= n_classes and 3 == palette.shape[1]
-        colors = np.asarray([palette[c] for c in labels])
+        assert palette.shape[0] >= n_classes and 3 == palette.shape[1], "Palette ({}) too small for {} classes".format(palette.shape, n_classes)
+        colors = np.asarray([palette[c] for c in label])
         colors = colors.astype(np.float32) / 255
         pcd.colors = o3d.utility.Vector3dVector(colors)
 
-    o3d.visualization.draw_geometries([pcd])
+    o3d.visualization.draw_geometries([pcd], window_name=window_name)
+
+
+def vis_multi_pc(xyzs, labels=[], class_nums=[], palettes=[], windows_name=[]):
+    """visualise multiple point clouds (label or prediction) simultaneously by calling `vis_point_cloud` with multi-processing
+    xyzs: list of int|float[n, 3], numpy.ndarray
+    labels: list of int[n] = None
+    class_nums: list of int = 0
+    palettes: list of int[m, 3] = None, m >= n_classes
+    windows_name: list of str = "Open3D"
+    """
+    assert isinstance(xyzs, (list, tuple))
+    if len(labels) == 0:
+        labels = [None] * len(xyzs)
+    if len(class_nums) == 0:
+        class_nums = [0] * len(xyzs)
+    if len(palettes) == 0:
+        palettes = [None] * len(xyzs)
+    if len(windows_name) == 0:
+        windows_name = ["Open3D {}".format(i) for i in range(len(xyzs))]
+    assert len(xyzs) == len(labels) == len(class_nums) == len(palettes) == len(windows_name)
+
+    p_list = []
+    for xyz, label, nc, palette, wn in zip(xyzs, labels, class_nums, palettes, windows_name):
+        p = mp.Process(target=vis_point_cloud, args=(xyz, label, nc, palette, wn))
+        p.start()
+        p_list.append(t)
+        # p.join() # do NOT join here
+
+    for p in p_list:
+        p.join()
 
 
 def bbox3d_points(point1, point2):
