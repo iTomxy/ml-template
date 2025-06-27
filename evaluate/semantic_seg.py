@@ -75,11 +75,12 @@ class Evaluator:
                 self.records[f"empty_gt_{metr}"] = [0] * self.n_classes
                 self.records[f"empty_pred_{metr}"] = [0] * self.n_classes
 
-    def __call__(self, *, pred, y):
+    def __call__(self, *, pred, y, spacing=None):
         """evaluates 1 prediction
         Input:
             pred: int numpy.ndarray, prediction (class ID after argmax) of one datum, not a batch
             y: same as `pred`, label (ground-truth class ID) of this datum
+            spacing: float[] = None, len(spacing) = pred.ndim
         """
         for c in range(self.n_classes):
             B_pred_c = (pred == c).astype(np.int64)
@@ -107,7 +108,10 @@ class Evaluator:
                             self.records[f"empty_gt_{metr}"][c] += 1
                 else: # normal cases or that medpy can solve well
                     # try:
-                    a = fn(B_pred_c, B_c)
+                    if is_distance_metr:
+                        a = fn(B_pred_c, B_c, voxelspacing=spacing)
+                    else:
+                        a = fn(B_pred_c, B_c)
                     # except:
                     #     a = np.nan
 
@@ -115,19 +119,17 @@ class Evaluator:
 
     def load_from_dict(self, vw_dict):
         """Useful when aggregating volume-wise results to an overall one.
-        Assumes the dict structure to be the same as what `reduce` produces, i.e.
+        Assumes the dict structure to be as follows:
         {
-            "vid": <VOLUME-ID>,
-            "metrics": {
-                "<METRIC>": float,
-                "<METRIC>_cw": List[float]
-            }
+            "<METRIC>_cw": List[float]
+            "<other keys>": Any
         }
+        Only keys of format `<METRIC>_cw` are used, while other keys are ignored.
         """
-        for metr in vw_dict["metrics"]:
+        for metr in vw_dict:
             if not metr.endswith("_cw") or metr.startswith("empty_"): # only use class-wise records
                 continue
-            cw_list = vw_dict["metrics"][metr]
+            cw_list = vw_dict[metr]
             assert len(cw_list) == self.n_classes
             metr = metr[:-3] # remove "_cw"
             for c, v in enumerate(cw_list):
@@ -181,7 +183,11 @@ class Evaluator:
 
 
 class EvaluatorMonai:
-    """implemented with MONAI"""
+    """implemented with MONAI
+    Assuming `0` to be the background class.
+    """
+
+    DISTANCE_BASED = ("hd", "assd", "hd95", "asd")
 
     def __init__(self, n_classes, ignore_bg=False, select=[]):
         """ignore_bg: bool, for NON-distance-based metrics"""
@@ -222,6 +228,7 @@ class EvaluatorMonai:
         if len(select) > 0:
             overall_metrics = {k: v for k, v in overall_metrics.items() if k in select}
             clswise_metrics = {k: v for k, v in clswise_metrics.items() if k in select}
+
         return overall_metrics, clswise_metrics
 
     def reset(self):
@@ -230,32 +237,56 @@ class EvaluatorMonai:
         for k in self.clswise_metrics:
             self.clswise_metrics[k].reset()
 
-    def __call__(self, *, pred, y):
+    def __call__(self, *, pred, y, spacing=None):
         """evaluates 1 prediction
         Input:
             pred: torch.Tensor, typically [H, W] or [H, W, L], predicted class ID
             y: same as `pred`, label, ground-truth class ID
+            spacing: float[] = None, len(spacing) = pred.ndim
         """
         if pred.dim() == 1:
-            # NOTE Vectors of shape [L] are NOT natually supported.
-            # I guess this is because
+            # NOTE Vectors of shape [L] are NOT natually supported (by distance-based metrics?).
+            # I guess this is because it does not form a object surface.
             pred, y = pred.unsqueeze(1), y.unsqueeze(1) # [L] -> [L, 1], pretending [H, W]
+
         pred = one_hot(pred.unsqueeze(0).unsqueeze(0), num_classes=self.n_classes, dim=1) # -> (B=1, C, H, W[, L])
         y = one_hot(y.unsqueeze(0).unsqueeze(0), num_classes=self.n_classes, dim=1) # -> (B=1, C, H, W[, L])
         for k in self.overall_metrics:
-            self.overall_metrics[k](y_pred=pred, y=y)
+            if k in self.DISTANCE_BASED:
+                self.overall_metrics[k](y_pred=pred, y=y, spacing=spacing)
+            else:
+                self.overall_metrics[k](y_pred=pred, y=y)
+
         for k in self.clswise_metrics:
-            self.clswise_metrics[k](y_pred=pred, y=y)
+            if k in self.DISTANCE_BASED:
+                self.clswise_metrics[k](y_pred=pred, y=y, spacing=spacing)
+            else:
+                self.clswise_metrics[k](y_pred=pred, y=y)
 
     def reduce(self, prec=4):
         res = {}
         for k in self.overall_metrics:
-            try:
-                res[k] = self.metric_get_off(self.overall_metrics[k].aggregate(), prec)
-            except:
-                print(k, type(self.overall_metrics[k]))
+            # try:
+            res[k] = self.metric_get_off(self.overall_metrics[k].aggregate(), prec)
+            # except:
+            #     print(k, type(self.overall_metrics[k]))
+
         for k in self.clswise_metrics:
-            res[k+"_cw"] = self.metric_get_off(self.clswise_metrics[k].aggregate(), prec)
+            r = self.metric_get_off(self.clswise_metrics[k].aggregate(), prec)
+            # Ensure the class-wise metrics are in list format
+            # to be consistent with `Evaluator` above.
+            if isinstance(r, (float, int)):
+                r = [r]
+
+            # In case of background(0) is excluded,
+            # prepend a `0` to ensure the the length equals to #classes.
+            # This assumes `0` is the background class.
+            if len(r) != self.n_classes:
+                assert len(r) == self.n_classes - 1
+                r = [0] + r
+
+            res[k+"_cw"] = r
+
         return res
 
     def metric_get_off(self, res, prec=6):
@@ -263,12 +294,15 @@ class EvaluatorMonai:
         if isinstance(res, list):
             assert len(res) == 1
             res = res[0]
+
         if "cuda" in res.device.type:
             res = res.cpu()
+
         if 0 == res.ndim:
             res = round(res.item(), prec)
         else:
             res = list(map(lambda x: round(x, prec), res.tolist()))
             if len(res) == 1:
                 res = res[0]
+
         return res
