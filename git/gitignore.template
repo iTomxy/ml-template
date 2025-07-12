@@ -151,6 +151,7 @@ cython_debug/
 
 # data
 *.h5
+*.hdf5
 *.mat
 *.np[yz]
 *.obj
@@ -165,7 +166,17 @@ cython_debug/
 *.svg
 *.web[mp]
 *.mov
+*.tif
+*.tiff
+
+# medical image
 *.nii
+*.mha
+*.dcm
+*.dicom
+*.mnc
+*.img
+*.hdr
 
 # zipped file
 *.zip
@@ -251,4 +262,3 @@ events.out.tfevents.*
 *.toc
 *.url
 *.vrb
-

@@ -306,16 +306,18 @@ def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore
     backup_files(
         "./logs/1st-run/backup_code",
         white_list=["*.py", "scripts/*.sh"],
-        black_list=["logs", ".*"],  # `.*` for `.idea/`, `.ipynb_checkpoints/`
+        black_list=["logs/*"],  # to ignore the folder `logs/`
     )
     ```
+    NOTE that to ignore a folder with `black_list`, one MUST writes in `<folder>/*` format.
 
     Input:
         backup_root: root folder to back-up file
         src_root: str, path to the root folder to search
         white_list: List[str], file pattern/s to back-up
         black_list: List[str], file/folder pattern/s to ignore
-        ignore_symlink: bool, ignore (i.e. don't back-up & search) symbol link to file/folder
+        ignore_symlink_dir: bool = True, ignore (i.e. don't back-up & search) symbol link to folder
+        ignore_symlink_file: bool = False, ignore (i.e. don't back-up & search) symbol link to file
     """
     assert os.path.isdir(src_root), src_root
     assert not os.path.isdir(backup_root), f"* Back-up folder already exists: {backup_root}"
@@ -345,7 +347,7 @@ def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore
     os.chdir(src_root)
 
     for root, dirs, files in os.walk('.'):
-        if '.' != root and _check(root, black_list):
+        if '.' != root and _check(os.path.relpath(root), black_list):
             continue
         if ignore_symlink_dir and os.path.islink(root):
             continue

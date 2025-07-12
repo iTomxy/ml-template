@@ -11,6 +11,10 @@ The leading `+` will add this folder into the searching path.
 
 - [git/](git): git-related command showcases and *.gitignore* template.
 
+- [latex/](latex): LaTeX preamble template for academic papers and a rebuttal analysis Excel template.
+
+- [losses/](losses): Implementation of some deep learning loss functions.
+
 - [scripts/](scripts): Utility scripts.
 
 - [utils/](utils): Utilities.
