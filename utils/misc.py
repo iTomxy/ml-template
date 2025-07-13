@@ -454,7 +454,7 @@ def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore
                 Q.extend([os.path.join(fd, x) for x in os.listdir(fd)])
 
     os.chdir(cwd) # return to current working dir on finish
-    rm_empty_dir(backup_root)
+    # rm_empty_dir(backup_root)
 
 
 def backup_by_renaming(*fd_list, suffix="bak"):
