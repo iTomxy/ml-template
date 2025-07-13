@@ -1,6 +1,5 @@
 import math
 import numpy as np
-from tdigest import TDigest # for online percentile estimation
 
 
 class Record:
@@ -181,6 +180,7 @@ class OnlineStatEstim:
         self.min = math.inf
         self.max = - math.inf
         self.avg_std.reset() # mean & standard deviation
+        from tdigest import TDigest # for online percentile estimation
         self.digest = TDigest() # rank-based statistics: quantile/percentile
 
     def value(self, prec=None):
