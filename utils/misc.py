@@ -365,7 +365,7 @@ def rm_empty_dir(root_dir):
 #     rm_empty_dir(backup_root)
 
 
-def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore_symlink=True):
+def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore_symlink=False):
     """Back-up files (e.g. codes) by copying recursively, selecting files based on white & black list.
     Only files match one of the white patterns will be candidates, and will be ignored if
     match any black pattern. I.e. black list is prioritised over white list.
@@ -383,10 +383,10 @@ def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore
 
     Input:
         backup_root: root folder to back-up file
-        src_root: str, path to the root folder to search
-        white_list: List[str], file pattern/s to back-up
-        black_list: List[str], file/folder pattern/s to ignore
-        ignore_symlink: bool = True, ignore (i.e. don't back-up & search) symbol link to file/folder
+        src_root: str = '.', path to the root folder to search
+        white_list: List[str] = [], file pattern/s to back-up
+        black_list: List[str] = [], file/folder pattern/s to ignore
+        ignore_symlink: bool = False, ignore (i.e. don't back-up & search) symbol link to file/folder
     """
     assert os.path.isdir(src_root), src_root
     assert not os.path.isdir(backup_root), f"* Back-up folder already exists: {backup_root}"
@@ -397,12 +397,24 @@ def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore
     src_root = os.path.expanduser(src_root)
     backup_root = os.path.realpath(os.path.expanduser(backup_root))
 
+    # Separate iterms in black_list with explicit `/` or `\` suffix and
+    # let them only apply on folder filtering
+    general_bl, dir_bl = [], []
+    for s in black_list:
+        if s.endswith('/') or s.endswith('\\'):
+            dir_bl.append(s)
+        else:
+            general_bl.append(s)
+
     # rm `./` prefix, or it will cause stupid matching failure like:
     #     fnmatch.fnmatch("./utils/misc.py", "utils/*") # <- got False
     # but works for:
     #     fnmatch.fnmatch("utils/misc.py", "utils/*") # <- got True
+    # Also rm '/' or '\' suffix.
     white_list = [os.path.relpath(s) for s in white_list]
-    black_list = [os.path.relpath(s) for s in black_list]
+    # black_list = [os.path.relpath(s) for s in black_list]
+    general_bl = [os.path.relpath(s) for s in general_bl]
+    dir_bl = [os.path.relpath(s) for s in dir_bl]
 
     def _check(_s, _list):
         """check if `_s` matches any listed pattern"""
@@ -415,11 +427,9 @@ def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore
     cwd = os.getcwd() # full path
     os.chdir(src_root)
 
-    Q = os.listdir('.')
+    Q = ['.']
     while len(Q) > 0:
         fd, Q = os.path.relpath(Q[0]), Q[1:]
-        if _check(fd, black_list) or _check(os.path.basename(fd), black_list):
-            continue
 
         is_link = os.path.islink(fd)
         if is_link and ignore_symlink:
@@ -427,13 +437,16 @@ def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore
 
         _dest = os.path.join(backup_root, fd)
         if os.path.isfile(fd):
-            if _check(fd, white_list) and not _check(fd, black_list):
+            if _check(fd, white_list) and not _check(fd, general_bl):
                 os.makedirs(os.path.dirname(_dest), exist_ok=True)
                 if is_link:
                     os.symlink(os.path.realpath(fd), _dest)
                 else:
                     shutil.copy(fd, _dest)
-        else: # is folder
+        elif not (
+            _check(fd, general_bl) or _check(os.path.basename(fd), general_bl) or
+            _check(fd, dir_bl) or _check(os.path.basename(fd), dir_bl)
+        ):
             if is_link:
                 os.makedirs(os.path.dirname(_dest), exist_ok=True)
                 os.symlink(os.path.realpath(fd), _dest, target_is_directory=True)
@@ -491,4 +504,4 @@ if __name__ == "__main__":
     logger = get_logger("dynamic", log_file="dynamic.json", log_console=False, fmt="%(message)s")
     logger.info(json.dumps({"time": time.asctime(), "acc": 0.78}))
 
-    backup_files("log/backup_codes", white_list=["*.py", "*.sh"], black_list=["log"])
+    backup_files("log/backup_codes", white_list=["*.py", "*.sh"], black_list=["log/"])
