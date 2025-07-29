@@ -1,3 +1,26 @@
+# Project Structure
+
+```
+draft/
+|- preamble.tex
+|- section_1.tex
+|- section_n.tex
+|- fig/
+|  |- *.pdf
+|  |- *.png
+|- fig-<LABEL>.tex  # per figure
+|- tab-<LABEL>.tex  # per table
+|- ref-dataset.bib  # separate different kinds of references
+|- ref-baseline.bib
+|- *.bib
+|- main.tex
+|- *.bst
+|- *.dtx
+`- *.sty
+```
+
+Use `\graphicspath{{fig/}}` and `\input{}`.
+
 # Mathematics
 
 ```tex
@@ -245,7 +268,7 @@ Reference:
 
 ## special symbols
 
-Use [pifont](https://ctan.org/pkg/pifont) for special symbols.
+Use [pifont](https://ctan.org/pkg/pifont) and [textcomp](https://docs.mathjax.org/en/latest/input/tex/extensions/textcomp.html) for special symbols.
 For example:
 
 ```tex
@@ -253,6 +276,20 @@ For example:
 
 \ding{51} % ✓
 \ding{55} % ✗
+```
+
+and
+
+```tex
+\usepackage{textcomp}
+\texttimes % ×
+\textdiv % ÷
+\textpm % ±
+\textdegree % °
+\textdagger % †
+\textdaggerdbl % ‡
+\textparagraph % ¶
+\textmusicalnote % ♪
 ```
 
 Also see many symbol and formatting tricks in the TeX source of [Point Transformer V3: Simpler, Faster, Stronger](https://arxiv.org/abs/2312.10035).
@@ -381,6 +418,20 @@ foo bar
 
 ```tex
 "a", ``b'', 'c', `d'.
+```
+
+# Quotation
+
+Use `quote` or `quotation` environment.
+One can add background colour to the quotation block by wrapping it like this:
+```tex
+\colorbox{lightgray!20}{% <- specify colour here
+\begin{minipage}{\dimexpr\textwidth-2\fboxsep}
+\begin{quote}
+Quoted content.
+\end{quote}
+\end{minipage}
+}
 ```
 
 # Fonts

@@ -3,28 +3,31 @@
 ## Calling
 # . find-gpu.sh [#gpu required] [min free memory per gpu] [b/w] [<IGNORE-GPU-1> ...]
 ## Input
-# $1: int = 1, number of GPU needed, <0 (e.g. -1) to select all
+# $1: int = -1, number of GPU needed, <0 (e.g. -1) to select all
 # $2: int = 0, least required free memory per GPU (in MiB)
-# $3: char = b, {b: Best fit, w: Worst fit}
-# ${@:4}: list[int], GPU IDs to exclude
+# $3: char = w, {b: Best fit, w: Worst fit}
+# $4: bool = f, {t: set CUDA_VISIBLE_DEVICES if found, f: do not set}
+# ${@:5}: list[int], GPU IDs to exclude
 ## Output (i.e. set/assigned variables)
 # gpu_id: int/str, selected GPU id (list, seperated by ','), can be fed to `CUDA_VISIBLE_DEVICES`.
 # n_gpu_found: int, number of selected GPU.
 ## Reference
 # https://blog.csdn.net/HackerTom/article/details/126257508
 
-# 1st arg: # of GPU needed, default = 1
+# 1st arg: # of GPU needed, default = -1
 #	<0 means requiring all GPUs.
-_n_gpu_req=${1-"1"}
+_n_gpu_req=${1-"-1"}
 # 2nd arg: lower bound of free memory needed per GPU (in MiB), default = 0
 #	i.e. only GPUs with free memory >= $2 will be selected.
 _mem_lb=${2-"0"}
 # 3rd arg: fit mode, in {b, w}, default = b
 #	b: best fit, prioritises those have LEAST but enough available memory
 #	w: worst fit, prioritises those have MOST and enough available memory
-_mode=${3-"b"}
+_mode=${3-"w"}
+# 4th arg: whether to set CUDA_VISIBLE_DEVICES, default = (f)alse
+_set=${4-"f"}
 # rest arg: GPU IDs to be ignored, 0-based
-_ignore=${@:4}
+_ignore=${@:5}
 
 # _res=$(nvidia-smi | \
 # 	grep -E "[0-9]+MiB\s*/\s*[0-9]+MiB" | \
@@ -82,3 +85,8 @@ for i in $(seq 0 2 `expr ${#_res[@]} - 1`); do
 done
 
 # echo found: ${n_gpu_found}
+if [ ${_set} == "t" -a ${n_gpu_found} -gt 0 ]; then
+	export CUDA_VISIBLE_DEVICES=${gpu_id}
+# else
+# 	unset CUDA_VISIBLE_DEVICES
+fi

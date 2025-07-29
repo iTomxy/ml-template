@@ -80,6 +80,7 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 # *.ipynb
+.virtual_documents
 
 # IPython
 profile_default/
@@ -262,3 +263,4 @@ events.out.tfevents.*
 *.toc
 *.url
 *.vrb
+

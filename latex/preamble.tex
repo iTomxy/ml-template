@@ -1,10 +1,3 @@
-% --- algorithm
-\usepackage{algorithm}
-\usepackage{algorithmic}
-
-% --- code
-\usepackage{listings}
-
 % --- colour
 \usepackage[table]{xcolor} % \textcolor, \definecolor
 \definecolor{bilibili}{RGB}{251, 114, 153}
@@ -12,6 +5,10 @@
 \definecolor{citegreen}{RGB}{34, 139, 34} % FROM: Mask R-CNN (https://arxiv.org/abs/1703.06870)
 \definecolor{royalblue}{RGB}{0, 113, 188}
 \definecolor{halfblue}{RGB}{0, 0, 128} % ICML citation blue
+
+% Chinese colours
+\definecolor{ricepaper}{RGB}{232, 232, 220} % 宣纸 as background
+\definecolor{cinnabar}{RGB}{255, 78, 32} % 朱砂 as red
 
 % matplotlib.pyplot.rcParams['axes.prop_cycle'].by_key()['color']
 \definecolor{mpl0}{HTML}{1f77b4}
@@ -28,6 +25,23 @@
 % --- encoding
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+
+% --- algorithm
+\usepackage{algorithm}
+\usepackage{algorithmic}
+% \usepackage{algpseudocode}
+% \usepackage[ruled,vlined]{algorithm2e}
+
+% Customise strings in algorithmic:
+%   \REQUIRE: `Require:' -> `Input:'
+%   \REQUIRE: `Ensure:' -> `Output:'
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+% Customise comment format in algorithmic
+\renewcommand{\algorithmiccomment}[1]{\hfill\textcolor{gray}{$\blacktriangleright$ \textit{#1}}}
+
+% --- code
+\usepackage{listings}
 
 % --- figure
 \usepackage{graphicx} % \resizebox
@@ -62,8 +76,8 @@
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 \DeclarePairedDelimiter{\paren}{(}{)} % PARENtheses
-\DeclarePairedDelimiter{\sqrbrk}{[}{]} % SQuaRe BRacKets
-\DeclarePairedDelimiter{\curbrk}{\{}{\}} % CURly BRacKets
+\DeclarePairedDelimiter{\sbrk}{[}{]} % Square BRacKets
+\DeclarePairedDelimiter{\cbrk}{\{}{\}} % Curly BRacKets
 \DeclarePairedDelimiter{\card}{|}{|} % CARDinality
 \DeclarePairedDelimiter{\norm}{\|}{\|}
 
@@ -77,6 +91,9 @@
 % --- symbol
 \usepackage{pifont} % \ding{51} (✓), \ding{55} (✗)
 \usepackage{pmboxdraw} % \textSFii (└), \textSFviii (├), \textSFx (─)
+% \texttimes (×), \textdiv (÷), \textpm (±), \textdegree (°),
+% \textdagger (†), \textdaggerdbl (‡), \textparagraph (¶), \textmusicalnote (♪)
+\usepackage{textcomp}
 
 % --- text
 \usepackage{soul} % \st: stridethrough text
@@ -103,14 +120,16 @@
 % - `\eqref`: built in the `amsmath` package
 % - `\nameref`: built in the `nameref` package
 % - `\pageref`: built-in
+\providecommand{\algref}[1]{Alg.~\ref{#1}}
+\providecommand{\Algref}[1]{Algorithm~\ref{#1}}
 \providecommand{\eqnref}[1]{Eq.~\eqref{#1}}
 \providecommand{\Eqnref}[1]{Equation~\eqref{#1}}
 \providecommand{\figref}[1]{Fig.~\ref{#1}}
 \providecommand{\Figref}[1]{\figurename~\ref{#1}}
-\providecommand{\tabref}[1]{Tab.~\ref{#1}}
-\providecommand{\Tabref}[1]{\tablename~\ref{#1}}
 \providecommand{\secref}[1]{\S\ref{#1}}
 \providecommand{\Secref}[1]{Section~\ref{#1}}
+\providecommand{\tabref}[1]{Tab.~\ref{#1}}
+\providecommand{\Tabref}[1]{\tablename~\ref{#1}}
 
 % Fake \cite & \ref
 % In rebuttal, when you want to \cite or \ref something from the paper
@@ -159,4 +178,3 @@
 \def\wolog{w.l.o.g\onedot}
 \def\etal{\emph{et al}\onedot}
 \makeatother
-

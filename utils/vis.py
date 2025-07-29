@@ -50,7 +50,7 @@ def color_seg(label, n_classes=0, palette=[]):
     Input:
         label: [H, W], int numpy.ndarray
         n_classes: int = 0, num of classes (including background), inferred from `label` if not provided.
-        palette: list = [], PIL-format palette, use this if provided, else use generated one.
+        palette: List[RGB] = [], PIL-format palette, use this if provided, else use generated one.
     Output:
         label_rgb: [H, W, 3], PIL.Image
     """
@@ -65,15 +65,16 @@ def color_seg(label, n_classes=0, palette=[]):
     return label_rgb.convert("RGB")
 
 
-def blend_seg(image, label, n_classes=0, alpha=0.7, rescale=False, transparent_bg=True, save_file=""):
+def blend_seg(image, label, n_classes=0, alpha=0.7, rescale=False, transparent_ids=[], palette=[], save_file=""):
     """blend image & pixel-level label/prediction
     Input:
         image: [H, W] or [H, W, C], int numpy.ndarray, in [0, 255]
         label: [H, W], int numpy.ndarray
-        n_classes: int, num of classes (including background), inferred from `label` if not provided
-        alpha: float in (0, 1)
-        rescale: bool, normalise & scale to [0, 255] if True
-        transparent_bg: bool, don't colour (i.e. use original image pixel value for) background pixels if True
+        n_classes: int = 0, num of classes (including background), inferred from `label` if not provided.
+        alpha: float = 0.7, in (0, 1)
+        rescale: bool = False, normalise & scale image to [0, 255] if True.
+        transparent_ids: List[int] = [], don't blend pixels with these label IDs, use original image pixel instead.
+        palette: List[RGB] = [], PIL-format palette, use this if provided, else use generated one.
         save_file: str, path to save the blended image
     Output:
         blended_image: PIL.Image
@@ -82,18 +83,23 @@ def blend_seg(image, label, n_classes=0, alpha=0.7, rescale=False, transparent_b
         denom = image.max() - image.min()
         if 0 != denom:
             image = (image - image.min()) / denom * 255
+
         image = np.clip(image, 0, 255).astype(np.uint8)
+
     img_pil = Image.fromarray(image).convert("RGB")
-    lab_pil = color_seg(label, n_classes)
+    lab_pil = color_seg(label, n_classes, palette)
     blended_image = Image.blend(img_pil, lab_pil, alpha)
-    if transparent_bg:
+    if len(transparent_ids) > 0:
         blended_image = Image.fromarray(np.where(
-            (0 == label)[:, :, np.newaxis],
+            np.isin(label, transparent_ids)[:, :, np.newaxis],
             np.asarray(img_pil),
             np.asarray(blended_image)
         ))
+
     if save_file:
+        os.makedirs(os.path.dirname(save_file) or '.', exist_ok=True)
         blended_image.save(save_file)
+
     return blended_image
 
 
