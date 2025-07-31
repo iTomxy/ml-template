@@ -1,23 +1,8 @@
-# IDE
-.vscode
-.idea
-
-# data
-*.mat
-*.h5
-*.np[yz]
-*.png
-*.jpg
-*.jpeg
-*.webm
-*.gif
-*.exe
-*.obj
-*.pkl
+# https://github.com/github/gitignore/blob/master/Python.gitignore
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
+*.py[codz]
 *$py.class
 
 # C extensions
@@ -25,7 +10,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-env/
 build/
 develop-eggs/
 dist/
@@ -38,9 +22,11 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -55,13 +41,17 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 htmlcov/
 .tox/
+.nox/
 .coverage
 .coverage.*
 .cache
 nosetests.xml
 coverage.xml
 *.cover
+*.py,cover
 .hypothesis/
+.pytest_cache/
+cover/
 
 # Translations
 *.mo
@@ -70,6 +60,8 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
+db.sqlite3
+db.sqlite3-journal
 
 # Flask stuff:
 instance/
@@ -82,28 +74,48 @@ instance/
 docs/_build/
 
 # PyBuilder
+.pybuilder/
 target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-*.ipynb
+# *.ipynb
+.virtual_documents
+
+# IPython
+profile_default/
+ipython_config.py
 
 # pyenv
-.python-version
+#   For a library or package, you might want to ignore these files since the code is
+#   intended to run in multiple environments; otherwise, check them in:
+# .python-version
 
-# celery beat schedule file
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery stuff
 celerybeat-schedule
+celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
 
-# dotenv
+# Environments
 .env
-
-# virtualenv
 .venv
+env/
 venv/
 ENV/
+env.bak/
+venv.bak/
 
 # Spyder project settings
 .spyderproject
@@ -117,13 +129,138 @@ ENV/
 
 # mypy
 .mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# IDE
+.vscode
+.idea
+
+# system
+*.exe
+*.lnk
+.DS_Store
+
+# data
+*.h5
+*.hdf5
+*.mat
+*.np[yz]
+*.obj
+*.pkl
+*.pickle
+
+# media
+*.gif
+*.jpeg
+*.jpg
+*.png
+*.svg
+*.web[mp]
+*.mov
+*.mp[34]
+*.tif
+*.tiff
+
+# medical image
+*.nii
+*.mha
+*.dcm
+*.dicom
+*.mnc
+*.img
+*.hdr
+
+# zipped file
+*.zip
+*.tar
+*.tar.*
+*.[gx7]z
+*.bz2
+*.tgz
+*.rar
+
+# documents
+*.csv
+*.doc
+*.docx
+~$*.doc
+~$*.docx
+*.et
+*.pdf
+*.ppt
+*.pptx
+~$*.ppt
+~$*.pptx
+*.rtf
+*.swp
+*.vsd
+*.vsdx
+~$*.vsd
+~$*.vsdx
+*.wps
+*.xls
+*.xlsx
+~$*.xls
+~$*.xlsx
 
 # tensorflow
 events.out.tfevents.*
+*.tfrecords
 
 # pytorch
+*.pt
 *.pth
 
-# vim
-*.swp
+# torch
+*.t7
 
+# latex
+*.ac[nr]
+*.alg
+*.aux
+*.bbl
+*.bcf
+*.bit
+*.blg
+*.brf
+*.cb
+*.cb2
+*.dvi
+*.fdb_latexmk
+*.fff
+*.fls
+*.f[mo]t
+*.gl[gosx]
+*.gx[gs]
+*.idx
+*.ilg
+*.ind
+*.ist
+*.lb
+*.lo[fgt]
+*.maf
+*.mp
+*.mtc
+*.mtcl
+*.nav
+*.nlo
+*.out
+*.run.xml
+*.snm
+*.spl
+*.st[ap]
+*.sv[ntx]
+*.synctex.gz
+*.toc
+*.url
+*.vrb

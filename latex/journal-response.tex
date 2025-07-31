@@ -1,0 +1,126 @@
+% Original Template: https://www.overleaf.com/latex/templates/review-response-letter/hcnyzndxpbnh
+% Rebuttal Template: https://github.com/guanyingc/cv_rebuttal_template
+\documentclass[10pt]{article}
+\usepackage[margin=25mm]{geometry}
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{setspace}
+% \usepackage{graphicx}
+\usepackage{tcolorbox}
+\usepackage{amsmath}
+
+
+\definecolor{citegreen}{RGB}{34, 139, 34} % FROM: Mask R-CNN (https://arxiv.org/abs/1703.06870)
+\definecolor{royalblue}{RGB}{0, 113, 188}
+
+% Fake \cite & \ref
+% In rebuttal, when you want to \cite or \ref something from the paper
+% but you can't have real cross-reference cuz it is in another separate file,
+% use hand-craft style to mimic them.
+\providecommand{\fref}[1]{\textcolor{red}{#1}} % mod reference colour here to match \ref
+\providecommand{\falgref}[1]{(Algorithm~\fref{#1})}
+\providecommand{\feqref}[1]{(\fref{#1})}
+\providecommand{\feqnref}[1]{Equation~\feqref{#1}}
+\providecommand{\ffigref}[1]{Figure~\fref{#1}}
+\providecommand{\fsecref}[1]{Section~\fref{#1}}
+\providecommand{\ftabref}[1]{Table~\fref{#1}}
+%\providecommand{\fcite}[1]{$\!${\scriptsize [\textcolor{citegreen}{#1}]}}
+\makeatletter
+\providecommand{\fcite}[1]{[\@fcite#1,\@nil]}
+\def\@fcite#1,#2\@nil{%
+  \textcolor{citegreen}{#1}% mod citation colour here to match \cite
+  \ifx\@nil#2\@nil\else,\@fcite#2\@nil\fi%
+}
+
+% Abbreviations ending with `.'
+\DeclareRobustCommand\onedot{\futurelet\@let@token\@onedot}
+\def\@onedot{\ifx\@let@token.\else.\null\fi\xspace}
+\def\eg{\emph{e.g}\onedot} \def\Eg{\emph{E.g}\onedot}
+\def\ie{\emph{i.e}\onedot} \def\Ie{\emph{I.e}\onedot}
+\def\viz{\emph{viz}\onedot}
+\def\cf{\emph{cf}\onedot} \def\Cf{\emph{Cf}\onedot}
+\def\etc{\emph{etc}\onedot}
+\def\vs{\emph{vs}\onedot}
+\def\wrt{w.r.t\onedot} \def\dof{d.o.f\onedot}
+\def\iid{i.i.d\onedot} \def\wolog{w.l.o.g\onedot}
+\def\etal{\emph{et al}\onedot}
+\makeatother
+
+
+% Quote block with background colour: to quote review comments
+\newenvironment{bgquote}
+{
+  \begin{tcolorbox}[
+    colback=gray!10,        % Light gray background
+    colframe=gray!10,       % Same color frame
+    boxrule=0pt,            % No visible border
+    arc=0pt,                % Square corners
+    left=0pt,               % Extra left padding
+    right=0pt,              % Extra right padding
+    top=5pt,                % Top padding
+    bottom=5pt              % Bottom padding
+  ]
+  \begin{quote}
+}
+{\end{quote}\end{tcolorbox}}
+
+
+\title{\textbf{Authors Response to Reviews}}
+\author{}
+\date{\begin{flushright}\today\end{flushright}}
+
+% line spacing 1.5 for better readability
+\onehalfspacing
+
+
+\begin{document}
+
+\maketitle
+
+\noindent Dear Editors and Reviewers of JOURNAL\_NAME,\newline
+
+Thank you and the reviewers for reviewing our paper and providing valuable comments.
+Those comments are insightful,
+and very helpful for us to improve the quality of our manuscript,
+as well as important guiding significance to our research.
+We have carefully considered the comments and tried our best to address every one of them.
+The major changes include:
+\begin{itemize}
+  \item CHANGE
+\end{itemize}
+
+Below are the quoted original review comments followed by our response to them.
+All modifications in the manuscript have been highlighted in red.
+
+~\newline
+
+Sincerely, \\
+Authors
+
+%-------------------------------------------------
+\newpage
+\section*{Response to Reviewer \#1}
+
+%-------------------------------------------------
+\begin{bgquote}
+COMMENT
+\end{bgquote}
+
+\paragraph{\underline{Response}}
+RESPONSE (Page 1, Line 2)
+
+
+%-------------------------------------------------
+\newpage
+\section*{Response to Reviewer \#2}
+
+%-------------------------------------------------
+\begin{bgquote}
+COMMENT
+\end{bgquote}
+
+\paragraph{\underline{Response}}
+RESPONSE (Page 3, \ftabref{4})
+
+
+\end{document}

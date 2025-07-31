@@ -160,15 +160,24 @@ cython_debug/
 *.pickle
 
 # media
+*.3gp
+*.asf
+*.avi
+*.flv
 *.gif
 *.jpeg
 *.jpg
+*.m[4ko]v
+*.mp[34]
+*.ogv
 *.png
 *.svg
-*.web[mp]
-*.mov
 *.tif
 *.tiff
+*.ts
+*.vob
+*.web[mp]
+*.wmv
 
 # medical image
 *.nii
@@ -263,4 +272,3 @@ events.out.tfevents.*
 *.toc
 *.url
 *.vrb
-

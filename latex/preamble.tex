@@ -7,8 +7,22 @@
 \definecolor{halfblue}{RGB}{0, 0, 128} % ICML citation blue
 
 % Chinese colours
+% https://cht-colors.pages.dev/painting/
+% https://zhongguose.com/
+% https://boxingp.github.io/traditional-chinese-colors/
+% https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E4%BC%A0%E7%BB%9F%E8%89%B2%E5%BD%A9
+\definecolor{azurite}{RGB}{22, 133, 169} % 石青 as light blue
+\definecolor{carmine}{RGB}{157, 41, 51} % 胭脂
+\definecolor{ccyan}{RGB}{0, 52, 114} % 花青 as dark blue
+\definecolor{cinnabar}{RGB}{243, 104, 56} % 朱膘 as shadowed orange
+\definecolor{gamboge}{RGB}{255, 182, 30} % 藤黄 as gold
+\definecolor{ink}{RGB}{80, 97, 109} % 墨 as black
+\definecolor{malachite}{RGB}{22, 169, 81} % 石绿/孔雀石 as green
+\definecolor{ochre}{RGB}{132, 90, 51} % 赭黄 as light brown
+\definecolor{orpiment}{RGB}{255, 198, 75} % 雌黄 as light yellow
+\definecolor{realgar}{RGB}{233, 187, 29} % 雄黄/鸡冠石 as shadow yellow
 \definecolor{ricepaper}{RGB}{232, 232, 220} % 宣纸 as background
-\definecolor{cinnabar}{RGB}{255, 78, 32} % 朱砂 as red
+\definecolor{vermilion}{RGB}{255, 78, 32} % 朱砂/丹 as red orange
 
 % matplotlib.pyplot.rcParams['axes.prop_cycle'].by_key()['color']
 \definecolor{mpl0}{HTML}{1f77b4}
@@ -136,11 +150,12 @@
 % but you can't have real cross-reference cuz it is in another separate file,
 % use hand-craft style to mimic them.
 \providecommand{\fref}[1]{\textcolor{red}{#1}} % mod reference colour here to match \ref
+\providecommand{\falgref}[1]{(Alg.~\fref{#1})}
 \providecommand{\feqref}[1]{(\fref{#1})}
 \providecommand{\feqnref}[1]{Eq.~\feqref{#1}}
 \providecommand{\ffigref}[1]{Fig.~\fref{#1}}
-\providecommand{\ftabref}[1]{Tab.~\fref{#1}}
 \providecommand{\fsecref}[1]{\S\fref{#1}}
+\providecommand{\ftabref}[1]{Tab.~\fref{#1}}
 %\providecommand{\fcite}[1]{$\!${\scriptsize [\textcolor{citegreen}{#1}]}}
 \makeatletter
 \providecommand{\fcite}[1]{[\@fcite#1,\@nil]}
@@ -149,6 +164,25 @@
   \ifx\@nil#2\@nil\else,\@fcite#2\@nil\fi%
 }
 \makeatother
+
+% --- quotation with background colour
+\usepackage{tcolorbox}
+
+\newenvironment{bgquote}
+{
+  \begin{tcolorbox}[
+    colback=gray!10,        % Light gray background
+    colframe=gray!10,       % Same color frame
+    boxrule=0pt,            % No visible border
+    arc=0pt,                % Square corners
+    left=0pt,               % Extra left padding
+    right=0pt,              % Extra right padding
+    top=5pt,                % Top padding
+    bottom=5pt              % Bottom padding
+  ]
+  \begin{quote}
+}
+{\end{quote}\end{tcolorbox}}
 
 
 % --- hyperref (at last?)
@@ -161,7 +195,7 @@
 ]{hyperref}
 
 
-% abbreviations
+% abbreviations ending with `.'
 \makeatletter
 \DeclareRobustCommand\onedot{\futurelet\@let@token\@onedot}
 \def\@onedot{\ifx\@let@token.\else.\null\fi\xspace}

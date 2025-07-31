@@ -13,13 +13,28 @@ draft/
 |- ref-dataset.bib  # separate different kinds of references
 |- ref-baseline.bib
 |- *.bib
-|- main.tex
+|- main.tex         # entry .tex file that \input others
 |- *.bst
 |- *.dtx
 `- *.sty
 ```
 
 Use `\graphicspath{{fig/}}` and `\input{}`.
+
+## combining .tex files
+
+Sometimes you want to combine all .tex files in your LaTeX project into one,
+e.g. when .tex and .bib files are required to be uploaded to the submission system.
+Use the `latexpand` command (comes with a local TeX Live installation) to do this:
+- *main.tex*: the entry .tex file of your LaTeX project
+- *combined.tex*: the output combined .tex file
+```shell
+latexpand -o combined.tex --out-encoding 'encoding(UTF-8)' main.tex
+```
+It deals with embedded `\input` commands automatically.
+But:
+- always remember to compile the output combined .tex file to verify its integrity before submission.
+- .bib files are not combined. Submit them all manually if there are more than one.
 
 # Mathematics
 
@@ -297,7 +312,7 @@ Also see many symbol and formatting tricks in the TeX source of [Point Transform
 # Custom Colours
 
 You can use these colours to configure the citation, link and url colour of `hyperref`.
-See [8] for some named colours.
+See [LaTeX Color](https://latexcolor.com/) and [Chinese Colors](https://zhongguose.com/) for some named colours.
 
 ```tex
 \usepackage[table]{xcolor} % \textcolor, \definecolor
@@ -423,15 +438,31 @@ foo bar
 # Quotation
 
 Use `quote` or `quotation` environment.
-One can add background colour to the quotation block by wrapping it like this:
+One can add background colour to the quotation block by using the `tcolorbox` package:
 ```tex
-\colorbox{lightgray!20}{% <- specify colour here
-\begin{minipage}{\dimexpr\textwidth-2\fboxsep}
-\begin{quote}
-Quoted content.
-\end{quote}
-\end{minipage}
+\usepackage{tcolorbox}
+
+\newenvironment{bgquote}
+{
+    \begin{tcolorbox}[
+        colback=gray!10,          % Light gray background
+        colframe=gray!10,         % Same color frame
+        boxrule=0pt,             % No visible border
+        arc=0pt,                 % Square corners
+        left=0pt,               % Extra left padding
+        right=0pt,              % Extra right padding
+        top=5pt,                % Top padding
+        bottom=5pt              % Bottom padding
+    ]
+    \begin{quote}
 }
+{\end{quote}\end{tcolorbox}}
+
+\begin{document}
+\begin{bgquote}
+Quotation content.
+\end{bgquote}
+\end{document}
 ```
 
 # Fonts
@@ -514,7 +545,7 @@ this is achieved by `\label` and `\ref`:
 % ...blabla...
 As mentioned in \ref{foo}, % refer to that label
 ```
-In HTML, this is realised by the `a` tag with its `name` attribute [9]:
+In HTML, this is realised by the `a` tag with its `name` attribute [8]:
 ```html
 <h1>Bar</h1>
 <a name="foo"></a> <!-- set a label -->
@@ -545,5 +576,4 @@ Source: [GAMES003: 图形视觉科研基本素养](https://pengsida.net/games003
 5. [guanyingc/latex_paper_writing_tips](https://github.com/guanyingc/latex_paper_writing_tips)
 6. [MLNLP-World/Paper-Writing-Tips](https://github.com/MLNLP-World/Paper-Writing-Tips)
 7. [MLNLP-World/Paper-Picture-Writing-Code](https://github.com/MLNLP-World/Paper-Picture-Writing-Code)
-8. [LaTeX Color](https://latexcolor.com/)
-9. [try writing blogs with GitHub issue #1](https://github.com/iTomxy/blogs/issues/1)
+8. [try writing blogs with GitHub issue #1](https://github.com/iTomxy/blogs/issues/1)
