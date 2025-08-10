@@ -173,44 +173,51 @@ class Logger:
 
 
 def get_logger(
-    logger_name,
-    log_file = '',
-    log_console = True,
-    # fmt = '[%(asctime)s] - {%(filename)s:%(lineno)d} - %(levelname)s - %(message)s',
-    fmt = "{{'time': %(asctime)s, 'file': %(filename)s, 'lineno': %(lineno)d, 'level': %(levelname)s, 'msg': %(message)s}}",
-    datefmt = '%Y-%m-%d %H:%M:%S',
-    logger_level = logging.DEBUG,
-    log_file_level = logging.INFO,
-    log_console_level = logging.DEBUG,
+    name,
+    log_file='',
+    # fmt='[%(asctime)s] - {%(filename)s:%(lineno)d} - %(levelname)s - %(message)s',
+    fmt="{{'time': %(asctime)s, 'file': %(filename)s, 'lineno': %(lineno)d, 'level': %(levelname)s, 'msg': %(message)s}}",
+    datefmt='%Y-%m-%d %H:%M:%S',
+    log_level=logging.INFO,
     log_file_mode='a',
 ):
     """using built-in logging module
     https://blog.csdn.net/weixin_39278265/article/details/115203933
     Args:
-        logger_name: str, globally unique logger name, usually `__file__`
+        name: str, globally unique logger name, usually `__file__`
         log_file: str, log to file if provided, default = None
-        log_console: bool, whether to log to console, default = True
         fmt: str, logging message format
         datefmt: str, date format
-        logger_level, log_file_level, log_console_level: can be logging.NOTSET|DEBUG|INFO|WARNING|ERROR|CRITICAL
+        log_level: can be logging.NOTSET|DEBUG|INFO|WARNING|ERROR|CRITICAL
         log_file_mode: str = 'a', in {'a', 'w'}. If log to file, set the writing mode.
     Return:
         logger: logging.Logger
     """
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(logger_level)
+    logger = logging.getLogger(name)
+    logger.setLevel(log_level)
     formatter = logging.Formatter(fmt, datefmt=datefmt)
-    if log_file:
+    handlers = []
+    # terminal output to stdout: debug, info
+    h = logging.StreamHandler(sys.stdout)
+    h.setLevel(logging.DEBUG)
+    h.addFilter(lambda record: record.levelno <= logging.INFO)
+    handlers.append(h)
+    # terminal output to stderr: warning, error, critical
+    h = logging.StreamHandler(sys.stderr)
+    h.setLevel(logging.WARNING)
+    handlers.append(h)
+    # file output
+    if log_file and 0 == rank:
         os.makedirs(os.path.dirname(log_file) or '.', exist_ok=True)
-        fileHandler = logging.FileHandler(log_file, mode=log_file_mode)
-        fileHandler.setLevel(log_file_level)
-        fileHandler.setFormatter(formatter)
-        logger.addHandler(fileHandler)
-    if log_console:
-        consoleHandler = logging.StreamHandler()
-        consoleHandler.setLevel(log_console_level)
-        consoleHandler.setFormatter(formatter)
-        logger.addHandler(consoleHandler)
+        h = logging.FileHandler(log_file, mode=log_file_mode)
+        h.setLevel(log_level)
+        handlers.append(h)
+
+    for h in handlers:
+        # h.setLevel(log_level)
+        h.setFormatter(formatter)
+        logger.addHandler(h)
+
     return logger
 
 

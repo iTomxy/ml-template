@@ -3,6 +3,7 @@ import numpy as np
 import medpy.metric.binary as mmb
 from monai.networks.utils import one_hot
 from monai.metrics import DiceMetric, MeanIoU, GeneralizedDiceScore, ConfusionMatrixMetric, HausdorffDistanceMetric, SurfaceDistanceMetric
+import torch
 
 """
 Wrap segmentation metrics implemented by MedPy and MONAI in a class for easy calling.
@@ -32,7 +33,7 @@ class Evaluator:
     }
     DISTANCE_BASED = ("hd", "assd", "hd95", "asd")
 
-    def __init__(self, n_classes, bg_classes, ignore_classes=[], select=[]):
+    def __init__(self, n_classes, bg_classes=[], ignore_classes=[], select=[]):
         """
         Input:
             n_classes: int, length of the softmax logit vector.
@@ -54,11 +55,14 @@ class Evaluator:
             ignore_classes = (ignore_classes,)
         self.ignore_classes = ignore_classes
 
-        self.metrics = {}
-        _no_select = len(select) == 0
-        for m, f in self.METRICS.items():
-            if _no_select or m in select:
-                self.metrics[m] = f
+        if len(select) == 0:
+            self.metrics = self.METRICS
+        else:
+            self.metrics = {}
+            for m in select:
+                ml = m.lower()
+                assert ml in self.METRICS, "Not supported metric: {}".format(m)
+                self.metrics[ml] = self.METRICS[ml]
 
         self.reset()
 
@@ -306,3 +310,33 @@ class EvaluatorMonai:
                 res = res[0]
 
         return res
+
+
+def intersection_and_union(output, target, K, ignore_index=-1):
+    # 'K' classes, output and target sizes are N or N * L or N * H * W, each value in range 0 to K - 1.
+    assert output.ndim in [1, 2, 3]
+    assert output.shape == target.shape
+    output = output.reshape(output.size).copy()
+    target = target.reshape(target.size)
+    output[np.where(target == ignore_index)[0]] = ignore_index
+    intersection = output[np.where(output == target)[0]]
+    area_intersection, _ = np.histogram(intersection, bins=np.arange(K + 1))
+    area_output, _ = np.histogram(output, bins=np.arange(K + 1))
+    area_target, _ = np.histogram(target, bins=np.arange(K + 1))
+    area_union = area_output + area_target - area_intersection
+    return area_intersection, area_union, area_target
+
+
+def intersection_and_union_gpu(output, target, k, ignore_index=-1):
+    # 'K' classes, output and target sizes are N or N * L or N * H * W, each value in range 0 to K - 1.
+    assert output.dim() in [1, 2, 3]
+    assert output.shape == target.shape
+    output = output.view(-1)
+    target = target.view(-1)
+    output[target == ignore_index] = ignore_index
+    intersection = output[output == target]
+    area_intersection = torch.histc(intersection, bins=k, min=0, max=k - 1)
+    area_output = torch.histc(output, bins=k, min=0, max=k - 1)
+    area_target = torch.histc(target, bins=k, min=0, max=k - 1)
+    area_union = area_output + area_target - area_intersection
+    return area_intersection, area_union, area_target

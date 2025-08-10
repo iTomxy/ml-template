@@ -312,7 +312,7 @@ Also see many symbol and formatting tricks in the TeX source of [Point Transform
 # Custom Colours
 
 You can use these colours to configure the citation, link and url colour of `hyperref`.
-See [LaTeX Color](https://latexcolor.com/) and [Chinese Colors](https://zhongguose.com/) for some named colours.
+See [LaTeX Color](https://latexcolor.com/), [中国色 Chinese Colors](https://zhongguose.com/), [日本の伝統色 Nippon Colors](https://nipponcolors.com/) and [和色 わいろ](https://wa-iro.com/) for some named colours.
 
 ```tex
 \usepackage[table]{xcolor} % \textcolor, \definecolor
@@ -565,7 +565,7 @@ As mentioned in [Bar](#foo),
 After receving the review comments,
 we need to analyse them to direct our rebuttal.
 See [Rebuttal Tracking Template.xlsx](Rebuttal_Tracking_Template.xlsx) for an analysing template.
-Source: [GAMES003: 图形视觉科研基本素养](https://pengsida.net/games003/) -> Ninth week [Slides](https://pengsida.net/games003/GAMES003_files/week_9.pdf) -> [Rebuttal Tracking Template](https://docs.google.com/spreadsheets/d/1-FqA8RfQY5XwycJLqjVLLM0QIVNwzelGJqpWSInCen0/edit?usp=sharing).
+Source: [GAMES003: 图形视觉科研基本素养](https://pengsida.net/games003/) -> 9th week [Slides](https://pengsida.net/games003/GAMES003_files/week_9.pdf) -> [Rebuttal Tracking Template](https://docs.google.com/spreadsheets/d/1-FqA8RfQY5XwycJLqjVLLM0QIVNwzelGJqpWSInCen0/edit?usp=sharing).
 
 # References
 

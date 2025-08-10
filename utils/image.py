@@ -1,6 +1,8 @@
 import os, os.path as osp
 import cv2
 import numpy as np
+import nibabel as nib
+from nibabel.orientations import axcodes2ornt, ornt_transform, apply_orientation
 
 
 def crop(img, blank=(255, 255, 255)):
@@ -44,6 +46,90 @@ def zoompad(image, size, interpolation=cv2.INTER_LINEAR):
         pad_top, pad_bottom = pad_h // 2, (pad_h + 1) // 2
         image = np.pad(image, ((pad_top, pad_bottom), (pad_left, pad_right), (0, 0)), constant_values=0)
     return image
+
+
+def reorient_nib(image_nii, target_orientation=('L', 'P', 'S'), dtype=None):
+    """Change to target orientation if not already is.
+    Input:
+        image_nii: nibabel.nifti1.Nifti1Image
+        target_orientation: Tuple(char) = ('L', 'P', 'S')
+        dtype: numpy data type, cast the data if provided, otherwise reoriented
+            volume will be float64 due to the nibabel `get_fdata()`.
+    Output:
+        image_nii: nibabel.nifti1.Nifti1Image
+    """
+    target_orientation = tuple(s.upper() for s in target_orientation)
+    original_orientation = nib.aff2axcodes(image_nii.affine)
+    if original_orientation == target_orientation:
+        return image_nii
+
+    # Convert orientation strings to orientation matrices
+    orig_ornt = axcodes2ornt(original_orientation)
+    target_ornt = axcodes2ornt(target_orientation)
+
+    # Get the transform from original to target orientation
+    transform = ornt_transform(orig_ornt, target_ornt)
+
+    # Apply the orientation transform to the image
+    image_data = apply_orientation(image_nii.get_fdata(), transform)
+    if dtype is not None:
+        image_data = image_data.astype(dtype)
+
+    # Create new affine for the transformed image
+    affine = image_nii.affine.copy()
+    affine = nib.orientations.inv_ornt_aff(transform, image_nii.shape)
+    affine = np.dot(image_nii.affine, affine)
+
+    # Create new oriented image
+    image_nii = image_nii.__class__(image_data, affine, image_nii.header)
+
+    # Check orientation after reorientation
+    assert nib.aff2axcodes(image_nii.affine) == target_orientation
+    return image_nii
+
+
+def reorient_np(vol, src_ornt, trg_ornt):
+    """numpy-based reorientation
+    Input:
+        vol: np.ndarray, [H, W, L], original volume
+        src_ornt: Tuple[char], original orientation, e.g. ('R', 'A', 'S')
+        trg_ornt: Tuple[char], target orientation, e.g. ('L', 'P', 'S')
+    Output:
+        result: np.ndarray, [H', W', L'], reoriented volume
+    """
+    src_ornt = tuple(s.upper() for s in src_ornt)
+    trg_ornt = tuple(s.upper() for s in trg_ornt)
+    if src_ornt == trg_ornt:
+        return vol
+
+    opposites = {'L': 'R', 'R': 'L', 'P': 'A', 'A': 'P', 'I': 'S', 'S': 'I'}
+    # Find axis mapping and flip requirements
+    axis_order = []
+    flip_flags = []
+
+    for _t in trg_ornt:
+        # Find which source axis corresponds to this target direction
+        for src_axis, _s in enumerate(src_ornt):
+            if _s == _t:
+                # Same direction - no flip needed
+                axis_order.append(src_axis)
+                flip_flags.append(False)
+                break
+            elif _s == opposites[_t]:
+                # Opposite direction - flip needed
+                axis_order.append(src_axis)
+                flip_flags.append(True)
+                break
+
+    # Apply axis permutation
+    result = np.transpose(vol, axis_order)
+
+    # Apply flips where needed
+    for axis, flip in enumerate(flip_flags):
+        if flip:
+            result = np.flip(result, axis=axis)
+
+    return result
 
 
 if "__main__" == __name__:
