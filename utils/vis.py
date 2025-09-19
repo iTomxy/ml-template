@@ -1,6 +1,7 @@
 import os, math, itertools, multiprocessing as mp
 import numpy as np
 from PIL import Image
+import open3d as o3d
 
 
 def get_palette(n_classes, pil_format=True):
@@ -196,7 +197,7 @@ def vis_point_cloud(xyz, label=None, n_classes=0, palette=None, window_name="Ope
         assert len(label) == xyz.shape[0]
         label = np.asarray(label)
         if n_classes < 1:
-            n_classes = label.max() + 1
+            n_classes = int(label.max()) + 1
         if palette is None:
             palette = np.asarray(get_palette(n_classes, False))
         elif not isinstance(palette, np.ndarray):
@@ -232,7 +233,7 @@ def vis_multi_pc(xyzs, labels=[], class_nums=[], palettes=[], windows_name=[]):
     for xyz, label, nc, palette, wn in zip(xyzs, labels, class_nums, palettes, windows_name):
         p = mp.Process(target=vis_point_cloud, args=(xyz, label, nc, palette, wn))
         p.start()
-        p_list.append(t)
+        p_list.append(p)
         # p.join() # do NOT join here
 
     for p in p_list:

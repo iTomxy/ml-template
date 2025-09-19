@@ -7,10 +7,9 @@ import csv
 import fnmatch, functools
 import glob
 import itertools
-import logging
 import os
 import re
-import shutil, socket, subprocess
+import shutil, socket, subprocess, sys
 import time, timeit
 from .timing import *
 
@@ -132,93 +131,6 @@ class prog_bar:
         prog_bar.builtin_print(*args, **kwargs)
         # reprint the progress log at bottum
         prog_bar.builtin_print(prog_bar.prev_log, end="", flush=True)
-
-
-class Logger:
-    """log info in stdout & log file"""
-
-    def __init__(self, log_path='.', file_name=None):
-        self.log_path = log_path
-        self.file_name = file_name
-        self.log_file = None
-
-    def __del__(self):
-        if self.log_file is not None:
-            self.log_file.write("end time: {}\n".format(time.asctime()))
-            self.log_file.flush()
-            self.log_file.close()
-            # self.log_file = None
-
-    def __call__(self, *text, sep=' ', end='\n', on_screen=True):
-        """mimic built-in `print`"""
-        if self.log_file is None:
-            self.open()
-        _str = sep.join(map(str, text))
-        if on_screen:
-            print(_str, end=end)
-        self.log_file.write(_str + end)
-
-    def open(self):
-        if self.file_name is None:
-            self.file_name = "log.{}.txt".format(timestamp())
-        log_file_path = os.path.join(self.log_path, self.file_name)
-        os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
-        self.log_file = open(log_file_path, "w")
-        assert self.log_file is not None
-        self.log_file.write("begin time: {}\n".format(time.asctime()))
-
-    def flush(self):
-        if self.log_file:
-            self.log_file.flush()
-
-
-def get_logger(
-    name,
-    log_file='',
-    # fmt='[%(asctime)s] - {%(filename)s:%(lineno)d} - %(levelname)s - %(message)s',
-    fmt="{{'time': %(asctime)s, 'file': %(filename)s, 'lineno': %(lineno)d, 'level': %(levelname)s, 'msg': %(message)s}}",
-    datefmt='%Y-%m-%d %H:%M:%S',
-    log_level=logging.INFO,
-    log_file_mode='a',
-):
-    """using built-in logging module
-    https://blog.csdn.net/weixin_39278265/article/details/115203933
-    Args:
-        name: str, globally unique logger name, usually `__file__`
-        log_file: str, log to file if provided, default = None
-        fmt: str, logging message format
-        datefmt: str, date format
-        log_level: can be logging.NOTSET|DEBUG|INFO|WARNING|ERROR|CRITICAL
-        log_file_mode: str = 'a', in {'a', 'w'}. If log to file, set the writing mode.
-    Return:
-        logger: logging.Logger
-    """
-    logger = logging.getLogger(name)
-    logger.setLevel(log_level)
-    formatter = logging.Formatter(fmt, datefmt=datefmt)
-    handlers = []
-    # terminal output to stdout: debug, info
-    h = logging.StreamHandler(sys.stdout)
-    h.setLevel(logging.DEBUG)
-    h.addFilter(lambda record: record.levelno <= logging.INFO)
-    handlers.append(h)
-    # terminal output to stderr: warning, error, critical
-    h = logging.StreamHandler(sys.stderr)
-    h.setLevel(logging.WARNING)
-    handlers.append(h)
-    # file output
-    if log_file and 0 == rank:
-        os.makedirs(os.path.dirname(log_file) or '.', exist_ok=True)
-        h = logging.FileHandler(log_file, mode=log_file_mode)
-        h.setLevel(log_level)
-        handlers.append(h)
-
-    for h in handlers:
-        # h.setLevel(log_level)
-        h.setFormatter(formatter)
-        logger.addHandler(h)
-
-    return logger
 
 
 def dict2csv(csv_file, dict_data):
