@@ -88,7 +88,7 @@ def reorient_nib(image_nii, target_orientation=('L', 'P', 'S'), dtype=None):
     return image_nii
 
 
-def reorient_np(vol, src_ornt, trg_ornt):
+def reorient_3dgrid(vol, src_ornt, trg_ornt):
     """numpy-based reorientation
     Input:
         vol: np.ndarray, [H, W, L], original volume
@@ -128,6 +128,52 @@ def reorient_np(vol, src_ornt, trg_ornt):
     for axis, flip in enumerate(flip_flags):
         if flip:
             result = np.flip(result, axis=axis)
+
+    return result
+
+
+def reorient_points(points, src_ornt, trg_ornt, axes_range):
+    """reorient a set of 3D points
+    Input:
+        points: [..., 3], numpy.ndarray
+        src_ornt: Tuple[char], original orientation, e.g. ('R', 'A', 'S')
+        trg_ornt: Tuple[char], target orientation, e.g. ('L', 'P', 'S')
+        axes_range: [(x1, x2), (y1, y2), (z1, z2)], range of point coordinates
+            along each axis, all inclusive, in original axis order.
+    Output:
+        result: [..., 3], numpy.ndarray, reoriented points
+    """
+    src_ornt = tuple(s.upper() for s in src_ornt)
+    trg_ornt = tuple(s.upper() for s in trg_ornt)
+    if src_ornt == trg_ornt:
+        return points
+
+    # Define opposite directions
+    opposites = {'L': 'R', 'R': 'L', 'P': 'A', 'A': 'P', 'I': 'S', 'S': 'I'}
+    # Find axis mapping and flip requirements
+    axis_order = []
+    flip_flags = []
+    for _t in trg_ornt:
+        # Find which source axis corresponds to this target direction
+        for src_axis, _s in enumerate(src_ornt):
+            if _s == _t:
+                # Same direction - no flip needed
+                axis_order.append(src_axis)
+                flip_flags.append(False)
+                break
+            elif _s == opposites[_t]:
+                # Opposite direction - flip needed
+                axis_order.append(src_axis)
+                flip_flags.append(True)
+                break
+
+    # re-order axes
+    result = points[..., axis_order]
+    axes_range = [axes_range[i] for i in axis_order]
+    # flip axes
+    for coord_axis, (flip, (_min, _max)) in enumerate(zip(flip_flags, axes_range)):
+        if flip:
+            result[..., coord_axis] = _min + _max - result[..., coord_axis]
 
     return result
 

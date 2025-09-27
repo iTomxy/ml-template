@@ -4,6 +4,7 @@ except ImportError:
     import builtins as __builtin__ # Python 3
 from collections.abc import Iterable
 import csv
+import datetime
 import fnmatch, functools
 import glob
 import itertools
@@ -11,7 +12,6 @@ import os
 import re
 import shutil, socket, subprocess, sys
 import time, timeit
-from .timing import *
 
 
 def enum_product(*args):
@@ -98,9 +98,12 @@ class prog_bar:
             self.current += self.step
             if self.eta:
                 eta = estim_time * (self.stop - self.current + 1)
-                self.update(self.log(human_time(estim_time), human_time(eta) if i > 0 else "N/A"))
+                self.update(self.log(
+                    str(datetime.timedelta(seconds=estim_time)),
+                    str(datetime.timedelta(seconds=eta)) if i > 0 else "N/A"
+                ))
             else:
-                self.update(self.log(human_time(estim_time)))
+                self.update(self.log(str(datetime.timedelta(seconds=estim_time))))
 
             tic = timeit.default_timer()
             yield x
@@ -108,9 +111,9 @@ class prog_bar:
         self.update(self.log())
 
     def log(self, estim_time=None, eta=None):
-        """construct progress log string & return
-        template: <msg>: [ <current iter> / <total iter>, <time per iter>/it, <ETA> ]
-        estim_time, eta: str if not None (formatted time string returned from `human_time`)
+        """construct progress log string & return. Template:
+            <msg>: [ <current iter> / <total iter>, <time per iter>/it, <ETA> ]
+        estim_time, eta: None|str, formatted time string
         """
         s = self.msg + "{} / {}".format(self.current, self.stop)
         if estim_time is not None:
@@ -394,12 +397,66 @@ def backup_by_renaming(*fd_list, suffix="bak"):
         os.rename(fd, fd + suf)
 
 
+def textcolor(text, color, bg=False, bright=False):
+    """color text in terminal using ANSI escape codes
+    Input:
+        text: str to be colored
+        color: can be
+            - int[3]: [R, G, B] in [0, 255], e.g. (255, 0, 0) for red
+            - str<#RRGGBB>: hex/html color string, e.g. "#00FF00" for green
+            - str: predefined color name, e.g. "blue"
+        bg: bool = False, apply to background instead of foreground
+        bright: bool = False, use bright variant for named colors
+    Output:
+        str: ANSI colored text
+    """
+
+    # Standard color names mapping
+    color_codes = {
+        'black': 0, 'red': 1, 'green': 2, 'yellow': 3,
+        'blue': 4, 'magenta': 5, 'cyan': 6, 'white': 7
+    }
+
+    # Determine ANSI code
+    if isinstance(color, (list, tuple)) and len(color) == 3:
+        # RGB mode: [r, g, b]
+        r, g, b = color
+        base_code = 48 if bg else 38
+        return "\033[{};2;{};{};{}m{}\033[0m".format(base_code, r, g, b, text)
+
+    elif isinstance(color, str) and color.startswith('#'):
+        # Hex color: #RRGGBB
+        hex_color = color.lstrip('#')
+        if len(hex_color) != 6:
+            raise ValueError("Hex color must be 6 characters (RRGGBB)")
+
+        try:
+            r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+            base_code = 48 if bg else 38
+            return "\033[{};2;{};{};{}m{}\033[0m".format(base_code, r, g, b, text)
+        except ValueError:
+            raise ValueError("Invalid hex color format")
+
+    elif isinstance(color, str) and color.lower() in color_codes:
+        # Named color
+        color_num = color_codes[color.lower()]
+
+        if bright:
+            # Bright colors: 90-97 (fg) or 100-107 (bg)
+            base_code = 100 if bg else 90
+        else:
+            # Standard colors: 30-37 (fg) or 40-47 (bg)
+            base_code = 40 if bg else 30
+
+        return f"\033[{base_code + color_num}m{text}\033[0m"
+
+    else:
+        raise ValueError(f"Invalid color format: {color}")
+
+
 if __name__ == "__main__":
     data = {"a": (1, 2, 3), "b": [4, 5, 6]}
     dict2csv("test.csv", data)
-
-    print(human_time(2 * 24 * 60 * 60 + 50))
-    print(human_time(0.1415, 0))
 
     X = ([1, 2], [3, 4], [5, 6], [7, 8])
     def _generator(_X):
@@ -424,3 +481,9 @@ if __name__ == "__main__":
     logger.info(json.dumps({"time": time.asctime(), "acc": 0.78}))
 
     backup_files("log/backup_codes", white_list=["*.py", "*.sh"], black_list=["log/"])
+
+    print(textcolor("Hello World", [255, 0, 0]))
+    print(textcolor("Hello World", "#00FF00"))
+    print(textcolor("Hello World", "blue"))
+    print(textcolor("Hello World", "red", bg=True))
+    print(textcolor("Hello World", "green", bright=True))

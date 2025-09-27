@@ -1,4 +1,5 @@
-import datetime, time, timeit, termcolor
+import datetime, time, timeit
+# import termcolor
 
 
 def timestamp(fmt="%Y%m%d-%H%M%S"):
@@ -41,8 +42,8 @@ def human_time(seconds, prec=0):
 class tic_toc:
     """timer with custom message"""
 
-    def __init__(self, message="time used", end='\n', color="light_yellow"):
-        assert color in termcolor.COLORS, "{} not in termcolor.COLORS".format(color)
+    def __init__(self, message="time used", end='\n'):#, color="light_yellow"):
+        # assert color in termcolor.COLORS, "{} not in termcolor.COLORS".format(color)
         self.msg = message
         self.end = end
         self.color = color
@@ -52,7 +53,8 @@ class tic_toc:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         n_second = timeit.default_timer() - self.tic
-        print("{}: {}".format(termcolor.colored(self.msg, self.color), datetime.timedelta(seconds=int(n_second))), end=self.end)
+        # print("{}: {}".format(termcolor.colored(self.msg, self.color), datetime.timedelta(seconds=int(n_second))), end=self.end)
+        print("{}: {}".format(self.msg, datetime.timedelta(seconds=int(n_second))), end=self.end)
 
     def __call__(self, f):
         """supports decorator-style usage, e.g.:

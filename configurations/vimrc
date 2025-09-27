@@ -39,6 +39,9 @@ Plugin 'vim-scripts/dosbatch-indent'
 " BeanCount accounting syntax highlight
 Plugin 'nathangrigg/vim-beancount'
 
+" sigularity def syntax highlight
+Plugin 'rbberger/vim-singularity-syntax'
+
 " fzf fuzzy finding
 Plugin 'junegunn/fzf'
 Plugin 'junegunn/fzf.vim'
@@ -481,3 +484,4 @@ function! AutoHighlightToggle()
 		return 1
 	endif
 endfunction
+
