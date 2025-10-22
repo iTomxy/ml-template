@@ -15,44 +15,50 @@ else
 endif
 Plugin 'VundleVim/Vundle.vim'
 
+"--- comment
 Plugin 'tpope/vim-commentary'
 " Plugin 'https://gitee.com/bigfacecat924/vim-commentary'
 
+"--- file explorer
 Plugin 'preservim/nerdtree'
 " Plugin 'https://gitee.com/xie-xiaopeng/nerdtree'
 
+"--- python
 Plugin 'Vimjas/vim-python-pep8-indent'
 " Plugin 'https://gitee.com/tyloeng/vim-python-pep8-indent'
 Plugin 'tell-k/vim-autopep8'
 
+"--- dos batch
+Plugin 'vim-scripts/dosbatch-indent'
+
+"--- BeanCount accounting syntax highlight
+Plugin 'nathangrigg/vim-beancount'
+
+"--- docker & sigularity
+Plugin 'ekalinin/Dockerfile.vim'
+Plugin 'rbberger/vim-singularity-syntax'
+
 " Plugin 'jiangmiao/auto-pairs'
 " Plugin 'https://gitee.com/rulei_mirror/auto-pairs'
 
+"--- vim themes
 Plugin 'altercation/solarized'
 " Plugin 'https://gitee.com/liazpg/solarized'
-Plugin 'tomasiser/vim-code-dark'
+" Plugin 'tomasiser/vim-code-dark'
 " Plugin 'https://gitee.com/bigfacecat924/vim-code-dark'
 
-" indent for dos batch
-Plugin 'vim-scripts/dosbatch-indent'
-
-" BeanCount accounting syntax highlight
-Plugin 'nathangrigg/vim-beancount'
-
-" sigularity def syntax highlight
-Plugin 'rbberger/vim-singularity-syntax'
-
-" fzf fuzzy finding
+"--- fzf fuzzy finding
 Plugin 'junegunn/fzf'
 Plugin 'junegunn/fzf.vim'
 call vundle#end()         " must
 filetype plugin indent on " must, here
 
 "--- Settings ---"
-"set nocompatible " not compatible with vi
-"filetype plugin indent on " auto-detect file type
 set autoread " auto-reload file if modified elsewhere
 set autochdir " change working path to current path
+set backspace=indent,eol,start
+let mapleader = '\'
+"--- backup & undo
 set nobackup " don't create backup files
 "set noundofile " don't create  .un~ files
 if(has("win32") || has("win64") || has("win95") || has("win16"))
@@ -63,10 +69,11 @@ endif
 if !isdirectory(&undodir)
 	call mkdir(&undodir, "p", 0700)
 endif
+"--- search
 set hlsearch " highlight matched string
 set incsearch " real-time match highlighting
-set backspace=indent,eol,start
-let mapleader = '\'
+set ignorecase " ignore case in search
+set smartcase " but not ignore if search has uppercase
 
 "--- Comment String (tpope/vim-commentary) ---"
 " default: #(space)
@@ -137,9 +144,7 @@ set number " show line number
 set ruler " show position
 set showcmd " show command
 set showmode " show mode
-set showmatch
-"set ignorecase
-set smartcase
+set showmatch " show matching parenthesis
 set cursorline " highlight current line
 if(has("win32") || has("win64") || has("win95") || has("win16"))
 	set t_Co=256	" for codedark theme
@@ -484,4 +489,3 @@ function! AutoHighlightToggle()
 		return 1
 	endif
 endfunction
-

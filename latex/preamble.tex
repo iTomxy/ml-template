@@ -48,7 +48,7 @@
 
 % Customise strings in algorithmic:
 %   \REQUIRE: `Require:' -> `Input:'
-%   \REQUIRE: `Ensure:' -> `Output:'
+%   \ENSURE: `Ensure:' -> `Output:'
 \renewcommand{\algorithmicrequire}{\textbf{Input:}}
 \renewcommand{\algorithmicensure}{\textbf{Output:}}
 % Customise comment format in algorithmic
@@ -94,13 +94,8 @@
 \DeclarePairedDelimiter{\cbrk}{\{}{\}} % Curly BRacKets
 \DeclarePairedDelimiter{\card}{|}{|} % CARDinality
 \DeclarePairedDelimiter{\norm}{\|}{\|}
-
 % bm
-\ifdefined\bm
-  \PackageWarning{\jobname}{\string\bm\space is already defined.}
-\else
-  \newcommand{\bm}{\boldsymbol}
-\fi
+\providecommand{\bm}{\boldsymbol}
 
 % --- symbol
 \usepackage{pifont} % \ding{51} (✓), \ding{55} (✗)
@@ -130,61 +125,87 @@
 \crefname{table}{Tab.}{Tabs.}
 \crefname{figure}{Fig.}{Figs.}
 
+% Unify ref
+\renewcommand{\figurename}{Figure}
+\renewcommand{\tablename}{Table}
+
 % Easy reference of figure, table, section
-% - `\eqref`: built in the `amsmath` package
-% - `\nameref`: built in the `nameref` package
-% - `\pageref`: built-in
-\providecommand{\algref}[1]{Alg.~\ref{#1}}
-\providecommand{\Algref}[1]{Algorithm~\ref{#1}}
-\providecommand{\eqnref}[1]{Eq.~\eqref{#1}}
-\providecommand{\Eqnref}[1]{Equation~\eqref{#1}}
-\providecommand{\figref}[1]{Fig.~\ref{#1}}
-\providecommand{\Figref}[1]{\figurename~\ref{#1}}
-\providecommand{\secref}[1]{\S\ref{#1}}
-\providecommand{\Secref}[1]{Section~\ref{#1}}
-\providecommand{\tabref}[1]{Tab.~\ref{#1}}
-\providecommand{\Tabref}[1]{\tablename~\ref{#1}}
+% - `\eqref': built in the `amsmath' package
+% - `\nameref': built in the `nameref' package
+% - `\pageref': built-in
+\newcommand{\algref}[1]{Alg.~\ref{#1}}
+\newcommand{\Algref}[1]{Algorithm~\ref{#1}}
+\newcommand{\eqnref}[1]{Eq.~\eqref{#1}}
+\newcommand{\Eqnref}[1]{Equation~\eqref{#1}}
+\newcommand{\figref}[1]{Fig.~\ref{#1}}
+\newcommand{\Figref}[1]{\figurename~\ref{#1}}
+\newcommand{\secref}[1]{\S\ref{#1}}
+\newcommand{\Secref}[1]{Section~\ref{#1}}
+\newcommand{\tabref}[1]{Tab.~\ref{#1}}
+\newcommand{\Tabref}[1]{\tablename~\ref{#1}}
 
 % Fake \cite & \ref
 % In rebuttal, when you want to \cite or \ref something from the paper
 % but you can't have real cross-reference cuz it is in another separate file,
 % use hand-craft style to mimic them.
-\providecommand{\fref}[1]{\textcolor{red}{#1}} % mod reference colour here to match \ref
-\providecommand{\falgref}[1]{(Alg.~\fref{#1})}
-\providecommand{\feqref}[1]{(\fref{#1})}
-\providecommand{\feqnref}[1]{Eq.~\feqref{#1}}
-\providecommand{\ffigref}[1]{Fig.~\fref{#1}}
-\providecommand{\fsecref}[1]{\S\fref{#1}}
-\providecommand{\ftabref}[1]{Tab.~\fref{#1}}
-%\providecommand{\fcite}[1]{$\!${\scriptsize [\textcolor{citegreen}{#1}]}}
+\newcommand{\fref}[1]{\textcolor{red}{#1}} % mod reference colour here to match \ref
+\newcommand{\falgref}[1]{(Alg.~\fref{#1})}
+\newcommand{\feqref}[1]{(\fref{#1})}
+\newcommand{\feqnref}[1]{Eq.~\feqref{#1}}
+\newcommand{\ffigref}[1]{Fig.~\fref{#1}}
+\newcommand{\fsecref}[1]{\S\fref{#1}}
+\newcommand{\ftabref}[1]{Tab.~\fref{#1}}
+\newcommand{\fpgref}[1]{p.~\fref{#1}} % page
+\newcommand{\fpgsref}[2]{pp.~\fref{#1}-\fref{#2}} % page range
+\newcommand{\flnref}[1]{l.~\fref{#1}} % line
+\newcommand{\flnsref}[2]{ll.~\fref{#1}-\fref{#2}} % line range
 \makeatletter
-\providecommand{\fcite}[1]{[\@fcite#1,\@nil]}
+\newcommand{\fcite}[1]{[\@fcite#1,\@nil]}
 \def\@fcite#1,#2\@nil{%
   \textcolor{citegreen}{#1}% mod citation colour here to match \cite
   \ifx\@nil#2\@nil\else,\@fcite#2\@nil\fi%
 }
 \makeatother
 
+%--- journal revision highlighting
+% Usage: \revise{1}{TEXT 1}, \revise{2}{TEXT 2}
+% #1: revision number, hide #2 if negative
+% #2: text to be highlighted
+\newcommand{\revise}[2]{%
+  \ifnum#1<0% negative: hide the text
+    % (output nothing)
+  \else\ifnum#1=1% <- adapt revision num here
+    \textcolor{red}{#2}%
+  \else
+    #2% as-is
+  \fi\fi
+}
+
 % --- quotation with background colour
-\usepackage{tcolorbox}
+\usepackage[most]{tcolorbox}
 
 \newenvironment{bgquote}
 {
   \begin{tcolorbox}[
-    colback=gray!10,        % Light gray background
-    colframe=gray!10,       % Same color frame
-    boxrule=0pt,            % No visible border
-    arc=0pt,                % Square corners
+    enhanced,
+    colback=gray!7,         % Light gray background
+    colframe=gray!7,        % Same color frame
+    arc=7pt,                % Rounded/sharp corners
+    rounded corners=east,
+    sharp corners=west,
     left=0pt,               % Extra left padding
     right=0pt,              % Extra right padding
-    top=5pt,                % Top padding
-    bottom=5pt              % Bottom padding
+    top=2pt,                % Top padding
+    bottom=5pt,             % Bottom padding
+    borderline west={3pt}{0pt}{gray!20},
   ]
   \begin{quote}
   \itshape % italic text
 }
 {\end{quote}\end{tcolorbox}}
 
+%--- list
+\usepackage{enumitem}
 
 % --- hyperref (at last?)
 \usepackage[
@@ -206,7 +227,7 @@
 \def\viz{\emph{viz}\onedot}
 \def\cf{\emph{cf}\onedot} \def\Cf{\emph{Cf}\onedot}
 \def\etc{\emph{etc}\onedot}
-\def\vs{\emph{vs}\onedot} % `vs.` not `v.s.`
+\def\vs{\emph{vs}\onedot} % versus: `vs.' not `v.s.'
 \def\wrt{w.r.t\onedot}
 \def\dof{d.o.f\onedot}
 \def\iid{i.i.d\onedot}

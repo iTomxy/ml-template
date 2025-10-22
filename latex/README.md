@@ -34,7 +34,7 @@ latexpand -o combined.tex --out-encoding 'encoding(UTF-8)' main.tex
 It deals with embedded `\input` commands automatically.
 But:
 - always remember to compile the output combined .tex file to verify its integrity before submission.
-- .bib files are not combined. Submit them all manually if there are more than one.
+- .bib files are not combined. Submit them individually.
 
 # Mathematics
 
@@ -62,8 +62,8 @@ and achieve easy auto-sizing (`\left` and `\right`).
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 \DeclarePairedDelimiter{\paren}{(}{)} % PARENtheses
-\DeclarePairedDelimiter{\sqrbrk}{[}{]} % SQuaRe BRacKets
-\DeclarePairedDelimiter{\curbrk}{\{}{\}} % CURly BRacKets
+\DeclarePairedDelimiter{\sbrk}{[}{]} % Square BRacKets
+\DeclarePairedDelimiter{\cbrk}{\{}{\}} % Curly BRacKets
 \DeclarePairedDelimiter{\card}{|}{|} % CARDinality
 \DeclarePairedDelimiter{\norm}{\|}{\|}
 
@@ -71,10 +71,10 @@ and achieve easy auto-sizing (`\left` and `\right`).
 \begin{align}
     \paren{\sum^{A^*_t}_{i=\theta_0} x} \quad
     \paren*{\sum^{A^*_t}_{i=\theta_0} x} \\
-    \sqrbrk{\sum^{A^*_t}_{i=\theta_0} x} \quad
-    \sqrbrk*{\sum^{A^*_t}_{i=\theta_0} x} \\
-    \curbrk{\sum^{A^*_t}_{i=\theta_0} x} \quad
-    \curbrk*{\sum^{A^*_t}_{i=\theta_0} x} \\
+    \sbrk{\sum^{A^*_t}_{i=\theta_0} x} \quad
+    \sbrk*{\sum^{A^*_t}_{i=\theta_0} x} \\
+    \cbrk{\sum^{A^*_t}_{i=\theta_0} x} \quad
+    \cbrk*{\sum^{A^*_t}_{i=\theta_0} x} \\
     \card{\sum^{A^*_t}_{i=\theta_0} x} \quad
     \card*{\sum^{A^*_t}_{i=\theta_0} x} \\
     \norm{\sum^{A^*_t}_{i=\theta_0} x} \quad
@@ -347,12 +347,16 @@ See [LaTeX Color](https://latexcolor.com/), [中国色 Chinese Colors](https://z
 % - `\eqref`: built in the `amsmath` package
 % - `\nameref`: built in the `nameref` package
 % - `\pageref`: built-in
-\providecommand{\eqnref}[1]{Eq.~\eqref{#1}}
-\providecommand{\Eqnref}[1]{Equation~\eqref{#1}}
-\providecommand{\figref}[1]{\figurename~\ref{#1}}
-\providecommand{\tabref}[1]{\tablename~\ref{#1}}
-\providecommand{\secref}[1]{\S\ref{#1}}
-\providecommand{\Secref}[1]{Section~\ref{#1}}
+\newcommand{\algref}[1]{Alg.~\ref{#1}}
+\newcommand{\Algref}[1]{Algorithm~\ref{#1}}
+\newcommand{\eqnref}[1]{Eq.~\eqref{#1}}
+\newcommand{\Eqnref}[1]{Equation~\eqref{#1}}
+\newcommand{\figref}[1]{Fig.~\ref{#1}}
+\newcommand{\Figref}[1]{\figurename~\ref{#1}}
+\newcommand{\secref}[1]{\S\ref{#1}}
+\newcommand{\Secref}[1]{Section~\ref{#1}}
+\newcommand{\tabref}[1]{Tab.~\ref{#1}}
+\newcommand{\Tabref}[1]{\tablename~\ref{#1}}
 ```
 
 ~~Alternative: use `\autoref` provided in `hyperref` package~~.
@@ -440,21 +444,25 @@ foo bar
 Use `quote` or `quotation` environment.
 One can add background colour to the quotation block by using the `tcolorbox` package:
 ```tex
-\usepackage{tcolorbox}
+\usepackage[most]{tcolorbox}
 
 \newenvironment{bgquote}
 {
-    \begin{tcolorbox}[
-        colback=gray!10,          % Light gray background
-        colframe=gray!10,         % Same color frame
-        boxrule=0pt,             % No visible border
-        arc=0pt,                 % Square corners
-        left=0pt,               % Extra left padding
-        right=0pt,              % Extra right padding
-        top=5pt,                % Top padding
-        bottom=5pt              % Bottom padding
-    ]
-    \begin{quote}
+  \begin{tcolorbox}[
+    enhanced,
+    colback=gray!7,         % Light gray background
+    colframe=gray!7,        % Same color frame
+    arc=7pt,                % Rounded/sharp corners
+    rounded corners=east,
+    sharp corners=west,
+    left=0pt,               % Extra left padding
+    right=0pt,              % Extra right padding
+    top=2pt,                % Top padding
+    bottom=5pt,             % Bottom padding
+    borderline west={3pt}{0pt}{gray!20},
+  ]
+  \begin{quote}
+  \itshape % italic text
 }
 {\end{quote}\end{tcolorbox}}
 
@@ -566,6 +574,45 @@ After receving the review comments,
 we need to analyse them to direct our rebuttal.
 See [Rebuttal Tracking Template.xlsx](Rebuttal_Tracking_Template.xlsx) for an analysing template.
 Source: [GAMES003: 图形视觉科研基本素养](https://pengsida.net/games003/) -> 9th week [Slides](https://pengsida.net/games003/GAMES003_files/week_9.pdf) -> [Rebuttal Tracking Template](https://docs.google.com/spreadsheets/d/1-FqA8RfQY5XwycJLqjVLLM0QIVNwzelGJqpWSInCen0/edit?usp=sharing).
+
+# Journal Revision Highlighting
+
+In journal revision,
+revised text needs to be highlighted.
+`\textcolor` can do this.
+But when a 2nd or more following revisions are reqired
+(e.g. major -> minor),
+manually cleaning all the old highlightings can be daunting.
+
+Define a `\revise` command to simplify this:
+```tex
+\newcommand{\revise}[2]{%
+  \ifnum#1=1% highlight for 1st revision
+    \textcolor{red}{#2}
+  \else
+    #2% as-is
+  \fi
+}
+
+% OLD TEXT 1
+\revise{1}{REVISED TEXT 1}
+```
+Then, if unfortunately, at the 2nd (or generally i-th) revision:
+```tex
+\newcommand{\revise}[2]{%
+  \ifnum#1=2% change the target revision number to `2'
+    \textcolor{red}{#2}
+  \else
+    #2% as-is
+  \fi
+}
+
+% OLD TEXT 1
+\revise{1}{REVISED TEXT 1} % NO need to remove \revise{1}
+
+% OLD TEXT 2
+\revise{2}{REVISED TEXT 2}
+```
 
 # References
 

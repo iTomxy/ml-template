@@ -5,10 +5,13 @@
 \usepackage{xcolor}
 \usepackage{xspace}
 \usepackage{setspace}
-% \usepackage{graphicx}
-\usepackage{tcolorbox}
+\usepackage[most]{tcolorbox}
 \usepackage{amsmath}
 
+
+% Change to Figure R1/ Table R1
+\renewcommand{\thetable}{R\arabic{table}}
+\renewcommand{\thefigure}{R\arabic{figure}}
 
 \definecolor{citegreen}{RGB}{34, 139, 34} % FROM: Mask R-CNN (https://arxiv.org/abs/1703.06870)
 \definecolor{royalblue}{RGB}{0, 113, 188}
@@ -17,16 +20,19 @@
 % In rebuttal, when you want to \cite or \ref something from the paper
 % but you can't have real cross-reference cuz it is in another separate file,
 % use hand-craft style to mimic them.
-\providecommand{\fref}[1]{\textcolor{red}{#1}} % mod reference colour here to match \ref
-\providecommand{\falgref}[1]{(Algorithm~\fref{#1})}
-\providecommand{\feqref}[1]{(\fref{#1})}
-\providecommand{\feqnref}[1]{Equation~\feqref{#1}}
-\providecommand{\ffigref}[1]{Figure~\fref{#1}}
-\providecommand{\fsecref}[1]{Section~\fref{#1}}
-\providecommand{\ftabref}[1]{Table~\fref{#1}}
-%\providecommand{\fcite}[1]{$\!${\scriptsize [\textcolor{citegreen}{#1}]}}
+\newcommand{\fref}[1]{\textcolor{red}{#1}} % mod reference colour here to match \ref
+\newcommand{\falgref}[1]{(Algorighm~\fref{#1})}
+\newcommand{\feqref}[1]{(\fref{#1})}
+\newcommand{\feqnref}[1]{Equation~\feqref{#1}}
+\newcommand{\ffigref}[1]{Figure~\fref{#1}}
+\newcommand{\fsecref}[1]{Section~\fref{#1}}
+\newcommand{\ftabref}[1]{Table~\fref{#1}}
+\newcommand{\fpgref}[1]{Page~\fref{#1}} % `p. 10'
+\newcommand{\fpgsref}[2]{Pages~\fref{#1}-\fref{#2}} % `pp. 12-15'
+\newcommand{\flnref}[1]{Line~\fref{#1}}
+\newcommand{\flnsref}[2]{Lines~\fref{#1}-\fref{#2}}
 \makeatletter
-\providecommand{\fcite}[1]{[\@fcite#1,\@nil]}
+\newcommand{\fcite}[1]{[\@fcite#1,\@nil]}
 \def\@fcite#1,#2\@nil{%
   \textcolor{citegreen}{#1}% mod citation colour here to match \cite
   \ifx\@nil#2\@nil\else,\@fcite#2\@nil\fi%
@@ -51,14 +57,17 @@
 \newenvironment{bgquote}
 {
   \begin{tcolorbox}[
-    colback=gray!10,        % Light gray background
-    colframe=gray!10,       % Same color frame
-    boxrule=0pt,            % No visible border
-    arc=0pt,                % Square corners
+    enhanced,
+    colback=gray!7,         % Light gray background
+    colframe=gray!7,        % Same color frame
+    arc=7pt,                % Rounded/sharp corners
+    rounded corners=east,
+    sharp corners=west,
     left=0pt,               % Extra left padding
     right=0pt,              % Extra right padding
-    top=4pt,                % Top padding
-    bottom=8pt              % Bottom padding
+    top=2pt,                % Top padding
+    bottom=5pt,             % Bottom padding
+    borderline west={3pt}{0pt}{gray!20},
   ]
   \begin{quote}
   \itshape % italic text
@@ -107,8 +116,8 @@ Authors
 COMMENT
 \end{bgquote}
 
-\paragraph{\underline{Response}}
-RESPONSE (Page 1, Line 2)
+% \paragraph{\underline{Response}}
+RESPONSE (\fpgref{3}, \flnref{4})
 
 
 %-------------------------------------------------
@@ -120,8 +129,8 @@ RESPONSE (Page 1, Line 2)
 COMMENT
 \end{bgquote}
 
-\paragraph{\underline{Response}}
-RESPONSE (Page 3, \ftabref{4})
+% \paragraph{\underline{Response}}
+RESPONSE (\fpgsref{5}{6}, \ftabref{7})
 
 
 \end{document}

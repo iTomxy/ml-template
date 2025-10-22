@@ -340,6 +340,7 @@ def confusion_matrix(pred, y, k, ignore_index=-1):
     """
     assert pred.dim() in [1, 2, 3]
     assert pred.shape == y.shape
+    assert k >= pred.max() and k >= y.max()
 
     pred = pred.view(-1)
     y = y.view(-1)
@@ -393,4 +394,10 @@ def calc_cm_metrics(tp, tn, fp, fn, class_set, ignore_cls=[]):
     metrics["acc_class"] = ((tp + tn) / np.clip(tp + tn + fp + fn, 1, None)).tolist()
     metrics["acc_macro"] = float(np.mean(metrics["acc_class"]))
     metrics["acc_micro"] = float((tp + tn).sum() / max(1.0, (tp + tn + fp + fn).sum()))
+
+    # these metrics should be within [0, 1]
+    for k, v in metrics.items():
+        if isinstance(v, float):
+            assert -0.01 < v < 1.01, "Error value range of {}: {}".format(k, v)
+
     return metrics
