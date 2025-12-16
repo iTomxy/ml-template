@@ -333,6 +333,9 @@ See [LaTeX Color](https://latexcolor.com/), [中国色 Chinese Colors](https://z
 
 # Citation & Reference
 
+- Tip: choose the citation (`\cite`), link (`\ref`) and url (`\href`, `\url`) colour
+so that they suit the figures coloring.
+
 ```tex
 % url & cite
 \usepackage[
@@ -340,7 +343,9 @@ See [LaTeX Color](https://latexcolor.com/), [中国色 Chinese Colors](https://z
   breaklinks,
   colorlinks,
   bookmarks=true,
-  citecolor=royalblue % custom colour defined above
+  citecolor=royalblue,
+  linkcolor=red,
+  urlcolor=bilibili,
 ]{hyperref}
 
 % easy reference of figure, table, section

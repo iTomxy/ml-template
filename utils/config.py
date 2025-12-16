@@ -139,8 +139,8 @@ def to_dict(ed):
 def dump_cfg(cfg, save_file):
     assert isinstance(cfg, dict)
     cfg = to_dict(cfg)
-    ext = os.path.splitext(save_file)[1]
-    assert ext.lower() in (".json", ".yaml", ".yml", ".py")
+    ext = os.path.splitext(save_file)[1].lower()
+    assert ext in (".json", ".yaml", ".yml", ".py")
     os.makedirs(os.path.dirname(save_file) or '.', exist_ok=True)
     with open(save_file, "w") as f:
         if ".json" == ext:
@@ -176,7 +176,7 @@ class DictAction(Action):
         except ValueError:
             pass
         if val.lower() in ['true', 'false']:
-            return True if val.lower() == 'true' else False
+            return 'true' == val.lower()
         if val == 'None':
             return None
         return val

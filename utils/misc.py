@@ -8,6 +8,7 @@ import datetime
 import fnmatch, functools
 import glob
 import itertools
+import multiprocessing as mp
 import os
 import re
 import shutil, socket, subprocess, sys
@@ -216,77 +217,6 @@ def rm_empty_dir(root_dir):
         os.rmdir(root_dir)
 
 
-# def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore_symlink_dir=True, ignore_symlink_file=False):
-#     """Back-up files (e.g. codes) by copying recursively, selecting files based on white & black list.
-#     Only files match one of the white patterns will be candidates, and will be ignored if
-#     match any black pattern. I.e. black list is prioritised over white list.
-
-#     Potential alternative: shutil.copytree
-
-#     Example (back-up codes in a Python project):
-#     ```python
-#     backup_files(
-#         "./logs/1st-run/backup_code",
-#         white_list=["*.py", "scripts/*.sh"],
-#         black_list=["logs/*"],  # to ignore the folder `logs/`
-#     )
-#     ```
-#     NOTE that to ignore a folder with `black_list`, one MUST writes in `<folder>/*` format.
-
-#     Input:
-#         backup_root: root folder to back-up file
-#         src_root: str, path to the root folder to search
-#         white_list: List[str], file pattern/s to back-up
-#         black_list: List[str], file/folder pattern/s to ignore
-#         ignore_symlink_dir: bool = True, ignore (i.e. don't back-up & search) symbol link to folder
-#         ignore_symlink_file: bool = False, ignore (i.e. don't back-up & search) symbol link to file
-#     """
-#     assert os.path.isdir(src_root), src_root
-#     assert not os.path.isdir(backup_root), f"* Back-up folder already exists: {backup_root}"
-#     assert isinstance(white_list, (list, tuple)) and len(white_list) > 0
-
-#     # resolve `~` and make them absolute path to servive
-#     # the working directory changing later
-#     src_root = os.path.expanduser(src_root)
-#     backup_root = os.path.realpath(os.path.expanduser(backup_root))
-
-#     # rm `./` prefix, or it will cause stupid matching failure like:
-#     #     fnmatch.fnmatch("./utils/misc.py", "utils/*") # <- got False
-#     # but works for:
-#     #     fnmatch.fnmatch("utils/misc.py", "utils/*") # <- got True
-#     white_list = [os.path.relpath(s) for s in white_list]
-#     black_list = [os.path.relpath(s) for s in black_list]
-
-#     def _check(_s, _list):
-#         """check if `_s` matches any listed pattern"""
-#         _s = os.path.relpath(_s)
-#         for _pat in _list:
-#             if fnmatch.fnmatch(_s, _pat):
-#                 return True
-#         return False
-
-#     cwd = os.getcwd() # full path
-#     os.chdir(src_root)
-
-#     for root, dirs, files in os.walk('.'):
-#         if '.' != root and _check(os.path.relpath(root), black_list):
-#             continue
-#         if ignore_symlink_dir and os.path.islink(root):
-#             continue
-
-#         bak_d = os.path.join(backup_root, root)
-#         os.makedirs(bak_d, exist_ok=True)
-#         for f in files:
-#             ff = os.path.join(root, f)
-#             if ignore_symlink_file and os.path.islink(ff):
-#                 continue
-#             if _check(ff, white_list) and not _check(ff, black_list):
-#                 shutil.copy(ff, os.path.join(bak_d, f))
-
-#     os.chdir(cwd) # return to current working dir on finish
-#     rm_empty_dir(backup_root)
-
-
 def backup_files(backup_root, src_root='.', white_list=[], black_list=[], ignore_symlink=False):
     """Back-up files (e.g. codes) by copying recursively, selecting files based on white & black list.
     Only files match one of the white patterns will be candidates, and will be ignored if
@@ -440,7 +370,6 @@ def textcolor(text, color, bg=False, bright=False):
     elif isinstance(color, str) and color.lower() in color_codes:
         # Named color
         color_num = color_codes[color.lower()]
-
         if bright:
             # Bright colors: 90-97 (fg) or 100-107 (bg)
             base_code = 100 if bg else 90
@@ -448,10 +377,43 @@ def textcolor(text, color, bg=False, bright=False):
             # Standard colors: 30-37 (fg) or 40-47 (bg)
             base_code = 40 if bg else 30
 
-        return f"\033[{base_code + color_num}m{text}\033[0m"
+        return "\033[{}m{}\033[0m".format(base_code + color_num, text)
 
-    else:
-        raise ValueError(f"Invalid color format: {color}")
+    raise ValueError("Invalid color format: {}".format(color))
+
+
+class MPExecutor:
+    """General-purpose multi-processing executor that dynamically create processes to run jobs
+
+    Built-in alternative: concurrent.futures.ProcessPoolExecutor
+    """
+    def __init__(self):
+        self.p_list = []
+
+    def __del__(self):
+        self.join()
+
+    def __call__(self, f, *args, **kwargs):
+        """
+        Args:
+            f: callable: function to call
+            args, kwargs: arguments to pass to `f'
+        Returns:
+            p: the process that runs the job
+        """
+        assert callable(f)
+        p = mp.Process(target=f, args=args, kwargs=kwargs)
+        p.start()
+        self.p_list.append(p)
+        # p.join() # do NOT join here
+        return p
+
+    def join(self):
+        for p in self.p_list:
+            if p.is_alive():
+                p.join()
+
+        self.p_list.clear()
 
 
 if __name__ == "__main__":

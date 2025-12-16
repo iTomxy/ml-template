@@ -138,7 +138,7 @@ def calc_stat(lst, percentages=[], prec=None, scale=None):
     }
     if len(percentages) > 0:
         percentages = [max(1e-7, min(p, 100 - 1e-7)) for p in percentages]
-        percentiles = np.pencentile(lst, percentages)
+        percentiles = np.percentile(lst, percentages)
         for ptage, ptile in zip(percentages, percentiles):
             ret["p_{}".format(ptage)] = float(ptile)
 

@@ -2,7 +2,7 @@
 \usepackage[table]{xcolor} % \textcolor, \definecolor
 \definecolor{bilibili}{RGB}{251, 114, 153}
 \definecolor{phub}{RGB}{255, 163, 26}
-\definecolor{citegreen}{RGB}{34, 139, 34} % FROM: Mask R-CNN (https://arxiv.org/abs/1703.06870)
+\definecolor{rcnngreen}{RGB}{34, 139, 34} % FROM: Mask R-CNN (https://arxiv.org/abs/1703.06870)
 \definecolor{royalblue}{RGB}{0, 113, 188}
 \definecolor{halfblue}{RGB}{0, 0, 128} % ICML citation blue
 
@@ -35,6 +35,10 @@
 \definecolor{mpl7}{HTML}{7f7f7f}
 \definecolor{mpl8}{HTML}{bcbd22}
 \definecolor{mpl9}{HTML}{17becf}
+
+% functional colour aliases: align fake cite & ref with real ones
+\colorlet{citecolor}{royalblue}% \cite <-> \fcite
+\colorlet{linkcolor}{red}% \ref <-> \fref
 
 % --- encoding
 \usepackage[T1]{fontenc}
@@ -148,7 +152,7 @@
 % In rebuttal, when you want to \cite or \ref something from the paper
 % but you can't have real cross-reference cuz it is in another separate file,
 % use hand-craft style to mimic them.
-\newcommand{\fref}[1]{\textcolor{red}{#1}} % mod reference colour here to match \ref
+\newcommand{\fref}[1]{\textcolor{linkcolor}{#1}} % mod reference colour here to match \ref
 \newcommand{\falgref}[1]{(Alg.~\fref{#1})}
 \newcommand{\feqref}[1]{(\fref{#1})}
 \newcommand{\feqnref}[1]{Eq.~\feqref{#1}}
@@ -162,7 +166,7 @@
 \makeatletter
 \newcommand{\fcite}[1]{[\@fcite#1,\@nil]}
 \def\@fcite#1,#2\@nil{%
-  \textcolor{citegreen}{#1}% mod citation colour here to match \cite
+  \textcolor{citecolor}{#1}% mod citation colour here to match \cite
   \ifx\@nil#2\@nil\else,\@fcite#2\@nil\fi%
 }
 \makeatother
@@ -213,7 +217,8 @@
   breaklinks,
   colorlinks,
   bookmarks=true,
-  citecolor=citegreen % custom colour defined above
+  citecolor=citecolor,
+  % linkcolor=linkcolor,
 ]{hyperref}
 
 

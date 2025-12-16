@@ -1,7 +1,8 @@
-import os, math, itertools, multiprocessing as mp
+import os, math, itertools
 import numpy as np
 from PIL import Image
 import open3d as o3d
+import seaborn as sns
 
 
 def get_palette(n_classes, pil_format=True):
@@ -183,61 +184,66 @@ def show_ply(ply_file):
     o3d.visualization.draw_geometries([pcd])
 
 
-def vis_point_cloud(xyz, label=None, n_classes=0, palette=None, window_name="Open3D"):
-    """visualise 1 point cloud (label or prediction)
-    xyz: int|float[n, 3], numpy.ndarray
-    label: int[n] = None
-    n_classes: int = 0
-    palette: int[m, 3] = None, m >= n_classes
-    window_name: str = "Open3D"
+def vis_pc(points, colors=None, window_name="Open3D"):
+    """visualise 1 point cloud
+    Args:
+        points: int|float[n, 3], numpy.ndarray, coordinates
+        colors: float[n, 3] = None, within [0, 1], numpy.ndarray, normalised RGB for each point
+        window_name: str = "Open3D"
     """
     pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(xyz)
-    if label is not None:
-        assert len(label) == xyz.shape[0]
-        label = np.asarray(label)
-        if n_classes < 1:
-            n_classes = int(label.max()) + 1
-        if palette is None:
-            palette = np.asarray(get_palette(n_classes, False))
-        elif not isinstance(palette, np.ndarray):
-            palette = np.asarray(palette)
-        assert palette.shape[0] >= n_classes and 3 == palette.shape[1], "Palette ({}) too small for {} classes".format(palette.shape, n_classes)
-        colors = np.asarray([palette[c] for c in label])
-        colors = colors.astype(np.float32) / 255
-        pcd.colors = o3d.utility.Vector3dVector(colors)
+    pcd.points = o3d.utility.Vector3dVector(points)
+    if colors is not None:
+        assert colors.shape[0] == points.shape[0] and 3 == colors.shape[1]
+        assert -0.01 < colors.min() and colors.max() < 1.01, \
+            "Wrong colour range: expected to be within [0, 1], but got [{}, {}]".format(colors.min(), colors.max())
+        pcd.colors = o3d.utility.Vector3dVector(np.clip(colors, 0, 1))
 
     o3d.visualization.draw_geometries([pcd], window_name=window_name)
 
 
-def vis_multi_pc(xyzs, labels=[], class_nums=[], palettes=[], windows_name=[]):
-    """visualise multiple point clouds (label or prediction) simultaneously by calling `vis_point_cloud` with multi-processing
-    xyzs: list of int|float[n, 3], numpy.ndarray
-    labels: list of int[n] = None
-    class_nums: list of int = 0
-    palettes: list of int[m, 3] = None, m >= n_classes
-    windows_name: list of str = "Open3D"
+def vis_pc_label(points, label, n_classes=0, palette=None, window_name="Open3D"):
+    """visualise 1 point cloud, colouring with label or prediction
+    Args:
+        points: int|float[n, 3], numpy.ndarray
+        label: int[n]
+        n_classes: int = 0
+        palette: int[m, 3] = None, m >= n_classes
+        window_name: str = "Open3D"
     """
-    assert isinstance(xyzs, (list, tuple))
-    if len(labels) == 0:
-        labels = [None] * len(xyzs)
-    if len(class_nums) == 0:
-        class_nums = [0] * len(xyzs)
-    if len(palettes) == 0:
-        palettes = [None] * len(xyzs)
-    if len(windows_name) == 0:
-        windows_name = ["Open3D {}".format(i) for i in range(len(xyzs))]
-    assert len(xyzs) == len(labels) == len(class_nums) == len(palettes) == len(windows_name)
+    assert len(label) == points.shape[0]
+    label = np.asarray(label)
+    if n_classes < 1:
+        n_classes = int(label.max()) + 1
+    if palette is None:
+        palette = np.asarray(get_palette(n_classes, False))
+    elif not isinstance(palette, np.ndarray):
+        palette = np.asarray(palette)
+    assert palette.shape[0] >= n_classes, "Palette ({}) too small for {} classes".format(palette.shape, n_classes)
+    assert 2 == palette.ndim and 3 == palette.shape[1], "Wrong palette shape: expect [m, 3], got {}".format(palette.shape)
+    colors = np.asarray([palette[c] for c in label])
+    colors = colors.astype(np.float32) / 255
+    vis_pc(points, colors, window_name)
 
-    p_list = []
-    for xyz, label, nc, palette, wn in zip(xyzs, labels, class_nums, palettes, windows_name):
-        p = mp.Process(target=vis_point_cloud, args=(xyz, label, nc, palette, wn))
-        p.start()
-        p_list.append(p)
-        # p.join() # do NOT join here
 
-    for p in p_list:
-        p.join()
+def vis_pc_gray(points, norm_gray, c_high=(0, 0, 0), c_low=(255, 255, 255), window_name="Open3D"):
+    """visualise 1 point cloud with gray scale colouring
+    Args:
+        points: int|float[n, 3], numpy.ndarray
+        norm_gray: float[n] within [0, 1], normalised intensity
+        c_high: int[3] = [0, 0, 0], in {0, ..., 255}, RGB when intensity is highest
+        c_low: int[3] = [255, 255, 255], in {0, ..., 255}, RGB when intensity is lowest
+        window_name: str = "Open3D"
+    """
+    assert any(h != l for h, l in zip(c_high, c_low))
+    assert 3 == len(c_high) and all(0 <= c <= 255 for c in c_high)
+    assert 3 == len(c_low) and all(0 <= c <= 255 for c in c_low)
+    assert len(norm_gray) == points.shape[0]
+    norm_gray = np.clip(np.asarray(norm_gray, dtype=np.float32), 0, 1)[:, np.newaxis] # [n, 1]
+    c_high = np.clip(np.asarray(c_high, dtype=np.float32) / 255, 0, 1)[np.newaxis, :] # [1, 3]
+    c_low = np.clip(np.asarray(c_low, dtype=np.float32) / 255, 0, 1)[np.newaxis, :] # [1, 3]
+    colors = c_low + norm_gray * (c_high - c_low)
+    vis_pc(points, colors, window_name)
 
 
 def bbox3d_points(point1, point2):
@@ -286,6 +292,32 @@ def bbox3d_points(point1, point2):
             all_edge_points.add((x, y, z))
 
     return np.array(list(all_edge_points))
+
+
+def vis_confusion_matrix(conf_matrix, classes_name, save_file, title='Normalized Confusion Matrix Heatmap'):
+    nc = len(classes_name)
+    fig, ax = plt.subplots(figsize=(nc + 4, nc + 4))
+
+    # Plot heatmap
+    fmt = ".2f" if np.issubdtype(conf_matrix.dtype, np.floating) else "d"
+    sns.heatmap(conf_matrix, annot=True, fmt=fmt, cmap="Blues",
+                xticklabels=classes_name, yticklabels=classes_name,
+                square=True, cbar=False, ax=ax)
+
+    for i in range(conf_matrix.shape[0]):
+        ax.add_patch(plt.Rectangle((i, i), 1, 1, fill=False, edgecolor='red', lw=2))
+
+    # Labels and title
+    ax.set_xlabel('Prediction')
+    ax.set_ylabel('Label')
+    ax.set_title(title)
+
+    # Adjust layout
+    plt.tight_layout()
+
+    # Save figure with transparent background
+    plt.savefig(save_file, pad_inches=0.0, bbox_inches='tight')#, transparent=True)
+    plt.close(fig)
 
 
 if "__main__" == __name__:
