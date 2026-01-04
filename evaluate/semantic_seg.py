@@ -135,6 +135,8 @@ class Evaluator:
             cw_list = vw_dict[metr]
             assert len(cw_list) == self.n_classes
             metr = metr[:-3] # remove "_cw"
+            if metr not in self.metrics:
+                continue
             for c, v in enumerate(cw_list):
                 if c in self.ignore_classes or (metr in self.DISTANCE_BASED and c in self.bg_classes):
                     # always ignore bg for distance metrics

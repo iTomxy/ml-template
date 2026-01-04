@@ -1,18 +1,20 @@
+" vimrc
+let s:is_windows = has("win32") || has("win64") || has("win95") || has("win16")
+let s:is_macos = has("macunix")
+if s:is_windows
+	" windows
+	let s:vimcfgp = expand('$HOME/vimfiles')
+else
+	" linux or macos
+	let s:vimcfgp = expand('~/.vim')
+endif
+
+
 "--- Vundle ---"
 set nocompatible " must
 filetype off     " must, temporarily close, will re-open later
-if(has("win32") || has("win64") || has("win95") || has("win16"))
-	" windows
-	set rtp+=$HOME/vimfiles/bundle/Vundle.vim
-	call vundle#begin('$HOME/vimfiles/bundle')
-
-	" for fzf. Suppose fzf.exe lies at D:/GnuWin32/bin/fzf.exe
-	set rtp+=D:/GnuWin32/bin
-else
-	" linux
-	set rtp+=~/.vim/bundle/Vundle.vim
-	call vundle#begin('~/.vim/bundle')
-endif
+let &rtp = &rtp . ',' . expand(s:vimcfgp . '/bundle/Vundle.vim')
+call vundle#begin(expand(s:vimcfgp . '/bundle'))
 Plugin 'VundleVim/Vundle.vim'
 
 "--- comment
@@ -53,19 +55,21 @@ Plugin 'junegunn/fzf.vim'
 call vundle#end()         " must
 filetype plugin indent on " must, here
 
+
 "--- Settings ---"
 set autoread " auto-reload file if modified elsewhere
 set autochdir " change working path to current path
 set backspace=indent,eol,start
 let mapleader = '\'
-"--- backup & undo
+"--- backup
 set nobackup " don't create backup files
-"set noundofile " don't create  .un~ files
-if(has("win32") || has("win64") || has("win95") || has("win16"))
-	set undodir=$HOME/vimundo " put .un~ files in undodir
-else
-	set undodir=$HOME/.vim/vimundo " put .un~ files in undodir
+let &backupdir = s:vimcfgp . '/backup'
+if !isdirectory(&backupdir)
+	call mkdir(&backupdir, "p", 0700)
 endif
+"--- undo
+" set noundofile " don't create .un~ files
+let &undodir = s:vimcfgp . '/undo'
 if !isdirectory(&undodir)
 	call mkdir(&undodir, "p", 0700)
 endif
@@ -74,25 +78,34 @@ set hlsearch " highlight matched string
 set incsearch " real-time match highlighting
 set ignorecase " ignore case in search
 set smartcase " but not ignore if search has uppercase
+"--- add search path of some executables
+if s:is_windows
+	" for fzf. Suppose fzf.exe lies at D:/GnuWin32/bin/fzf.exe
+	set rtp+=D:/GnuWin32/bin
+endif
+
 
 "--- Comment String (tpope/vim-commentary) ---"
 " default: #(space)
 "setlocal commentstring=#\ %s
 " C/C++、Java: //(space)
-autocmd FileType c,cpp,cc,java,h,hpp setlocal commentstring=//\ %s
+autocmd FileType c,cpp,java setlocal commentstring=//\ %s
 " python、shell: #(space)
-autocmd FileType python,shell setlocal commentstring=#\ %s
+autocmd FileType python,sh,ps1 setlocal commentstring=#\ %s
 " lua、sql: --(space)
 autocmd FileType lua,sql setlocal commentstring=--\ %s
 " matlab: %(space)
-autocmd FileType matlab setlocal commentstring=%\ %s
+autocmd FileType matlab,tex setlocal commentstring=%\ %s
 " dosbatch: @REM(space)
 autocmd FileType dosbatch setlocal commentstring=\@REM\ %s
+" beancount: ;(space)
+autocmd FileType beancount setlocal commentstring=;\ %s
+
 
 "--- Encoding ---"
 set encoding=utf-8
 set fileencoding=utf-8
-if(has("win32") || has("win64") || has("win95") || has("win16"))
+if s:is_windows
 	"set termencoding=chinese " chinese is a variable
 	source $VIMRUNTIME/delmenu.vim
 	source $VIMRUNTIME/menu.vim
@@ -103,6 +116,7 @@ endif
 "set fileformats=unix,dos
 "set fileformat=unix " use `\n`
 "set fileformat=dos " use `\r\n`
+
 
 "--- Tab ---"
 set tabstop=4 " 1 tab = 4 spaces
@@ -120,6 +134,7 @@ function Setup_XHTML()
 	set shiftwidth=2
 endfunction
 
+
 "--- Formatting ---"
 noremap <F8> gg=G
 inoremap <F8> <ESC>gg=G
@@ -133,9 +148,11 @@ let g:autopep8_max_line_length=150
 let g:autopep8_disable_show_diff=1
 "let g:autopep8_on_save=1
 
+
 "--- ctags ---"
 set tags=./tags,tags;$HOME
 set tagcase=match
+
 
 "--- Theme ---"
 syntax enable
@@ -146,21 +163,22 @@ set showcmd " show command
 set showmode " show mode
 set showmatch " show matching parenthesis
 set cursorline " highlight current line
-if(has("win32") || has("win64") || has("win95") || has("win16"))
+if s:is_windows
 	set t_Co=256	" for codedark theme
 	set t_ut=		" for codedark theme
 	if has ("gui_running") " gVim
-		"set cursorline
 		colorscheme solarized
 	else " vim
-		"colorscheme codedark
 		colorscheme desert
 	endif
 	set guifont=Consolas:h13:cANSI " English font
 	set guifontwide=YouYuan:h13 " Chinese font
 endif
-set listchars=precedes:<,extends:>,tab:\|\ ,eol:¬,space:·
+set listchars=precedes:«,extends:»,tab:\|\ ,eol:┐,space:·
 "set list " show special characters
+highlight SpecialKey guifg=gray ctermfg=darkgray
+highlight NonText guifg=gray ctermfg=darkgray
+
 
 "--- GUI Initialisation  ---"
 autocmd GUIEnter * call Init_GUI()
@@ -196,6 +214,7 @@ func! Init_GUI()
 	endif
 endfunc
 
+
 "--- Buffer / Window Tab ---"
 " to next buffer
 noremap <C-Left> gT
@@ -206,9 +225,9 @@ noremap <C-Right> gt
 inoremap <C-Right> <ESC>gta
 vnoremap <C-Right> <ESC>gt
 " open new buffer (prompt)
-noremap <C-t> :tabe
-inoremap <C-t> <ESC>:tabe
-vnoremap <C-t> <ESC>:tabe
+noremap <C-t> :tabe<Space>
+inoremap <C-t> <ESC>:tabe<Space>
+vnoremap <C-t> <ESC>:tabe<Space>
 " close current buffer
 " `Ctrl-w` conflicts with window switching
 "noremap <C-w> :q<CR>
@@ -223,11 +242,25 @@ inoremap <F2> <ESC>:NERDTreeToggle<CR>
 noremap <C-F2> :NERDTree
 inoremap <C-F2> <ESC>:NERDTree
 
+
 "--- Code Folding ---"
+let &viewdir = s:vimcfgp . '/view' " put view files in viewdir
+if !isdirectory(&viewdir)
+	call mkdir(&viewdir, "p", 0700)
+endif
 set foldenable " enable code folding
 set foldmethod=manual " manual folding creating with `zf` command
 " Ctrl-f toggle open/collapse <- {zo: open, zc: collapse}
 nnoremap <C-f> @=((foldclosed(line('.')) < 0) ? 'zc':'zo')<CR>
+" auto save & load folding (i.e. view)
+autocmd BufWinLeave ?* mkview
+autocmd VimLeavePre ?* mkview
+autocmd BufWinEnter ?* silent loadview
+set foldlevel=1 " open folds up to level 1 when file opened
+set foldlevelstart=1 " open folds up to level 1 when file opened
+" set foldnestmax=3 " maximum fold level of 3
+" set foldminlines=2 " minimum lines for a fold
+" set fillchars=fold:\· " show `·` for folded lines
 
 
 "--- select all ---"
@@ -438,20 +471,15 @@ func! Before_Saving()
 	if &filetype == "python"
 		exec "silent! %s/^\\(\\s*#\\) \\@!/\\1 /g"
 	elseif &filetype == "sh"
-		exec "silent! %s/^\\(\\s*#\\)!\\@! \\@!/\\1 /g"
+		exec "silent! %s/^\\(\\s*#\\) \\@! !\\@!/\\1 /g"
 	elseif &filetype == "c" || &filetype == "cpp" || &filetype == "java"
 		exec "silent! %s/^\\(\\s*\\/\\/\\) \\@!/\\1 /g"
 	elseif &filetype == "tex" || &filetype == "matlab"
-		exec "silent! %s/^\\(\\s*%\\)!\\@! \\@!/\\1 /g"
+		exec "silent! %s/^\\(\\s*%\\) \\@! !\\@!/\\1 /g"
 	elseif &filetype == "sql" || &filetype == "lua"
-		exec "silent! %s/^\\(\\s*--\\)!\\@! \\@!/\\1 /g"
+		exec "silent! %s/^\\(\\s*--\\) \\@! !\\@!/\\1 /g"
 	endif
 
-	" keep 1 trailing space after `:tabe` in _vimrc/.vimrc
-	let this_file = expand('%')
-	if this_file == '_vimrc' || this_file == '.vimrc'
-		exec "%s/:tabe$/:tabe /e"
-	endif
 	" delete trailing blank lines
 	let ln_nb = prevnonblank('$')
 	let ln_eof = line('$')

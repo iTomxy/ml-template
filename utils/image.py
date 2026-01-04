@@ -110,8 +110,8 @@ def determine_reorient(src_ornt, trg_ornt):
         'A': 'Y', 'P': 'Y', 'Y': 'Y', # y-axis
         'S': 'Z', 'I': 'Z', 'Z': 'Z', # z-axis
     }
-    assert len(set([to_axis(s) for s in src_ornt])) == 3, "Duplicated axes in `src_ornt': {}".format(src_ornt)
-    assert len(set([to_axis(t) for t in trg_ornt])) == 3, "Duplicated axes in `trg_ornt': {}".format(trg_ornt)
+    assert len(set([to_axis[s] for s in src_ornt])) == 3, "Duplicated axes in `src_ornt': {}".format(src_ornt)
+    assert len(set([to_axis[t] for t in trg_ornt])) == 3, "Duplicated axes in `trg_ornt': {}".format(trg_ornt)
     flag_diff = False
     for s, t, in zip(src_ornt, trg_ornt):
         if to_axis[s] != to_axis[t] or ( # diff axis order
@@ -167,6 +167,7 @@ def reorient_3dgrid(vol, src_ornt, trg_ornt):
         if flip:
             result = np.flip(result, axis=axis)
 
+    result = result.copy()  # ensure contiguous array
     return result
 
 
@@ -248,7 +249,7 @@ def adjust_spacing(points, old_spacing, new_spacing):
     return adjusted_points
 
 
-def normalise_pc(points, centroid=None, radius=None, return_params=False):
+def normalise_coord(points, centroid=None, radius=None, return_params=False):
     """normalise point cloud: (points - centroid) / radius
     Input:
         points: float[n, 3], numpy.ndarray
@@ -275,6 +276,22 @@ def normalise_pc(points, centroid=None, radius=None, return_params=False):
     if return_params:
         return points, centroid, radius
     return points
+
+
+def normalise_intensity(arr, clip_percentile=None):
+    """clip extremes & normalise
+    Args:
+        arr: float numpy.ndarray
+        clip_percentile: float[2] = None, in [0, 100], percentile to clip extreme values
+            E.g. (0.5, 99.5) to clip 0.5% low and 0.5% high values.
+    """
+    if clip_percentile is not None:
+        assert len(clip_percentile) == 2 and -0.01 < clip_percentile[0] < clip_percentile[1] < 100.01
+        _min, _max = np.percentile(arr, [max(0, clip_percentile[0]), min(clip_percentile[1], 100)])
+        arr = np.clip(arr, _min, _max) # truncate extreme values
+
+    _mean, _std = np.mean(arr), np.std(arr)
+    return (arr - _mean) / _std
 
 
 def axcodes2dir(axcode):

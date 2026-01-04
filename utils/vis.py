@@ -119,6 +119,48 @@ def show_nii(nii_file):
     OrthoSlicer3D(img.dataobj).show()
 
 
+def compact_factor(n, scale=(1, 1), exact=False, descending=False):
+    """find (m1, m2) so that m1 * m2 >= n and m1 * s1 + m2 * s2 is minimized
+    Scenario: arranging n images with resolutions HxW in a compact 2D grid of
+        nr rows and nc columns:
+        ```
+        nr, nc = compact_factor(n, scale=(H, W), exact=False)
+        ```
+    Args:
+        n: int, the number to factorise
+        scale: float[2] = (1, 1), scale factor for m1 and m2
+        exact: bool = False, enforce m1 * m2 = n or not
+        descending: bool = False, prioritise m1 >= m2 or not
+    Returns:
+        (m1, m2): int, factors of n
+    """
+    if 1 == n:
+        return 1, 1
+
+    if descending:
+        # transpose temporarily
+        scale = (scale[1], scale[0])
+
+    # factorise: prioritise m1 <= m2
+    m1, m2 = 1, n
+    min_peri = m1 * scale[0] + m2 * scale[1] # 1 row
+    for r in range(2, n + 1):
+        if exact and n % r != 0:
+            continue
+        c = math.ceil(n / r)
+        assert r * c >= n and r * (c - 1) <= n
+        peri = r * scale[0] + c * scale[1]
+        if peri < min_peri:
+            m1, m2, min_peri = r, c, peri
+
+    if descending:
+        # transpose back
+        m1, m2 = m2, m1
+
+    assert m1 * m2 >= n
+    return m1, m2
+
+
 def compact_image_grid(image_list, exact=False, high_first=False):
     """adaptively arrange images in a compactest 2D grid (for better visualisation)
     Input:
@@ -140,29 +182,7 @@ def compact_image_grid(image_list, exact=False, high_first=False):
         max_h = max(max_h, h)
         max_w = max(max_w, w)
 
-    # find compactest layout
-    if high_first:
-        # consider transposed case
-        max_h, max_w = max_w, max_h
-
-    nr, nc = 1, n
-    min_peri = nr * max_h + nc * max_w # 1 row
-    for r in range(2, n + 1):
-        if exact and n % r != 0:
-            continue
-        c = math.ceil(n / r)
-        assert r * c >= n and r * (c - 1) <= n
-        peri = r * max_h + c * max_w
-        if peri < min_peri:
-            nr, nc, min_peri = r, c, peri
-
-    if high_first:
-        # transpose back
-        nr, nc = nc, nr
-        max_h, max_w = max_w, max_h
-
-    assert nr * nc >= n
-
+    nr, nc = compact_factor(n, scale=(max_h, max_w), exact=exact, descending=high_first)
     grid_shape = (nr * max_h, nc * max_w) + image_list[0].shape[2:]
     grid = np.zeros(grid_shape, dtype=image_list[0].dtype)
     for i, img in enumerate(image_list):
