@@ -3,6 +3,10 @@ Windows Registry Editor Version 5.00
 ; Modify the path to `Code.exe' to suit your case.
 ; https://stackoverflow.com/questions/37306672/visual-studio-code-open-with-code-does-not-appear-after-right-clicking-a-folde
 
+;
+; ADD
+;
+
 ; Open files
 [HKEY_CLASSES_ROOT\*\shell\Open with VS Code]
 @="Edit with VS Code"
@@ -25,3 +29,12 @@ Windows Registry Editor Version 5.00
 "Icon"="\"C:\\Program Files (x86)\\Microsoft VS Code\\Code.exe\",0"
 [HKEY_CLASSES_ROOT\Directory\Background\shell\vscode\command]
 @="\"C:\\Program Files (x86)\\Microsoft VS Code\\Code.exe\" \"%V\""
+
+;
+; DELETE
+; Uncommand and execute the followings
+;
+
+;[-HKEY_CLASSES_ROOT\*\shell\Open with VS Code]
+;[-HKEY_CLASSES_ROOT\Directory\shell\vscode]
+;[-HKEY_CLASSES_ROOT\Directory\Background\shell\vscode]

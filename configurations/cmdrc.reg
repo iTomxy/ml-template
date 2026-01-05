@@ -1,0 +1,6 @@
+Windows Registry Editor Version 5.00
+; Enable auto-executing a preset `cmdrc.cmd' at starting
+; https://superuser.com/questions/144347/is-there-windows-equivalent-to-the-bashrc-file-in-linux
+[HKEY_CURRENT_USER\Software\Microsoft\Command Processor]
+"AutoRun"="C:\\Users\\tomty\\cmdrc.cmd" ; ADD
+; "AutoRun"=- ; DELETE
