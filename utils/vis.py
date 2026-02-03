@@ -3,6 +3,7 @@ import numpy as np
 from PIL import Image
 import open3d as o3d
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 def get_palette(n_classes, pil_format=True):

@@ -4,6 +4,7 @@ import numpy as np
 import nibabel as nib
 import SimpleITK as sitk
 from nibabel.orientations import axcodes2ornt, ornt_transform, apply_orientation
+from PIL import Image
 
 
 def crop(img, blank=(255, 255, 255)):

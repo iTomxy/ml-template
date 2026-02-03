@@ -4,3 +4,9 @@
 
 @REM Change code page to UTF-8
 chcp 65001 >nul
+
+@REM Alias
+doskey ls=dir /w
+doskey ll=dir
+doskey clear=cls
+

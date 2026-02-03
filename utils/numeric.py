@@ -1,5 +1,7 @@
 import math
 import numpy as np
+import torch
+import torch.distributed as dist
 
 
 class Record:
@@ -113,6 +115,49 @@ class MeanValue:
         self.m_s = 0.0
         self.std = math.nan
 
+    def all_reduce(self):
+        """Reduce statistics across all processes in distributed training.
+
+        Returns:
+            MeanValue: A new MeanValue object with reduced statistics from all processes.
+                       Returns self if not in distributed mode.
+        """
+        if not dist.is_available() or not dist.is_initialized():
+            return self
+
+        # Reduce sum, var, and n across all processes
+        stats_tensor = torch.tensor([self.sum, self.var, self.n], dtype=torch.float32).cuda()
+        dist.all_reduce(stats_tensor)
+
+        # Create a new MeanValue object with reduced statistics
+        reduced = MeanValue()
+        reduced.sum = stats_tensor[0].item()
+        reduced.var = stats_tensor[1].item()
+        reduced.n = int(stats_tensor[2].item())
+
+        # Recompute mean and std from reduced values
+        if reduced.n == 0:
+            reduced.mean = math.nan
+            reduced.std = math.nan
+        elif reduced.n == 1:
+            reduced.mean = reduced.sum
+            reduced.std = math.inf
+            reduced.mean_old = reduced.mean
+            reduced.m_s = 0.0
+        else:
+            reduced.mean = reduced.sum / reduced.n
+            # var(X) = E[X^2] - E[X]^2
+            variance = (reduced.var / reduced.n) - (reduced.mean ** 2)
+            # std = sqrt(var * n / (n-1)) for sample std
+            reduced.std = math.sqrt(max(0, variance * reduced.n / (reduced.n - 1)))
+            reduced.mean_old = reduced.mean
+            # Note: m_s is not reconstructible from sum/var/n alone, but it's only
+            # used for incremental updates, which won't happen after reduction
+            reduced.m_s = 0.0
+
+        reduced.val = self.val  # Keep the last value (though it's process-specific)
+        return reduced
+
 
 def calc_stat(lst, percentages=[], prec=None, scale=None):
     """list of statistics: median, mean, standard error, min, max, percentiles
@@ -203,3 +248,32 @@ class OnlineStatEstim:
                 ans["percentile"][str(p)] = v
 
         return ans
+
+
+def np_smallest_dtype(arr, return_dtype=False):
+    """decide the smallest suitable numpy integer dtype for an integer array
+    Args:
+        arr: numpy.ndarray of integer dtype
+        return_dtype: bool = False, return the chosen dtype. If False, cast
+            the input array to the chosen dtype and return it.
+    Returns:
+        if return_dtype:
+            dtype: the smallest numpy ingeter dtype that suits the input array
+        else:
+            arr: the input array cast to the chosen dtype
+    """
+    assert np.issubdtype(arr.dtype, np.integer), 'Expect array with integer dtype, got {}'.format(arr.dtype)
+    if 0 == arr.size:
+        return np.uint8 if return_dtype else arr.astype(np.uint8)
+
+    min_val = np.min(arr)
+    max_val = np.max(arr)
+    type_list = [np.uint8, np.uint16, np.uint32, np.uint64]
+    if min_val < 0:
+        type_list = [np.int8, np.int16, np.int32, np.int64]
+
+    for d_type in type_list:
+        if np.iinfo(d_type).min <= min_val and np.iinfo(d_type).max >= max_val:
+            return d_type if return_dtype else arr.astype(d_type)
+
+    raise ValueError('Could not find a dtype for the array.')

@@ -60,7 +60,7 @@ filetype plugin indent on " must, here
 set autoread " auto-reload file if modified elsewhere
 set autochdir " change working path to current path
 set backspace=indent,eol,start
-let mapleader = '\'
+let mapleader = ' ' " default = '\\'
 "--- backup
 set nobackup " don't create backup files
 let &backupdir = s:vimcfgp . '/backup'
@@ -78,6 +78,11 @@ set hlsearch " highlight matched string
 set incsearch " real-time match highlighting
 set ignorecase " ignore case in search
 set smartcase " but not ignore if search has uppercase
+"--- paste: avoid weird indentation in Windows vim
+set pastetoggle=<F3>
+" inoremap <leader>p <C-O>:set paste<CR><C-R>+<C-O>:set nopaste<CR>
+nnoremap <leader>p :set paste<CR>"+p:set nopaste<CR>
+vnoremap <leader>p d:set paste<CR>"+p:set nopaste<CR>
 "--- add search path of some executables
 if s:is_windows
 	" for fzf. Suppose fzf.exe lies at D:/GnuWin32/bin/fzf.exe
@@ -239,9 +244,8 @@ vnoremap <C-t> <ESC>:tabe<Space>
 noremap <F2> :NERDTreeToggle<CR>
 inoremap <F2> <ESC>:NERDTreeToggle<CR>
 " Ctrl + F2 open specific directory (prompt)
-noremap <C-F2> :NERDTree
-inoremap <C-F2> <ESC>:NERDTree
-
+noremap <C-F2> :NERDTree<Space>
+inoremap <C-F2> <ESC>:NERDTree<Space>
 
 "--- Code Folding ---"
 let &viewdir = s:vimcfgp . '/view' " put view files in viewdir

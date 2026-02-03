@@ -20,11 +20,12 @@ class Evaluator:
     """numpy.ndarray based segmentation evaluation for semantic segmentation."""
 
     METRICS = {
-        "dice": mmb.dc,
+        "dice": mmb.dc, # = F1
         "iou": mmb.jc,
         "accuracy": lambda _B1, _B2: (_B1 == _B2).sum() / _B1.size,
-        "sensitivity": mmb.sensitivity,
-        "specificity": mmb.specificity,
+        "precision": mmb.precision,
+        "recall": mmb.recall, # = sensitivity, true_positive_rate
+        "specificity": mmb.specificity, # = true_negative_rate
         "hd": mmb.hd,
         "assd": mmb.assd,
         "hd95": mmb.hd95,
@@ -161,27 +162,17 @@ class Evaluator:
                 res[metr+"_cw"] = self.records[metr]
                 res[metr] = int(np.sum(self.records[metr]))
             else:
-                CxN = np.asarray(self.records[metr], dtype=np.float32)
-                nans = np.isnan(CxN)
-                CxN[nans] = 0
-                not_nans = ~nans
+                CxN = np.asarray(self.records[metr], dtype=float)
 
                 # class-wise average
-                cls_n = not_nans.sum(1) # [c]
-                # cls_avg = np.where(cls_n > 0, CxN.sum(1) / cls_n, 0)
-                _cls_n_denom = cls_n.copy()
-                _cls_n_denom[0 == _cls_n_denom] = 1 # to avoid warning though not necessary
-                cls_avg = np.where(cls_n > 0, CxN.sum(1) / _cls_n_denom, 0)
+                cls_avg = np.nanmean(CxN, axis=1)  # [c]
+                cls_avg = np.nan_to_num(cls_avg, nan=0.0)  # replace NaN with 0 if all values for a class are NaN
                 res[f"{metr}_cw"] = np.round(cls_avg, prec).tolist()
 
                 # overall average
-                ins_cls_n = not_nans.sum(0) # [n]
-                # ins_avg = np.where(ins_cls_n > 0, CxN.sum(0) / ins_cls_n, 0)
-                _ins_cls_n_denom = ins_cls_n.copy()
-                _ins_cls_n_denom[0 == _ins_cls_n_denom] = 1 # to avoid warning though not necessary
-                ins_avg = np.where(ins_cls_n > 0, CxN.sum(0) / _ins_cls_n_denom, 0)
-                ins_n = (ins_cls_n > 0).sum()
-                avg = ins_avg.sum() / ins_n if ins_n > 0 else 0
+                ins_avg = np.nanmean(CxN, axis=0)  # [n]
+                avg = np.nanmean(ins_avg)  # overall average across instances
+                avg = 0.0 if np.isnan(avg) else avg  # handle case where all values are NaN
                 res[metr] = float(np.round(avg, prec))
 
         return res
