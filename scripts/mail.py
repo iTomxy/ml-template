@@ -61,7 +61,7 @@ if "__main__" == __name__:
     parser.add_argument('-T', '--to-name', type=str, metavar="NAME", nargs='+', default=["Receiver_1"],
         help="receivers' name, separated by space. Concatenate with `_` for multi-word names, e.g. `Jerry_Mouse Spike_Dog`.")
     parser.add_argument('-f', '--from-addr', type=str, metavar="ADDR", default="", help="sender address/account")
-    parser.add_argument('-F', '--from-name', type=str, metavar="NAME", default="Sender",
+    parser.add_argument('-F', '--from-name', type=str, metavar="NAME", nargs='+', default="Sender",
         help="sender name. Concatenate with `_` if multi-word, e.g. `Thomas_Cat`.")
     parser.add_argument('-p', '--password', type=str, metavar="PSW", default="", help="password (or authorisation code) of sender email account")
     parser.add_argument('-P', '--smtp-port', type=int, metavar="PORT", default=0)

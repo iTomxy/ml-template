@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import torch
 
@@ -33,19 +34,19 @@ def confusion_matrix(pred, y, num_classes, ignore_index=-1):
     """
     assert pred.dim() in [1, 2, 3]
     assert pred.shape == y.shape
-    assert num_classes >= pred.max() and num_classes >= y.max()
+    assert num_classes > int(pred.max().item()) and num_classes > int(y.max().item())
 
     pred = pred.view(-1)
     y = y.view(-1)
-    ignore_index = torch.tensor([ignore_index], dtype=pred.dtype).flatten().to(pred.device)
+    ignore_index = torch.as_tensor(ignore_index, device=pred.device).flatten()
     valid_mask = ~ torch.isin(y, ignore_index)
     total_valid_pixels = valid_mask.sum().item()
 
-    p_pred = torch.histc(pred[valid_mask], bins=num_classes, min=0, max=num_classes-1)
-    p_y = torch.histc(y[valid_mask], bins=num_classes, min=0, max=num_classes-1)
+    p_pred = torch.bincount(pred[valid_mask], minlength=num_classes)
+    p_y = torch.bincount(y[valid_mask], minlength=num_classes)
     correct_mask = (pred == y) & valid_mask
 
-    tp = torch.histc(y[correct_mask], bins=num_classes, min=0, max=num_classes-1)
+    tp = torch.bincount(y[correct_mask], minlength=num_classes)
     fp = p_pred - tp
     fn = p_y - tp
     tn = total_valid_pixels - tp - fp - fn
@@ -153,3 +154,32 @@ def calc_cm_metrics(tp, tn, fp, fn, class_set, ignore_cls=[]):
             metrics[k] = v.tolist()
 
     return metrics
+
+
+def error_rate(pred, y, bg_class):
+    """calculate error rates (binary or multi-class)
+    - False Negative Rate: p(pred \in BG | y \in FG)
+    - False Positive Rate: p(pred \in FG | y \in BG)
+    - Wrong Positive Rate: p(pred != y | pred \in FG, y \in FG)
+        In multi-class, both prediction and ground-truth are fore-ground, but mismatched.
+
+    Args:
+        pred: int numpy.ndarray, predicted class id
+        y: same shape as pred, ground-truth class id
+        bg_class: int or List[int], class id/s of background
+
+    Returns:
+        dict with fields:
+            fnr: float in [0, 1], false-negative rate
+            fpr: float in [0, 1], false-positive rate
+            wpr: float in [0, 1], wrong-positive rate
+    """
+    bg_class = np.asarray([bg_class]).flatten()
+    mask_bg = np.isin(y, bg_class)
+    mask_bg_pred = np.isin(pred, bg_class)
+    both_p = ~mask_bg & ~mask_bg_pred
+    return {
+        "fnr": float((mask_bg_pred & ~mask_bg).sum() / (~mask_bg).sum()) if (~mask_bg).sum() > 0 else math.nan,
+        "fpr": float((~mask_bg_pred & mask_bg).sum() / mask_bg.sum()) if mask_bg.sum() > 0 else math.nan,
+        "wpr": float((pred[both_p] != y[both_p]).sum() / both_p.sum()) if both_p.sum() > 0 else math.nan,
+    }

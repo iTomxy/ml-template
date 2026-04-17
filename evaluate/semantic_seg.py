@@ -48,13 +48,20 @@ class Evaluator:
                 instead of all supported (see METRICS).
         """
         self.n_classes = n_classes
+        if bg_classes is None:
+            bg_classes = []
         if isinstance(bg_classes, int):
             bg_classes = (bg_classes,)
         self.bg_classes = bg_classes
+
+        if ignore_classes is None:
+            ignore_classes = []
         if isinstance(ignore_classes, int):
             ignore_classes = (ignore_classes,)
         self.ignore_classes = ignore_classes
 
+        if select is None:
+            select = []
         if len(select) == 0:
             self.metrics = self.METRICS
         else:

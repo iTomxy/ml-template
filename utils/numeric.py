@@ -175,15 +175,15 @@ def calc_stat(lst, percentages=[], prec=None, scale=None):
         lst = list(map(lambda x: scale * x, lst))
 
     ret = {
-        "min": float(np.min(lst)),
-        "max": float(np.max(lst)),
-        "mean": float(np.mean(lst)),
-        "std": float(np.std(lst)),
-        "median": float(np.median(lst))
+        "min": float(np.nanmin(lst)),
+        "max": float(np.nanmax(lst)),
+        "mean": float(np.nanmean(lst)),
+        "std": float(np.nanstd(lst)),
+        "median": float(np.nanmedian(lst))
     }
     if len(percentages) > 0:
         percentages = [max(1e-7, min(p, 100 - 1e-7)) for p in percentages]
-        percentiles = np.percentile(lst, percentages)
+        percentiles = np.nanpercentile(lst, percentages)
         for ptage, ptile in zip(percentages, percentiles):
             ret["p_{}".format(ptage)] = float(ptile)
 
@@ -201,7 +201,7 @@ class OnlineStatEstim:
         for p in percentages:
             assert 0 < p < 100, "percentages should be within open interval (0, 100)"
         self.percentages = [max(1e-7, min(p, 100 - 1e-7)) for p in percentages]
-        self.avg_std = MeanMeter()
+        self.avg_std = MeanValue()
         self.reset()
 
     def __call__(self, x):

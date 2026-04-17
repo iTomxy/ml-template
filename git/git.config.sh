@@ -6,3 +6,4 @@ git config user.email "itom@example.com"
 
 git config push.default simple
 # git config core.autocrlf false
+git config --global http.postBuffer 2097152000

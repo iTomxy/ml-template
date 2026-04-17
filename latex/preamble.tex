@@ -12,7 +12,7 @@
 % https://boxingp.github.io/traditional-chinese-colors/
 % https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E4%BC%A0%E7%BB%9F%E8%89%B2%E5%BD%A9
 \definecolor{azurite}{RGB}{22, 133, 169} % 石青 as light blue
-\definecolor{carmine}{RGB}{157, 41, 51} % 胭脂
+\definecolor{carmine}{RGB}{157, 41, 51} % 胭脂 as red
 \definecolor{ccyan}{RGB}{0, 52, 114} % 花青 as dark blue
 \definecolor{cinnabar}{RGB}{243, 104, 56} % 朱膘 as shadowed orange
 \definecolor{gamboge}{RGB}{255, 182, 30} % 藤黄 as gold
@@ -121,7 +121,15 @@
 %\usepackage{xparse} % parsing multiple arguments in custom commands
 
 % --- reference
-\usepackage[capitalize]{cleveref}
+\usepackage[
+  pagebackref,
+  breaklinks,
+  colorlinks,
+  bookmarks=true,
+  citecolor=citecolor,
+  % linkcolor=linkcolor,
+]{hyperref}
+\usepackage[capitalize]{cleveref} % must AFTER hyperref
 \Crefname{section}{Section}{Sections}
 \Crefname{table}{Table}{Tables}
 \Crefname{figure}{Figure}{Figures}
@@ -211,16 +219,6 @@
 
 %--- list
 \usepackage{enumitem}
-
-% --- hyperref (at last?)
-\usepackage[
-  pagebackref,
-  breaklinks,
-  colorlinks,
-  bookmarks=true,
-  citecolor=citecolor,
-  % linkcolor=linkcolor,
-]{hyperref}
 
 
 % abbreviations ending with `.'

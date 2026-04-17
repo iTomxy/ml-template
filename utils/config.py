@@ -7,7 +7,7 @@ import yaml
 # Reserved Keys
 # FROM https://github.com/open-mmlab/mmengine/blob/main/mmengine/config/config.py
 BASE_KEY = '_base_' # import another config file in a config file
-# DELETE_KEY = '_delete_'
+DELETE_KEY = '_delete_'
 # DEPRECATION_KEY = '_deprecation_'
 # RESERVED_KEYS = ['filename', 'text', 'pretty_text', 'env_variables']
 
@@ -42,6 +42,30 @@ def load_cfg_file(cfg_file):
         raise OSError('Only py/yml/yaml/json type are supported now!')
 
     return cfg
+
+
+def _merge_a_into_b(a, b):
+    """Merge config ``a`` into base config ``b`` recursively.
+
+    A descendant dict normally merges into its ancestor dict. If a descendant
+    dict contains ``DELETE_KEY=True``, the ancestor subtree is discarded and the
+    descendant subtree fully replaces it.
+    """
+    assert isinstance(a, dict) and isinstance(b, dict)
+
+    merged = copy.deepcopy(b)
+    for k, v in a.items():
+        if isinstance(v, dict):
+            should_delete = v.get(DELETE_KEY, False)
+            v = {vk: vv for vk, vv in v.items() if vk != DELETE_KEY}
+            if should_delete or k not in merged or not isinstance(merged[k], dict):
+                merged[k] = copy.deepcopy(v)
+            else:
+                merged[k] = _merge_a_into_b(v, merged[k])
+        else:
+            merged[k] = copy.deepcopy(v)
+
+    return merged
 
 
 def inherit(cfg, path_prefix='.'):
@@ -83,10 +107,7 @@ def inherit(cfg, path_prefix='.'):
 
         base_cfg.update(_cfg)
 
-    # cfg.update(base_cfg) # ancestor overwrites descendant
-    # return cfg
-    base_cfg.update(cfg) # descendant overwrites ancestor
-    return base_cfg
+    return _merge_a_into_b(cfg, base_cfg)
 
 
 def parse_cfg(cfg_file, *update_dicts):

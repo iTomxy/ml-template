@@ -383,37 +383,56 @@ def textcolor(text, color, bg=False, bright=False):
 
 
 class MPExecutor:
-    """General-purpose multi-processing executor that dynamically create processes to run jobs
-
-    Built-in alternative: concurrent.futures.ProcessPoolExecutor
-    """
+    """General-purpose multi-processing executor that dynamically creates processes to run jobs."""
     def __init__(self):
         self.p_list = []
+        self._error_queue = mp.Queue()
 
     def __del__(self):
         self.join()
 
     def __call__(self, f, *args, **kwargs):
-        """
-        Args:
-            f: callable: function to call
-            args, kwargs: arguments to pass to `f'
-        Returns:
-            p: the process that runs the job
-        """
         assert callable(f)
-        p = mp.Process(target=f, args=args, kwargs=kwargs)
+        p = mp.Process(target=self._wrapper, args=(f, self._error_queue, *args), kwargs=kwargs)
         p.start()
         self.p_list.append(p)
-        # p.join() # do NOT join here
         return p
 
-    def join(self):
+    @staticmethod
+    def _wrapper(f, error_queue, *args, **kwargs):
+        try:
+            f(*args, **kwargs)
+        except Exception as e:
+            error_queue.put((mp.current_process().name, e))
+            raise
+
+    def join(self, timeout=None):
+        """Join all processes. Raises RuntimeError if any subprocess failed."""
+        errors = []
         for p in self.p_list:
             if p.is_alive():
-                p.join()
+                p.join(timeout=timeout)
+
+            if p.exitcode and p.exitcode != 0:
+                # Drain any error details from the queue
+                while not self._error_queue.empty():
+                    name, exc = self._error_queue.get_nowait()
+                    errors.append((name, exc))
+
+                if not any(name == p.name for name, _ in errors):
+                    errors.append((p.name, RuntimeError(f"exited with code {p.exitcode}")))
 
         self.p_list.clear()
+        if errors:
+            msg = "\n".join(f"  {name}: {exc}" for name, exc in errors)
+            raise RuntimeError(f"Subprocess error(s):\n{msg}")
+
+    def check(self):
+        """Poll running processes and raise immediately if any have failed."""
+        for p in self.p_list:
+            if not p.is_alive() and p.exitcode and p.exitcode != 0:
+                self.join()  # clean up everything and collect all errors
+                break  # join() will raise
 
 
 if __name__ == "__main__":

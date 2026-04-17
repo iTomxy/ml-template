@@ -145,6 +145,10 @@ cython_debug/
 .vscode
 .idea
 
+# AI
+.codex
+.claude
+
 # system
 *.exe
 *.lnk
@@ -272,3 +276,7 @@ events.out.tfevents.*
 *.toc
 *.url
 *.vrb
+
+# git
+*.bundle
+
