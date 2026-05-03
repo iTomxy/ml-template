@@ -33,6 +33,12 @@ pip config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple
 pip config set global.index-url http://pypi.douban.com/simple/
 ```
 
+# cmd
+
+To patch the Windows cmd.exe to be more powerful,
+e.g. let it complete like bash that to the common prefix of multiple candidates,
+install clink [8]: `winget install clink`.
+
 # powershell
 
 By default, the powershell is prohibited to run ps1 files
@@ -58,3 +64,4 @@ If a script is blocked, run
 5. [screen](https://zhuanlan.zhihu.com/p/592016896)
 6. [亲测！screen好看好用的配置（Linux）](https://www.jianshu.com/p/89607ef31493)
 7. [ipaddress.com](https://www.ipaddress.com/)
+8. [chrisant996/clink](https://github.com/chrisant996/clink)

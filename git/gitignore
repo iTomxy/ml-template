@@ -280,3 +280,7 @@ events.out.tfevents.*
 # git
 *.bundle
 
+# Syncthing
+.stfolder/
+*.sync-conflict-*
+~syncthing~*.tmp

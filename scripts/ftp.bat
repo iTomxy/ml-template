@@ -1,6 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
+@REM Send/fetch files to/from remote computer via putty `pscp`.
+
 set KEY=%USERPROFILE%\.ssh\putty-pri.ppk
 
 set IP=1.2.3.4

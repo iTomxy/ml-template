@@ -1,13 +1,8 @@
 #!/bin/bash
+# Example of using `case` in shell script
 
-dset=$1
-dset=${dset:="wikipedia"}
+dset=${1:-wikipedia}
 # echo $dset
-
-if [ ! -d $dset ]; then
-    mkdir $dset
-fi
-cd $dset
 
 case $dset in
 wikipedia)
@@ -40,4 +35,3 @@ nuswide-tc10)
     exit
     ;;
 esac
-
