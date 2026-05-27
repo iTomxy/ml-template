@@ -1,5 +1,5 @@
 % --- colour
-\usepackage[table]{xcolor} % \textcolor, \definecolor
+\usepackage[table]{xcolor} % \textcolor, \definecolor, \columncolor, \rowcolor
 \definecolor{bilibili}{RGB}{251, 114, 153}
 \definecolor{phub}{RGB}{255, 163, 26}
 \definecolor{rcnngreen}{RGB}{34, 139, 34} % FROM: Mask R-CNN (https://arxiv.org/abs/1703.06870)
@@ -40,6 +40,22 @@
 \colorlet{citecolor}{royalblue}% \cite <-> \fcite
 \colorlet{linkcolor}{red}% \ref <-> \fref
 
+% highlight text
+\providecommand{\todo}[1]{\textcolor{red}{\textbf{[TODO]} #1}}
+%--- journal revision highlighting
+% Usage: \revise{1}{TEXT 1}, \revise{2}{TEXT 2}
+% #1: revision number, hide #2 if negative
+% #2: text to be highlighted
+\newcommand{\revise}[2]{%
+  \ifnum#1<0% negative: hide the text
+    % (output nothing)
+  \else\ifnum#1=1% <- adapt revision num here
+    \textcolor{red}{#2}%
+  \else
+    #2% as-is
+  \fi\fi
+}
+
 % --- encoding
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -49,6 +65,19 @@
 \usepackage{algorithmic}
 % \usepackage{algpseudocode}
 % \usepackage[ruled,vlined]{algorithm2e}
+% This is for adding footnote after algorithm (FROM: https://arxiv.org/abs/2104.02057)
+\usepackage{etoolbox}
+\makeatletter
+\AfterEndEnvironment{algorithm}{\let\@algcomment\relax}
+\AtEndEnvironment{algorithm}{\kern2pt\hrule\relax\vskip3pt\@algcomment}
+\let\@algcomment\relax
+\newcommand\algcomment[1]{\def\@algcomment{\footnotesize#1}}
+\renewcommand\fs@ruled{\def\@fs@cfont{\bfseries}\let\@fs@capt\floatc@ruled
+  \def\@fs@pre{\hrule height.8pt depth0pt \kern2pt}%
+  \def\@fs@post{}%
+  \def\@fs@mid{\kern2pt\hrule\kern2pt}%
+  \let\@fs@iftopcapt\iftrue}
+\makeatother
 
 % Customise strings in algorithmic:
 %   \REQUIRE: `Require:' -> `Input:'
@@ -77,11 +106,32 @@
 \usepackage{multirow}
 \usepackage{colortbl} % \cellcolor
 \usepackage{pgfplotstable} % dynamically colour cells according to their value (with custom colouring command)
+% \shline: Strong \hline (FROM: https://arxiv.org/abs/2104.02057)
+\newlength\savewidth\newcommand\shline{\noalign{\global\savewidth\arrayrulewidth
+  \global\arrayrulewidth 1pt}\hline\noalign{\global\arrayrulewidth\savewidth}}
+\usepackage{tabulary}
+% Column style `x' (FROM: https://arxiv.org/abs/2104.02057):
+% 1) cells have fixed width in pt.
+% 2) text inside is centered.
+% 3) long text wraps with that fixed width.
+\newcolumntype{x}[1]{>{\centering\arraybackslash}p{#1pt}} % column style `x{#1}' for tabular
+% \tablestyle (FROM: https://arxiv.org/abs/2104.02057): use before `\begin{tabular}'
+\newcommand{\tablestyle}[2]{\setlength{\tabcolsep}{#1}\renewcommand{\arraystretch}{#2}\centering\footnotesize}
+% Inline table (FROM: https://arxiv.org/abs/2104.02057), tune the parameters as needed.
+\newenvironment{inlinetable}{%
+  \begin{center}\vspace{-.2em}\small%
+  \tablestyle{2pt}{1.1}%
+}{%
+  \vspace{-.2em}\end{center}%
+}
 
 % --- math
-\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{amsmath,amsthm}
+\usepackage{amssymb} % loads `amsfonts', \mathbb, \checkmark, \lozenge
+% \usepackage{amsfonts} % Already loaded by `amssymb'.
 % \usepackage{bm} % defines \bm
-\usepackage{mathtools} % hollow char
+\usepackage{newtxmath} % hollow char
+\usepackage{mathtools} % \DeclarePairedDelimiter
 \usepackage{stmaryrd} % hollow bracket
 
 % argmax, argmin
@@ -108,6 +158,9 @@
 % \textdagger (†), \textdaggerdbl (‡), \textparagraph (¶), \textmusicalnote (♪)
 \usepackage{textcomp}
 \providecommand{\x}{\texttimes}
+\newcommand{\app}{\raise.17ex\hbox{$\scriptstyle\sim$}} % `~' (FROM: https://arxiv.org/abs/2104.02057)
+\providecommand{\worse}{\scriptsize{\textsubscript{(\textcolor[RGB]{192, 41, 43}{$\downarrow$})}}} % (↑)
+\providecommand{\better}{\scriptsize{\textsubscript{(\textcolor[RGB]{39, 137, 72}{$\uparrow$})}}} % (↓)
 
 % --- text
 \usepackage{soul} % \st: stridethrough text
@@ -179,20 +232,6 @@
   \ifx\@nil#2\@nil\else,\@fcite#2\@nil\fi%
 }
 \makeatother
-
-%--- journal revision highlighting
-% Usage: \revise{1}{TEXT 1}, \revise{2}{TEXT 2}
-% #1: revision number, hide #2 if negative
-% #2: text to be highlighted
-\newcommand{\revise}[2]{%
-  \ifnum#1<0% negative: hide the text
-    % (output nothing)
-  \else\ifnum#1=1% <- adapt revision num here
-    \textcolor{red}{#2}%
-  \else
-    #2% as-is
-  \fi\fi
-}
 
 % --- quotation with background colour
 \usepackage[most]{tcolorbox}

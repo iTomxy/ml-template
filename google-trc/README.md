@@ -26,6 +26,10 @@ TRC will send another e-mail with:
 and this new project has access to free TPU quota.
 - quick start procedure [2].
 
+# Next
+
+- (10 May 2026) I don't know how to use yet.
+
 # References
 
 1. [TPU Research Cloud](https://sites.research.google/trc/about/)

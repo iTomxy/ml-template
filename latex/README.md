@@ -41,7 +41,8 @@ But:
 ```tex
 \usepackage{amsmath,amssymb,amsfonts,amsthm}
 % \usepackage{bm} % defines \bm
-\usepackage{mathtools} % hollow char, see [1]
+\usepackage{newtxmath} % hollow char, see [1]
+\usepackage{mathtools} % \DeclarePairedDelimiter
 \usepackage{stmaryrd} % hollow bracket, see [1]
 
 % argmax, argmin
@@ -97,6 +98,37 @@ and achieve easy auto-sizing (`\left` and `\right`).
 
 % code
 \usepackage{listings}
+```
+
+## notes below algo
+
+From [An Empirical Study of Training Self-Supervised Vision Transformers](https://arxiv.org/abs/2104.02057),
+use a custom `\algcomment` command:
+
+```tex
+\usepackage{etoolbox}
+
+\makeatletter
+\AfterEndEnvironment{algorithm}{\let\@algcomment\relax}
+\AtEndEnvironment{algorithm}{\kern2pt\hrule\relax\vskip3pt\@algcomment}
+\let\@algcomment\relax
+\newcommand\algcomment[1]{\def\@algcomment{\footnotesize#1}}
+\renewcommand\fs@ruled{\def\@fs@cfont{\bfseries}\let\@fs@capt\floatc@ruled
+  \def\@fs@pre{\hrule height.8pt depth0pt \kern2pt}%
+  \def\@fs@post{}%
+  \def\@fs@mid{\kern2pt\hrule\kern2pt}%
+  \let\@fs@iftopcapt\iftrue}
+\makeatother
+
+%--- Example ---
+\begin{algorithm}[t]
+\caption{CAPTION}
+\label{alg:code}
+\algcomment{NOTES BELOW THE ALGO} % Just like how \caption is used
+\begin{lstlisting}[language=python]
+ALGO
+\end{lstlisting}
+\end{algorithm}
 ```
 
 # Figure & Table
@@ -224,6 +256,57 @@ An example:
 ## table in figure
 
 Inspect the TeX source of figure 1 in [(iclr'25) Hydra-SGG: Hybrid Relation Assignment for One-stage Scene Graph Generation](https://arxiv.org/abs/2409.10262): use `\put` and `\scalebox` to write those texts and table cells manually.
+
+## inline table
+
+From [An Empirical Study of Training Self-Supervised Vision Transformers](https://arxiv.org/abs/2104.02057).
+It is NOT wrapped by `\begin{table}`-`\end{table}`.
+
+```tex
+\usepackage{tabulary}
+\newcolumntype{x}[1]{>{\centering\arraybackslash}p{#1pt}} % column style `x{#1}' for tabular
+\newcommand{\tablestyle}[2]{\setlength{\tabcolsep}{#1}\renewcommand{\arraystretch}{#2}\centering\footnotesize}
+% \shline: Strong \hline
+\newlength\savewidth\newcommand\shline{\noalign{\global\savewidth\arrayrulewidth
+  \global\arrayrulewidth 1pt}\hline\noalign{\global\arrayrulewidth\savewidth}}
+
+%--- Example ---
+SOME TEXTS ABOVE
+%<<<<<<< INLINE TABLE
+\begin{center}
+\vspace{-.2em}
+\small
+\tablestyle{2pt}{1.1} % fine-tune table style
+\begin{tabular}{x{52}|x{52}x{52}x{52}} % `x' column style
+R50, 800-ep & MoCo v2 \cite{Chen2020a} & MoCo v2+ \cite{Chen2021} & MoCo v3 \\
+\shline % custom Strong \hline
+linear acc. & 71.1 & 72.2 & \textbf{73.8} \\
+\end{tabular}
+\vspace{-.2em}
+\end{center}
+%>>>>>>> INLINE TABLE
+SOME TEXTS BELOW
+```
+
+You can wrap a custom environment (e.g. `inlinetable`) for convenience:
+```tex
+% Tune the parameters as needed
+\newenvironment{inlinetable}{%
+  \begin{center}\vspace{-.2em}\small%
+  \tablestyle{2pt}{1.1}%
+}{%
+  \vspace{-.2em}\end{center}%
+}
+
+%--- Example ---
+\begin{inlinetable}
+\begin{tabular}{x{52}|x{52}x{52}x{52}}
+R50, 800-ep & MoCo v2 \cite{Chen2020a} & MoCo v2+ \cite{Chen2021} & MoCo v3 \\
+\shline
+linear acc. & 71.1 & 72.2 & \textbf{73.8} \\
+\end{tabular}
+\end{inlinetable}
+```
 
 # Abbreviations
 

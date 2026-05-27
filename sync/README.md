@@ -5,7 +5,7 @@ it is:
 - no upload / download data limit:
 not depend on a central server,
 only need to run it on computers that need to synchronise.
-- support custom filtering rule with `.stignore` file [4]
+- support custom filtering rule with [.stignore](stignore) file [4]
 
 This can be useful when synchronising a folder with frequently updated contents
 (e.g. projects progress managing folder)
@@ -42,7 +42,7 @@ Run `syncthing.exe browser` to open the control website.
 Use a `.stignore` file to exclude some folders and/or files from synchronising,
 just like the `.gitignore` for git.
 Example [.stignore](stignore).
-One can also refer [.gitignore](../git/gitignore.template) for items to ignore.
+One can also refer [.gitignore](../git/gitignore) for items to ignore.
 
 The ignoring rules can also be edit on the website/GUI within the sync folder property editting.
 

@@ -267,6 +267,57 @@ def vis_pc_gray(points, norm_gray, c_high=(0, 0, 0), c_low=(255, 255, 255), wind
     vis_pc(points, colors, window_name)
 
 
+def vis_voxgrid_label(
+    voxgrid,
+    label, n_classes=0, palette=None, ignore_ids=[],
+    window_name="PyVista",
+    vol_cmap="bone", opacity=[0, 0.05, 0.06, 0.07, 0.08], clim=[200, 1500],
+    legend=False,
+):
+    """Visualise 3D voxel grid, colouring with label/prediction/error map
+    Args:
+        voxgrid: float[H, W, L], numpy.ndarray, voxel grid to visualise as volume
+        label: int[H, W, L], numpy.ndarray, voxel-wise label/prediction/error map, for colouring objects of interest
+        n_classes: int = 0, number of classes (including background), inferred from `label` if not provided.
+        palette: int[m, 3] = None, m >= n_classes, RGB colour
+        ignore_ids: List[int] = [], label IDs to ignore when visualising, e.g. background or uncertain classes
+        window_name: str = "PyVista"
+        vol_cmap: str = "bone", colormap for visualising the voxel grid
+            See https://docs.pyvista.org/plotting/scalar_bars_and_color_maps.html#colormaps
+        opacity: List[float] = [0, 0.05, 0.06, 0.07, 0.08], in [0, 1], opacity for different intensity of the voxel grid.
+        clim: List[float] = [200, 1500], intensity range for visualising the voxel grid, values outside this range will be clipped to the nearest limit.
+        legend: bool = False, whether to display a legend for the colour bar.
+    """
+    import pyvista as pv
+    if n_classes < 1:
+        n_classes = int(label.max()) + 1
+    if palette is None:
+        palette = get_palette(n_classes, pil_format=False) # [c, 3]
+
+    plotter = pv.Plotter(title=window_name)
+    grid = pv.ImageData(dimensions=voxgrid.shape)
+    grid.point_data["values"] = voxgrid.flatten(order="F")
+    plotter.add_volume(grid, cmap=vol_cmap, opacity=opacity, clim=clim)
+
+    for cid in range(n_classes):
+        if cid in ignore_ids:
+            continue
+
+        mask = (label == cid).astype(float)
+        cls_grid = pv.ImageData(dimensions=label.shape)
+        cls_grid.point_data["values"] = mask.flatten(order="F")
+        mesh = cls_grid.contour(isosurfaces=[0.5])
+        if mesh.n_points > 0:
+            mesh = mesh.smooth(n_iter=50)
+            color = palette(cid - 1)[:3]
+            plotter.add_mesh(mesh, color=color, opacity=0.9, label=str(cid))
+
+    if legend:
+        plotter.add_legend(size=(0.15, 0.4))
+
+    plotter.show()
+
+
 def bbox3d_points(point1, point2):
     """Generate all integer positions (xyz) of a 3D bounding-box defined by its two diagonal points.
     Input:

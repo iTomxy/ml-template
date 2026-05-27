@@ -273,6 +273,7 @@ events.out.tfevents.*
 *.st[ap]
 *.sv[ntx]
 *.synctex.gz
+*.synctex(busy)
 *.toc
 *.url
 *.vrb

@@ -5,13 +5,12 @@ except ImportError:
 from collections.abc import Iterable
 import csv
 import datetime
-import fnmatch, functools
-import glob
+import fnmatch
 import itertools
 import multiprocessing as mp
 import os
 import re
-import shutil, socket, subprocess, sys
+import shutil, socket, subprocess
 import time, timeit
 
 
