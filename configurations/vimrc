@@ -29,16 +29,21 @@ Plugin 'preservim/nerdtree'
 Plugin 'Vimjas/vim-python-pep8-indent'
 " Plugin 'https://gitee.com/tyloeng/vim-python-pep8-indent'
 Plugin 'tell-k/vim-autopep8'
+" Plugin 'https://gitee.com/tyloeng/dosbatch-indent'
 
 "--- dos batch
 Plugin 'vim-scripts/dosbatch-indent'
+" Plugin 'https://gitee.com/tyloeng/dosbatch-indent'
 
 "--- BeanCount accounting syntax highlight
 Plugin 'nathangrigg/vim-beancount'
+" Plugin 'https://gitee.com/little0/vim-beancount'
 
 "--- docker & sigularity
 Plugin 'ekalinin/Dockerfile.vim'
+" Plugin 'https://gitee.com/mirrors_ekalinin/Dockerfile.vim'
 Plugin 'rbberger/vim-singularity-syntax'
+" Plugin 'https://gitee.com/tyloeng/vim-singularity-syntax'
 
 " Plugin 'jiangmiao/auto-pairs'
 " Plugin 'https://gitee.com/rulei_mirror/auto-pairs'
@@ -51,7 +56,9 @@ Plugin 'altercation/solarized'
 
 "--- fzf fuzzy finding
 Plugin 'junegunn/fzf'
+" Plugin 'https://gitee.com/adam_cchen/fzf'
 Plugin 'junegunn/fzf.vim'
+" Plugin 'https://gitee.com/maozed/fzf.vim'
 call vundle#end()         " must
 filetype plugin indent on " must, here
 
