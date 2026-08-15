@@ -7,3 +7,4 @@ function prompt {
 
 # let tab complete like bash: complete to common prefix
 Set-PSReadLineKeyHandler -Key Tab -Function Complete
+Set-Alias python3 python

@@ -10,7 +10,7 @@
 #   python main.py      # run training code
 #   ```
 
-CONDA_P=${1-$HOME/miniconda3}
+CONDA_P=${1:-$HOME/miniconda3}
 
 lib_p=$CONDA_P/envs/$CONDA_DEFAULT_ENV/lib
 

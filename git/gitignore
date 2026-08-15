@@ -153,6 +153,7 @@ cython_debug/
 *.exe
 *.lnk
 .DS_Store
+.nfs*
 
 # data
 *.h5
@@ -232,6 +233,7 @@ events.out.tfevents.*
 # pytorch
 *.pt
 *.pth
+*.safetensor
 
 # torch
 *.t7
@@ -285,3 +287,8 @@ events.out.tfevents.*
 .stfolder/
 *.sync-conflict-*
 ~syncthing~*.tmp
+
+# PBS
+*.e[0-9]*
+*.o[0-9]*
+

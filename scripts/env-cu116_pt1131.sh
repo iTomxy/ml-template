@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-CONDA_P=${1-"$HOME/miniconda3"}
+CONDA_P=${1:-"$HOME/miniconda3"}
 CONDA_BIN=$CONDA_P/bin
 ENV=cu116_pt1131
 if [ ! -d $CONDA_P/envs/$ENV ]; then

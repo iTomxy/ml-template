@@ -80,7 +80,7 @@ def inherit(cfg, path_prefix='.'):
         base_cfg: dict, updated
     """
     if BASE_KEY not in cfg:
-        return cfg
+        return _merge_a_into_b(cfg, {}) # deals with DELETE_KEY
 
     includes = cfg.pop(BASE_KEY, '')
     if isinstance(includes, str):

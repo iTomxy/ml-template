@@ -23,4 +23,5 @@ doskey ls=dir /w $*
 doskey ll=dir $*
 doskey mlrun=matlab -nodesktop -nosplash -r $*
 doskey psh=powershell.exe -ExecutionPolicy Bypass -File $*
+doskey python3=python $*
 doskey tb=tensorboard --bind_all --logdir $*

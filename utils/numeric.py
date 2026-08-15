@@ -174,6 +174,14 @@ def calc_stat(lst, percentages=[], prec=None, scale=None):
     if isinstance(scale, (int, float)):
         lst = list(map(lambda x: scale * x, lst))
 
+    if not np.isfinite(np.asarray(lst, dtype=float)).any():
+        # empty, or every entry is NaN: numpy would warn and return NaN anyway,
+        # so answer with the same shape of dict quietly
+        keys = ["min", "max", "mean", "std", "median"]
+        # same clamping as the normal path below, so the keys match
+        keys += ["p_{}".format(max(1e-7, min(p, 100 - 1e-7))) for p in percentages]
+        return {k: math.nan for k in keys}
+
     ret = {
         "min": float(np.nanmin(lst)),
         "max": float(np.nanmax(lst)),

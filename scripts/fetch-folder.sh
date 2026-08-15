@@ -20,7 +20,7 @@ USER=itom
 SRC_ROOT=/home/itom/codes
 N_PROCESSES=1
 
-DEST=${1-"~/codes/ScanNet"}
+DEST=${1:-"~/codes/ScanNet"}
 if [ ! -d $DEST ]; then
 	echo * NO SUCH FOLDER: $DEST
     echo Hint: use \`export-dir.sh\` to clone folder structure first

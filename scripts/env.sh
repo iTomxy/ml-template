@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-CONDA_P=${1-"$HOME/miniconda3"}
+CONDA_P=${1:-"$HOME/miniconda3"}
 CONDA_BIN=$CONDA_P/bin
 ENV=stylehuman
 if [ ! -d $CONDA_P/envs/$ENV ]; then
@@ -34,4 +34,3 @@ $ENV_BIN/pip install -r requirements.txt
 $ENV_BIN/pip install -e .
 cd Matting
 $ENV_BIN/pip install -r requirements.txt
-

@@ -13,7 +13,7 @@
 # FILE_TYPE=(scene*_*.sens scene*_*_2d-instance.zip)
 FILE_TYPE=(' ')  # all
 
-SRC=${1-"~/data/ScanNet"}
+SRC=${1:-"~/data/ScanNet"}
 if [ ! -d $SRC ]; then
 	echo * NO SUCH FOLDER: $SRC
 	exit
@@ -22,12 +22,12 @@ cd $SRC
 SRC=`pwd`
 cd - # back to last path
 
-OUT_SHELL=${2-"copy-dir_`basename $SRC`.sh"}
+OUT_SHELL=${2:-"copy-dir_`basename $SRC`.sh"}
 cd `dirname $OUT_SHELL`
 OUT_SHELL=`pwd`/`basename $OUT_SHELL`
 cd -
 
-OUT_TEXT=${3-"file-list_`basename $SRC`.txt"}
+OUT_TEXT=${3:-"file-list_`basename $SRC`.txt"}`
 cd `dirname $OUT_TEXT`
 OUT_TEXT=`pwd`/`basename $OUT_TEXT`
 cd -
@@ -86,4 +86,3 @@ if [ -f $OUT_TEXT ]; then
 fi
 echo "#/bin/bash" > $OUT_SHELL  # single '>'
 dfs $src 0
-

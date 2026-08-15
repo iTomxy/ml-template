@@ -309,7 +309,7 @@ def vis_voxgrid_label(
         mesh = cls_grid.contour(isosurfaces=[0.5])
         if mesh.n_points > 0:
             mesh = mesh.smooth(n_iter=50)
-            color = palette(cid - 1)[:3]
+            color = palette[cid - 1][:3]
             plotter.add_mesh(mesh, color=color, opacity=0.9, label=str(cid))
 
     if legend:

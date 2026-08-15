@@ -18,7 +18,7 @@ N_PROCESSES=1
 # FILE_TYPE=(scene*_*.sens scene*_*_2d-instance.zip)
 FILE_TYPE=(' ')  # all
 
-SRC=${1-"~/data/ScanNet"}
+SRC=${1:-"~/data/ScanNet"}
 if [ ! -d $SRC ]; then
 	echo * NO SUCH FOLDER: $SRC
 	exit

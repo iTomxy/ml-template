@@ -54,6 +54,10 @@ to bypass the policy setting.
 If a script is blocked, run
 `Unblock-File <THE_SCRIPT>.ps1`.
 
+# claude
+
+Grant some permissions to claude code, so that it needs not to ask for them in executions.
+See [claude-settings.json](claude-settings.json), put it in *~/.claude/settings.json*.
 
 # References
 

@@ -1,7 +1,7 @@
 import argparse
 from email.header import Header
 from email.mime.text import MIMEText
-from email.utils import parseaddr, formataddr
+from email.utils import formataddr
 import smtplib
 
 """send E-mail with python
@@ -13,7 +13,7 @@ with the package name `email` and that will raise error.
 
 def send_email(
     subject, text, to_name_list, to_addr_list,
-    server, from_name, from_addr, password, port=0, ssl=False, debuglevel=1
+    server, from_name, from_addr, password, port=0, ssl=False, debuglevel=1, timeout=60
 ):
     """send text E-mail
     subject: str, E-mail subject
@@ -27,6 +27,7 @@ def send_email(
     port: int = 0, connect to which port of the SMTP server
     ssl: bool = False, use SMTP_SSL instead of SMTP for those servers that require so
     debuglevel: int = 1, set 0 to depress verbose output
+    timeout: float = 60, timeout in seconds for blocking operations like the connection attempt
     """
     assert isinstance(to_addr_list, (list, tuple)) and len(to_addr_list) > 0
     for i, t in enumerate(to_addr_list):
@@ -43,9 +44,9 @@ def send_email(
 
     # with smtplib.SMTP(server, port) as server:
     if ssl:
-        server = smtplib.SMTP_SSL(server, port)
+        server = smtplib.SMTP_SSL(server, port, timeout=timeout)
     else:
-        server = smtplib.SMTP(server, port)
+        server = smtplib.SMTP(server, port, timeout=timeout)
     server.set_debuglevel(debuglevel)
     server.login(from_addr, password)
     server.sendmail(from_addr, to_addr_list, msg.as_string())
@@ -53,7 +54,7 @@ def send_email(
 
 
 if "__main__" == __name__:
-    parser = argparse.ArgumentParser()#fromfile_prefix_chars='@')
+    parser = argparse.ArgumentParser()
     parser.add_argument('text', type=str, nargs='+', metavar="STR", help='email body/content')
     parser.add_argument('-s', '--subject', type=str, nargs='+', metavar="STR", default=["NO SUBJECT"], help='email subject')
     parser.add_argument('-S', '--smtp-server', type=str, metavar="IP", default="", help="SMTP server IP address")
@@ -61,12 +62,12 @@ if "__main__" == __name__:
     parser.add_argument('-T', '--to-name', type=str, metavar="NAME", nargs='+', default=["Receiver_1"],
         help="receivers' name, separated by space. Concatenate with `_` for multi-word names, e.g. `Jerry_Mouse Spike_Dog`.")
     parser.add_argument('-f', '--from-addr', type=str, metavar="ADDR", default="", help="sender address/account")
-    parser.add_argument('-F', '--from-name', type=str, metavar="NAME", nargs='+', default="Sender",
-        help="sender name. Concatenate with `_` if multi-word, e.g. `Thomas_Cat`.")
+    parser.add_argument('-F', '--from-name', type=str, metavar="NAME", nargs='+', default=["Sender"], help="sender name")
     parser.add_argument('-p', '--password', type=str, metavar="PSW", default="", help="password (or authorisation code) of sender email account")
     parser.add_argument('-P', '--smtp-port', type=int, metavar="PORT", default=0)
     parser.add_argument('--ssl', action="store_true", help="set if using SSL is required by the SMTP server")
     parser.add_argument('-d', '--debug-level', type=int, metavar="INT", default=1)
+    parser.add_argument('--timeout', type=float, metavar="SECONDS", default=60, help="timeout in seconds for blocking operations like the connection attempt")
     args = parser.parse_args()
 
     assert len(args.to_addr) > 0, "Please specify receiver email address/es, e.g. jerry.mouse@get-cheese.edu"
@@ -75,11 +76,11 @@ if "__main__" == __name__:
     assert args.smtp_server, "Please specify SMTP server, e.g. smtp.sina.cn"
 
     # deal with name, e.g. `Spike_Dog` -> `Spike Dog`
-    args.from_name = args.from_name.replace('_', ' ')
+    args.from_name = ' '.join(args.from_name).replace('_', ' ') if isinstance(args.from_name, (list, tuple)) else args.from_name.replace('_', ' ')
     args.to_name = [tn.replace('_', ' ') for tn in args.to_name]
 
     send_email(
         ' '.join(args.subject), ' '.join(args.text), args.to_name, args.to_addr,
         args.smtp_server, args.from_name, args.from_addr, args.password, args.smtp_port,
-        args.ssl, args.debug_level
+        args.ssl, args.debug_level, args.timeout
     )

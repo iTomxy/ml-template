@@ -4,6 +4,9 @@ alias rm='rm -i'
 alias cp='cp -i'
 alias mv='mv -i'
 alias what='ps aux | grep `whoami`'
+alias akill='pkill -u `whoami`'
+# PBS
+alias rmpbs='rm *.[eo][0-9]*'
 # TensorBoard
 alias tb='tensorboard --bind_all --logdir'
 # Jupyter lab
