@@ -82,7 +82,7 @@ class Evaluator:
         for metr in self.metrics:
             # self.records[metr] = [[]] * self.n_classes # wrong
             self.records[metr] = [[] for _ in range(self.n_classes)]
-        for metr in self.DISTANCE_BASED:
+        for metr in self.DISTANCE_BASED + ("recall", "sensitivity", "precision"):
             if metr in self.metrics:
                 self.records[f"empty_gt_{metr}"] = [0] * self.n_classes
                 self.records[f"empty_pred_{metr}"] = [0] * self.n_classes

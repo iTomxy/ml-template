@@ -1,0 +1,16 @@
+# ~/.codex/config.toml
+# 20 August 2026, iTom
+
+# Primary orchestrator
+model = "gpt-5.6-sol"
+model_reasoning_effort = "ultra"
+approvals_reviewer = "auto_review"
+
+[agents]
+enabled = true
+
+# Unspecified subagents use the cheapest worker tier.
+default_subagent_model = "gpt-5.6-luna"
+default_subagent_reasoning_effort = "medium"
+
+max_concurrent_threads_per_session = 3

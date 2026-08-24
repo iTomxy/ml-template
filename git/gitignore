@@ -148,6 +148,7 @@ cython_debug/
 # AI
 .codex
 .claude
+.agents
 
 # system
 *.exe
