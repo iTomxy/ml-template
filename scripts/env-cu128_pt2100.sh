@@ -52,11 +52,17 @@ if [[ ! -x "${CONDA_BIN}" ]]; then
     exit 1
 fi
 
-# An interrupted conda transaction can leave the prefix directory behind
-# without a usable Python. Treat that as corruption instead of letting later
-# commands fail with misleading 'file not found' errors.
-if [[ -e "${ENV_ROOT}" && ! -x "${ENV_BIN}/python" ]]; then
-    echo "Incomplete conda environment at ${ENV_ROOT}: bin/python is missing." >&2
+# An interrupted conda transaction leaves the prefix behind in one of two
+# shapes: without bin/python, or -- after a failed create -- with bin/python but
+# an empty conda-meta. conda does not recognise the second as an environment, so
+# the `conda install` path below aborts with DirectoryNotACondaEnvironmentError
+# (hit on iHPC venus25, 2026-08-29). conda-meta/history is the marker conda
+# itself looks for; testing the file rather than running `conda list` keeps this
+# instant on a network home, where a conda subprocess costs minutes.
+if [[ -e "${ENV_ROOT}" ]] \
+    && { [[ ! -x "${ENV_BIN}/python" ]] \
+        || [[ ! -f "${ENV_ROOT}/conda-meta/history" ]]; }; then
+    echo "Incomplete or unrecognised conda environment at ${ENV_ROOT}." >&2
     echo "Move or remove that incomplete prefix, then rerun this script." >&2
     exit 1
 fi
@@ -83,7 +89,20 @@ CONDA_PACKAGES=(
     tensorboard pillow
     medpy nibabel
     "gxx_linux-64>=9,<15"
-    "cuda-version=${CUDA_VERSION}" cuda-nvcc cuda-cudart-dev cuda-driver-dev
+    # cuda-nvcc must be pinned, not merely constrained by cuda-version: left
+    # free, the solver picked nvcc 12.4 on both iHPC nodes (2026-08-29), which
+    # cannot target compute_120 and does not match the 12.8 torch wheel.
+    "cuda-version=${CUDA_VERSION}" "cuda-nvcc=${CUDA_VERSION}"
+    cuda-cudart-dev cuda-driver-dev
+    # torch 2.10's ATen/cuda/CUDAContextLight.h includes cusparse.h, cublas_v2.h,
+    # cublasLt.h and cusolverDn.h for every CUDA extension build, and
+    # torch.utils.cpp_extension searches only this prefix's include tree -- never
+    # the pip nvidia-*-cu12 wheels that also ship them. Without these three,
+    # every openpoints CUDA-op build in scripts/env.sh dies at
+    # "cusparse.h: No such file or directory". The ops themselves include no
+    # math-library headers, so this trio is the whole requirement; cuda-toolkit
+    # would also work but drags in the entire toolkit.
+    libcublas-dev libcusparse-dev libcusolver-dev
 )
 CONDA_SOLVE_ARGS=(
     --yes
@@ -101,6 +120,12 @@ else
     echo "Updating ${ENV_NAME} at ${ENV_ROOT}..."
     "${CONDA_BIN}" install "${CONDA_SOLVE_ARGS[@]}" "${CONDA_PACKAGES[@]}"
 fi
+
+# Put this env's own runtime libraries ahead of the system paths. Conda's
+# `activate` would do this, but this script drives python/nvcc by absolute path,
+# so without it the login node's /lib64/libstdc++.so.6 (which lacks
+# GLIBCXX_3.4.29) shadows the env's libstdc++ and numpy/torch fail to import.
+export LD_LIBRARY_PATH="${ENV_ROOT}/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 
 # PyTorch's CUDA wheel index is the source of truth for this exact pair.
 "${ENV_BIN}/python" -m pip install \
@@ -136,6 +161,19 @@ if [[ ! -e "${ENV_ROOT}/targets/x86_64-linux/lib/libcudart.so" ]]; then
     echo "Base environment is incomplete: CUDA ${CUDA_VERSION} development library is missing." >&2
     exit 1
 fi
+
+# The math-library headers torch's CUDAContextLight.h pulls into every extension
+# build. Checking them here turns a channel change into a clear failure of this
+# script, instead of "cusparse.h: No such file or directory" much later, inside
+# the first openpoints CUDA-op compile in scripts/env.sh.
+for header in cusparse.h cublas_v2.h cublasLt.h cusolverDn.h; do
+    if [[ ! -f "${ENV_ROOT}/targets/x86_64-linux/include/${header}" ]]; then
+        echo "Base environment is incomplete: ${header} is missing." >&2
+        echo "libcublas-dev, libcusparse-dev and libcusolver-dev supply these;" >&2
+        echo "if the channels stop carrying them, use cuda-toolkit=${CUDA_VERSION}." >&2
+        exit 1
+    fi
+done
 
 TORCH_CUDA_VERSION="$("${ENV_BIN}/python" -c 'import torch; print(torch.version.cuda)')"
 if [[ "${TORCH_CUDA_VERSION}" != "${CUDA_VERSION}" ]]; then
