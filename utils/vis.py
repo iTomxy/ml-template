@@ -1,4 +1,4 @@
-import os, math, itertools
+import os, math, itertools, gc
 import numpy as np
 from PIL import Image
 import open3d as o3d
@@ -272,7 +272,7 @@ def vis_voxgrid_label(
     label, n_classes=0, palette=None, ignore_ids=[],
     window_name="PyVista",
     vol_cmap="bone", opacity=[0, 0.05, 0.06, 0.07, 0.08], clim=[200, 1500],
-    legend=False,
+    scalar_bar=False, legend=False,
 ):
     """Visualise 3D voxel grid, colouring with label/prediction/error map
     Args:
@@ -286,18 +286,24 @@ def vis_voxgrid_label(
             See https://docs.pyvista.org/plotting/scalar_bars_and_color_maps.html#colormaps
         opacity: List[float] = [0, 0.05, 0.06, 0.07, 0.08], in [0, 1], opacity for different intensity of the voxel grid.
         clim: List[float] = [200, 1500], intensity range for visualising the voxel grid, values outside this range will be clipped to the nearest limit.
-        legend: bool = False, whether to display a legend for the colour bar.
+        scalar_bar: bool = False, whether to display the intensity colour bar of the voxel grid.
+        legend: bool = False, whether to display a legend mapping each label ID to its colour.
     """
+    import gc
     import pyvista as pv
     if n_classes < 1:
         n_classes = int(label.max()) + 1
     if palette is None:
         palette = get_palette(n_classes, pil_format=False) # [c, 3]
+    if ignore_ids is None:
+        ignore_ids = []
+    if isinstance(ignore_ids, int):
+        ignore_ids = [ignore_ids]
 
     plotter = pv.Plotter(title=window_name)
     grid = pv.ImageData(dimensions=voxgrid.shape)
     grid.point_data["values"] = voxgrid.flatten(order="F")
-    plotter.add_volume(grid, cmap=vol_cmap, opacity=opacity, clim=clim)
+    plotter.add_volume(grid, cmap=vol_cmap, opacity=opacity, clim=clim, show_scalar_bar=scalar_bar)
 
     for cid in range(n_classes):
         if cid in ignore_ids:
@@ -309,13 +315,20 @@ def vis_voxgrid_label(
         mesh = cls_grid.contour(isosurfaces=[0.5])
         if mesh.n_points > 0:
             mesh = mesh.smooth(n_iter=50)
-            color = palette[cid - 1][:3]
+            color = palette[cid][:3]
             plotter.add_mesh(mesh, color=color, opacity=0.9, label=str(cid))
 
     if legend:
         plotter.add_legend(size=(0.15, 0.4))
 
     plotter.show()
+
+    # `plotter` is held by pyvista's global plotter registry, so without an
+    # explicit close its __del__ runs at interpreter shutdown, after pyvista's
+    # modules are torn down, and spams "Exception ignored in: ... __del__".
+    # The grids/meshes are locals and are released when this function returns.
+    plotter.close()
+    gc.collect()
 
 
 def bbox3d_points(point1, point2):

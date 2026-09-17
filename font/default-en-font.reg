@@ -1,0 +1,73 @@
+Windows Registry Editor Version 5.00
+; Substitute Times New Roman for Segoe UI and the legacy dialog font aliases.
+; This is not a universal Windows font setting: coverage depends on the font name
+; and rendering API each control uses. Segoe UI Variable is not mapped here.
+; Requires administrator rights, and a sign-out (or reboot) to take effect.
+; https://superuser.com/questions/1502897/how-to-change-the-system-font-in-windows-10
+;
+; Times New Roman is a proportional serif font; install it before applying this file.
+; Its installed family name is "Times New Roman".
+; Use the installed family name, not the product name or filename, in substitutions.
+; Text outside its coverage is served by Windows' font linking / fallback.
+; This substitution is intended to change the English (Latin) UI text.
+;
+; Two steps are needed:
+;   1. unregister the Segoe UI *text* faces, so the font mapper cannot resolve the name;
+;   2. add a substitution Segoe UI -> Times New Roman for font mappers that honor it.
+; Segoe UI Emoji / Symbol / Historic are deliberately left registered: blanking them
+; strips emoji and the symbol glyphs used by the shell.
+
+;
+; ADD
+;
+
+; 1. unregister the Segoe UI text faces (empty value = no font file)
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts]
+"Segoe UI (TrueType)"=""
+"Segoe UI Black (TrueType)"=""
+"Segoe UI Black Italic (TrueType)"=""
+"Segoe UI Bold (TrueType)"=""
+"Segoe UI Bold Italic (TrueType)"=""
+"Segoe UI Italic (TrueType)"=""
+"Segoe UI Light (TrueType)"=""
+"Segoe UI Light Italic (TrueType)"=""
+"Segoe UI Semibold (TrueType)"=""
+"Segoe UI Semibold Italic (TrueType)"=""
+"Segoe UI Semilight (TrueType)"=""
+"Segoe UI Semilight Italic (TrueType)"=""
+
+; 2. substitute the installed family name for Segoe UI and legacy dialog aliases
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes]
+"Segoe UI"="Times New Roman"
+; These aliases are independent of Segoe UI; controls requesting them need mappings too.
+; Their previous values on this machine were "Microsoft Sans Serif" and "Tahoma".
+"MS Shell Dlg"="Times New Roman"
+"MS Shell Dlg 2"="Times New Roman"
+
+;
+; DELETE
+; Restore the Windows defaults: comment out the ADD block above, uncomment the
+; followings and execute. The .ttf files themselves are never touched by the tweak,
+; only their registration. Restore a prior export instead if your original values differed.
+;
+
+; 1. re-register the Segoe UI text faces (the Windows 10/11 defaults)
+;[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts]
+;"Segoe UI (TrueType)"="segoeui.ttf"
+;"Segoe UI Black (TrueType)"="seguibl.ttf"
+;"Segoe UI Black Italic (TrueType)"="seguibli.ttf"
+;"Segoe UI Bold (TrueType)"="segoeuib.ttf"
+;"Segoe UI Bold Italic (TrueType)"="segoeuiz.ttf"
+;"Segoe UI Italic (TrueType)"="segoeuii.ttf"
+;"Segoe UI Light (TrueType)"="segoeuil.ttf"
+;"Segoe UI Light Italic (TrueType)"="seguili.ttf"
+;"Segoe UI Semibold (TrueType)"="seguisb.ttf"
+;"Segoe UI Semibold Italic (TrueType)"="seguisbi.ttf"
+;"Segoe UI Semilight (TrueType)"="segoeuisl.ttf"
+;"Segoe UI Semilight Italic (TrueType)"="seguisli.ttf"
+
+; 2. drop the Segoe UI substitution and restore the previous legacy aliases
+;[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes]
+;"Segoe UI"=-
+;"MS Shell Dlg"="Microsoft Sans Serif"
+;"MS Shell Dlg 2"="Tahoma"
